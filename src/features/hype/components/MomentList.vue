@@ -160,7 +160,7 @@ const chips = computed(() => {
 </script>
 
 <template>
-  <div class="flex flex-col gap-2">
+  <div class="flex min-h-0 flex-col gap-2">
     <ol class="chips grid grid-cols-[repeat(auto-fill,minmax(92px,1fr))] gap-1.5">
       <li
         v-for="c in chips"
@@ -269,11 +269,18 @@ const chips = computed(() => {
 </template>
 
 <style scoped>
-/* A phone scrolls the page, which is the right scroll there; a desktop has the panel beside
-   the player and must not lose the export button below the fold. */
+/* A phone scrolls the page, which is the right scroll there. On a desktop the grid takes
+   whatever height its column has and scrolls only past that — a fixed cap left the chips
+   huddled at the top of a tall, empty card (Angel, 2026-09-17). `max-content` rows keep a
+   chip at its own height instead of sharing out the box. */
 @media (min-width: 1024px) {
   .chips {
-    max-height: 13.5rem;
+    /* shrink-to-fit, never stretch: the hint stays under the last chip, and a long list
+       scrolls inside whatever height the column has */
+    flex: 0 1 auto;
+    min-height: 6rem;
+    align-content: start;
+    grid-auto-rows: max-content;
     overflow-y: auto;
     overscroll-behavior: contain;
     padding-right: 4px;

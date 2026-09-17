@@ -562,3 +562,29 @@ it used to cost none — the trade Angel picked knowingly. The menus carry
 `data-testid="pick-<name>"`, and `e2e/cut.mjs` and `e2e/ai.mjs` drive them
 through a shared `pickSetting` helper. Five new strings per catalog, ten
 catalogs.
+
+## ADR-28 — The moments grid takes its column's height (2026-09-17)
+
+**Context.** ADR-27 capped the grid at 13.5 rem. That was solving a problem
+the layout does not have: on `xl` the moments card is its own column beside
+the player, and below `xl` the three panels are tabs, so a long list never
+pushed the clip panel anywhere. Worse, a fixed height on a grid whose card
+is stretched by its taller neighbour let the rows share out that height
+instead of keeping their own: with 25 moments the chips overlapped each
+other by half, inside a card that was two-thirds empty (Angel, 2026-09-17,
+with a screenshot).
+
+**Decision.** `.chips` is `flex: 0 1 auto` with `min-height: 6rem`,
+`align-content: start` and `grid-auto-rows: max-content` from 1024 px up,
+and the component is `min-h-0 flex-1` in its card. It therefore takes the
+height its content wants, shrinks and scrolls only when the column is
+genuinely shorter than the list, and can never compress a row below a
+chip's own height. The hint line stays under the last chip rather than
+being pushed to the bottom of the card.
+
+**Consequences.** No cap in practice on a desktop: a VOD with sixty
+moments makes that column tall and the page scrolls, which is what it did
+before ADR-27 and what the column is for. The scroll-the-selection-into-view
+behaviour from ADR-27 stays and still matters when the column is short.
+`grid-auto-rows: max-content` is the load-bearing line; without it any
+future height constraint brings the overlap straight back.

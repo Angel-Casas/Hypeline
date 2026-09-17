@@ -891,6 +891,7 @@ watch(
             </button>
             <MomentList
               v-if="allMoments.length"
+              class="min-h-0 flex-1"
               :moments="allMoments"
               :length-seconds="lengthSeconds"
               :active-id="activeMomentId"

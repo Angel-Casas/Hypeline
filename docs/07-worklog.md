@@ -1283,3 +1283,14 @@ explicitly. 101 unit tests, 14/14 e2e, lint and build clean. Measured in the
 real dashboard: settings row 65 px at 1440 and above, 100 px at 1280, from
 ~170 px before. The five mocks Angel chose from are in
 `design/clips/clip-controls.html`.
+
+## 2026-09-17 (cont.) — The moments grid, uncramped
+
+**What changed.** ADR-28, correcting ADR-27's cap. The chips grid now takes
+its own content height (`flex: 0 1 auto`, `align-content: start`,
+`grid-auto-rows: max-content`) inside a `min-h-0 flex-1` list, so it fills
+the column instead of huddling in 216 px of a 745 px card, and rows can no
+longer be squeezed into each other — which is what made the chips overlap in
+Angel's screenshot. Measured in the dashboard at 1800×1150: grid 466 px of a
+745 px card, rows at their full 61 px, no scrollbar; the hint sits under the
+last chip. 101 unit tests, e2e green, lint and build clean.
