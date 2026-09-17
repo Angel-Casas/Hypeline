@@ -1178,3 +1178,15 @@ it, so the "?" links work out of the box; new public `README.md`, `LICENSE`
 The working folder is now a git repo on `main` with `origin` set and one
 initial commit (245 files, author Angel Casas); Angel pushes it himself.
 95 unit, 14/14 e2e.
+
+## 2026-09-17 (cont.) — hypeline.live
+
+**What changed.** The app has a home: `README.md` opens with
+[hypeline.live](https://hypeline.live) (badge + a line under the title, and
+a closing link), `package.json` gained `homepage`/`repository`,
+`.env.example` names the real OAuth redirect. For a static host:
+`public/CNAME` and `scripts/spa-fallback.mjs` (copies `index.html` to
+`404.html` after the build) so `/dashboard/<vod>` and the Twitch redirect
+survive a hard load. **Blocked/next:** the domain resolves to GitHub Pages
+but 404s — nothing is published yet (the repo is still local, and Pages
+needs an Actions workflow to build a Vite app).

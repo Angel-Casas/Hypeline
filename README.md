@@ -1,13 +1,16 @@
 # Hypeline
 
+### → [**hypeline.live**](https://hypeline.live) — open the app
+
 **Free, open-source Twitch clipping that listens to chat.** Paste a VOD link;
 Hypeline reads the chat replay, draws the stream as a hype heatmap, ranks the
 moments, and cuts captioned vertical clips — entirely in your browser.
 
-No uploads. No account. No server. Your VODs, clips and keys never leave your
-machine.
+No uploads. No account. No sign-up. No server. Your VODs, clips and keys never
+leave your machine. Nothing to install either, though you can: it is a PWA, so
+your browser will offer to keep it in its own window, offline.
 
-![MIT](https://img.shields.io/badge/license-MIT-black) ![Browser only](https://img.shields.io/badge/backend-none-black) ![PWA](https://img.shields.io/badge/PWA-installable-black)
+[![Open the app](https://img.shields.io/badge/open-hypeline.live-7a4f8e)](https://hypeline.live) ![MIT](https://img.shields.io/badge/license-MIT-black) ![Browser only](https://img.shields.io/badge/backend-none-black) ![PWA](https://img.shields.io/badge/PWA-installable-black)
 
 ## Why it is different
 
@@ -33,7 +36,10 @@ clip are ever fetched.
   their newest VODs — one click from a clip.
 - Ten languages, day and night, installable as an app, works offline.
 
-## Run it
+## Run your own copy
+
+The hosted app at [hypeline.live](https://hypeline.live) is this repository,
+built and served as static files. To work on it:
 
 ```bash
 pnpm install        # npm works too (the lockfile is npm's)
@@ -68,6 +74,16 @@ else. There is no backend to run and nothing to pay for.
 vision, architecture, decisions (ADRs), research notes on Twitch's
 undocumented endpoints, the design system, and a running worklog.
 
+## Deploying
+
+The build is static: `pnpm build` writes `dist/`, which any host can serve.
+Two details matter for a single-page app on a static host — both already in
+the build: `public/CNAME` carries the custom domain, and `scripts/
+spa-fallback.mjs` copies `index.html` to `404.html` so deep links
+(`/dashboard/<vod>`, and Twitch's sign-in redirect) survive a hard load.
+GitHub Pages needs an Actions workflow to run the build; `dist/` itself is
+never committed.
+
 ## Contributing
 
 Issues and pull requests are welcome. The three doors in the app's "?" open a
@@ -83,3 +99,5 @@ extra cost to you. The app works with any NanoGPT key, referred or not.
 ## Licence
 
 MIT © 2026 Angel Casas. Not affiliated with Twitch or Amazon.
+
+**[hypeline.live](https://hypeline.live)**

@@ -4,10 +4,15 @@
   "private": true,
   "type": "module",
   "description": "Free, open-source Twitch clipping that listens to chat. Browser-only, BYOK AI.",
+  "homepage": "https://hypeline.live",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Angel-Casas/Hypeline.git"
+  },
   "license": "MIT",
   "scripts": {
     "dev": "vite",
-    "build": "vue-tsc -b && vite build",
+    "build": "vue-tsc -b && vite build && node scripts/spa-fallback.mjs",
     "preview": "vite preview",
     "test": "vitest run",
     "test:watch": "vitest",
