@@ -514,7 +514,7 @@ watch(
     </header>
     <div
       v-if="railOpen"
-      class="scrim fixed inset-0 z-40 backdrop-blur-[6px] lg:hidden"
+      class="scrim-soft fixed inset-0 z-40 backdrop-blur-[6px] lg:hidden"
       @click="railOpen = false"
     ></div>
     <!-- rail: brand, VOD input, library, storage, settings. Below lg it is a drawer. -->
@@ -1163,7 +1163,7 @@ watch(
    own background, where the glass is right. */
 @media (max-width: 1023.98px) {
   .rail-drawer {
-    background: color-mix(in srgb, var(--color-ground) 86%, transparent);
+    background: var(--sheet-bg);
     backdrop-filter: blur(24px) saturate(1.2);
     -webkit-backdrop-filter: blur(24px) saturate(1.2);
   }
@@ -1171,6 +1171,12 @@ watch(
 /* overlay scrims: a real dim in both themes (see --scrim in style.css) */
 .scrim {
   background: var(--scrim);
+}
+/* The drawer's scrim is the lighter one: it sits *between* the page and the drawer, so a
+   full-strength dim there is counted twice and the drawer reads as flat black however
+   transparent its own background is (Angel, 2026-09-17). */
+.scrim-soft {
+  background: var(--sheet-scrim);
 }
 /* the example VOD has no video: a black card with a whisper, where the player would be */
 .example-video {

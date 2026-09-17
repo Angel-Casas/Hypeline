@@ -40,9 +40,20 @@ Rounded 12–18 px. Shadows only on glass.
 `glass` is a window: it wants the page's own background behind it. Put it
 over content — a drawer, a popover — and the text behind it shows through
 and neither can be read (Angel, 2026-09-17). Anything that floats over the
-dashboard uses `sheet` instead: 86 % of `--color-ground` (so near-opaque
-paper by day, near-opaque black by night) with a 24 px backdrop blur, and a
-`--scrim` behind it. Same rule as the scrim tokens — the surface must read
+dashboard uses `sheet` instead: `--sheet-bg`, which is 88 % of
+`--color-ground` (so near-opaque
+paper by day, near-opaque black by night) by day and 76 % by night, with a 24 px backdrop blur, and
+`--sheet-scrim` behind it.
+
+**The panel and its scrim are one decision.** The scrim sits _between_ the
+page and the panel, so the panel's own transparency only ever sees an
+already-dimmed page: a 58 % scrim under a 14 %-transparent panel lets about
+6 % of the page through, which is nothing, and the panel reads as flat paint
+however its `background` is written (Angel, 2026-09-17 — twice). Change them
+together, and judge the result from a screenshot, never from the computed
+`background-color`. The two themes need different numbers because paper
+shows dark bleed-through far more readily than black shows bright: night is
+76 % panel over a 40 % scrim, day is 88 % over 32 %. Same rule as the scrim tokens — the surface must read
 in both themes, and `--color-ground` is the only colour that flips with
 them.
 

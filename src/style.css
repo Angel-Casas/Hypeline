@@ -29,6 +29,12 @@
   --scrim-soft: rgba(34, 28, 42, 0.1);
   --scrim: rgba(34, 28, 42, 0.32);
   --scrim-strong: rgba(34, 28, 42, 0.45);
+  /* A floating panel and the scrim under it are one decision: the scrim sits *between* the
+     page and the panel, so its dim is counted twice and a strong one makes the panel read as
+     flat however transparent it is (Angel, 2026-09-17). Paper shows dark bleed-through far
+     more readily than black shows bright, so the two themes get different numbers. */
+  --sheet-bg: color-mix(in srgb, var(--color-ground) 88%, transparent);
+  --sheet-scrim: var(--scrim);
   --font-display: 'Gloock', 'Iowan Old Style', Georgia, serif;
   --font-sans: 'Manrope', 'Helvetica Neue', Arial, sans-serif;
   --font-mono: 'JetBrains Mono', Menlo, Consolas, monospace;
@@ -75,6 +81,8 @@
   --scrim-soft: rgba(0, 0, 0, 0.4);
   --scrim: rgba(0, 0, 0, 0.58);
   --scrim-strong: rgba(0, 0, 0, 0.7);
+  --sheet-bg: color-mix(in srgb, var(--color-ground) 76%, transparent);
+  --sheet-scrim: var(--scrim-soft);
   --glass-bg: rgba(255, 255, 255, 0.06);
   --glass-line: rgba(255, 255, 255, 0.12);
   --glass-inset: rgba(255, 255, 255, 0.08);
@@ -214,7 +222,7 @@ body {
  * through.
  */
 @utility sheet {
-  background: color-mix(in srgb, var(--color-ground) 86%, transparent);
+  background: var(--sheet-bg);
   border: 1px solid var(--glass-line);
   backdrop-filter: blur(24px) saturate(1.2);
   -webkit-backdrop-filter: blur(24px) saturate(1.2);

@@ -1310,3 +1310,17 @@ drawer's scrim blur went from 2 px to 6 px — the drawer was `glass` over
 live content and unreadable (Angel, screenshot). At `lg` the rail is a
 column on the page background and keeps the glass. `docs/08-design-system.md`
 now says which of the two to reach for. 101 unit tests, e2e green.
+
+## 2026-09-17 (cont.) — The drawer really is translucent now
+
+**What changed.** Two goes at this were wrong because I measured the panel's
+`background-color` rather than what gets painted: the scrim is _between_ the
+page and the drawer, so at 58 % it halved the page before the drawer's own
+transparency saw it, and 94 % then 86 % both came out as flat black. The
+panel and its scrim are now one pair of tokens, `--sheet-bg` and
+`--sheet-scrim`, set per theme — night 76 % over a 40 % scrim, day 88 % over
+32 %, since paper shows dark bleed-through much more readily than black
+shows bright. Verified from screenshots in both themes: the heatmap ghosts
+through the night drawer, the player is a soft grey wash behind the day one,
+and the text stays crisp in both. `docs/08-design-system.md` records the
+trap. 101 unit tests, e2e green.
