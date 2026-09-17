@@ -1294,3 +1294,18 @@ longer be squeezed into each other — which is what made the chips overlap in
 Angel's screenshot. Measured in the dashboard at 1800×1150: grid 466 px of a
 745 px card, rows at their full 61 px, no scrollbar; the hint sits under the
 last chip. 101 unit tests, e2e green, lint and build clean.
+
+## 2026-09-17 (cont.) — A black icon and a readable drawer
+
+**What changed.** The maskable icon was drawn on `#0c0a0f`, so the installed
+app's launcher icon and Android's splash showed a faintly purple square on
+the app's true black; its background is pure black now (the mark is
+untouched — a linear stretch sending the old background to 0). The
+apple-touch icon was transparent, which renders inconsistently, so it is
+baked onto black too. New `sheet` utility in `src/style.css` for panels that
+float over the page: 94 % `--color-ground` plus a 24 px blur, near-opaque in
+both themes. The rail drawer below `lg` and `ShortcutsHelp` use it, and the
+drawer's scrim blur went from 2 px to 6 px — the drawer was `glass` over
+live content and unreadable (Angel, screenshot). At `lg` the rail is a
+column on the page background and keeps the glass. `docs/08-design-system.md`
+now says which of the two to reach for. 101 unit tests, e2e green.

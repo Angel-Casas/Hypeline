@@ -206,6 +206,24 @@ body {
     inset 0 1px 0 var(--glass-inset);
   border-radius: 18px;
 }
+/**
+ * A panel that floats *over* the page (the rail drawer below lg, the shortcuts popover).
+ * `glass` is a window — lovely against the page's own background, unreadable when there is
+ * text behind it (Angel, 2026-09-17). This is a surface instead: near-opaque paper by day,
+ * near-opaque black by night, with whatever is behind it blurred away rather than showing
+ * through.
+ */
+@utility sheet {
+  background: color-mix(in srgb, var(--color-ground) 94%, transparent);
+  border: 1px solid var(--glass-line);
+  backdrop-filter: blur(24px) saturate(1.2);
+  -webkit-backdrop-filter: blur(24px) saturate(1.2);
+  box-shadow:
+    0 24px 60px rgba(0, 0, 0, 0.28),
+    inset 0 1px 0 var(--glass-inset);
+  border-radius: 18px;
+}
+
 @utility glass-sm {
   background: var(--glass-sm-bg);
   border: 1px solid var(--glass-sm-line);

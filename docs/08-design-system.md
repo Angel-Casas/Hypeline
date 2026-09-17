@@ -33,8 +33,18 @@ Type: **Gloock** (display: wordmark, headlines, moment titles),
 **Manrope** (body, buttons), **JetBrains Mono** (eyebrows, timestamps,
 numbers — always `tabular-nums`). Self-hosted under `public/fonts/` since 2026-09-15 (`src/fonts.css`).
 
-Utilities: `glass` (panel), `glass-sm` (chips/buttons), `eyebrow`,
-`btn-ink`, `btn-ghost`, `field`. Rounded 12–18 px. Shadows only on glass.
+Utilities: `glass` (panel), `sheet` (a panel that floats _over_ the page),
+`glass-sm` (chips/buttons), `eyebrow`, `btn-ink`, `btn-ghost`, `field`.
+Rounded 12–18 px. Shadows only on glass.
+
+`glass` is a window: it wants the page's own background behind it. Put it
+over content — a drawer, a popover — and the text behind it shows through
+and neither can be read (Angel, 2026-09-17). Anything that floats over the
+dashboard uses `sheet` instead: 94 % of `--color-ground` (so near-opaque
+paper by day, near-opaque black by night) with a 24 px backdrop blur, and a
+`--scrim` behind it. Same rule as the scrim tokens — the surface must read
+in both themes, and `--color-ground` is the only colour that flips with
+them.
 
 Atmosphere (App shell): `.hl-mesh` — four blurred pastel radials drifting
 30 s, opacity .55 — and `.hl-grain` — SVG fractal noise multiplied at 30%.

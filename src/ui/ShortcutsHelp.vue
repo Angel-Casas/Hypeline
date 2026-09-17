@@ -38,7 +38,7 @@ onBeforeUnmount(() => {
     <Transition name="tip">
       <div
         v-if="open"
-        class="glass absolute bottom-full left-0 z-30 mb-2 w-64 p-3 text-xs"
+        class="sheet absolute bottom-full left-0 z-30 mb-2 w-64 p-3 text-xs"
         role="tooltip"
       >
         <div class="eyebrow mb-2">{{ t('shortcuts.keyboard') }}</div>

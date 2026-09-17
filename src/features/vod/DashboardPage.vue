@@ -514,13 +514,13 @@ watch(
     </header>
     <div
       v-if="railOpen"
-      class="scrim fixed inset-0 z-40 backdrop-blur-[2px] lg:hidden"
+      class="scrim fixed inset-0 z-40 backdrop-blur-[6px] lg:hidden"
       @click="railOpen = false"
     ></div>
     <!-- rail: brand, VOD input, library, storage, settings. Below lg it is a drawer. -->
     <aside
       data-tour="rail"
-      class="glass fixed inset-y-3 left-3 z-50 flex w-[min(320px,86vw)] flex-col gap-4 overflow-y-auto p-4 transition-transform duration-300 ease-[cubic-bezier(0.2,0.7,0.2,1)] lg:sticky lg:inset-auto lg:top-4 lg:z-auto lg:w-auto lg:translate-x-0 lg:self-start lg:overflow-visible"
+      class="glass rail-drawer fixed inset-y-3 left-3 z-50 flex w-[min(320px,86vw)] flex-col gap-4 overflow-y-auto p-4 transition-transform duration-300 ease-[cubic-bezier(0.2,0.7,0.2,1)] lg:sticky lg:inset-auto lg:top-4 lg:z-auto lg:w-auto lg:translate-x-0 lg:self-start lg:overflow-visible"
       :class="railOpen ? 'translate-x-0' : '-translate-x-[calc(100%+16px)]'"
       :inert="drawer && !railOpen"
     >
@@ -1158,6 +1158,16 @@ watch(
 </template>
 
 <style scoped>
+/* Below lg the rail floats over the page, so it must be a surface you can read rather than a
+   window onto the dashboard behind it (Angel, 2026-09-17). At lg it is a column on the page's
+   own background, where the glass is right. */
+@media (max-width: 1023.98px) {
+  .rail-drawer {
+    background: color-mix(in srgb, var(--color-ground) 94%, transparent);
+    backdrop-filter: blur(24px) saturate(1.2);
+    -webkit-backdrop-filter: blur(24px) saturate(1.2);
+  }
+}
 /* overlay scrims: a real dim in both themes (see --scrim in style.css) */
 .scrim {
   background: var(--scrim);
