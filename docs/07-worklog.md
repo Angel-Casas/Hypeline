@@ -1246,7 +1246,7 @@ registration and calls `update()` every 15 minutes, on tab focus, and on
 `e2e/pwa.mjs` gained a real-worker section — install, reload into its
 control, append to `dist/sw.js` as a stand-in deploy, and the untouched tab
 raises the toast without reloading. 101 unit tests, lint and build clean.
-**Angel:** after this ships, the *next* deploy is the one an open tab will
+**Angel:** after this ships, the _next_ deploy is the one an open tab will
 announce by itself.
 
 ## 2026-09-17 (cont.) — hypeline.live moved to Cloudflare
@@ -1261,5 +1261,9 @@ declares `relay.hypeline.live` as a `[[routes]]` custom domain, so
 and `.env.example` follow. **Angel:** `cd shim && wrangler deploy`, check
 `https://relay.hypeline.live/health`, then set the `VITE_SHIM_URL`
 repository variable to `https://relay.hypeline.live` and re-run the deploy
-workflow. The `*.workers.dev` URL keeps working, so nothing breaks in
-between.
+workflow. **Careful:** deploying the custom domain switched the
+`*.workers.dev` URL off (wrangler disables it unless `workers_dev = true` is
+in the file), so it 404s and the live build has no relay until the variable
+is updated — deploy and rebuild in one sitting. Verified from outside:
+`relay.hypeline.live/health` 200, `origin not allowed` for other sites,
+`host not allowed` for non-Twitch URLs.

@@ -59,8 +59,15 @@ is broken when it happens. So the relay answers on a subdomain of its own,
 `relay.hypeline.live`, declared as a `[[routes]]` entry with
 `custom_domain = true` in `wrangler.toml`: `wrangler deploy` creates the route
 _and_ its DNS record, provided the zone is on the same Cloudflare account
-(`hypeline.live` moved to Cloudflare's nameservers on 2026-09-17). The
-`*.workers.dev` URL keeps working alongside it.
+(`hypeline.live` moved to Cloudflare's nameservers on 2026-09-17).
+
+Mind the swap. A Wrangler file that does not say `workers_dev = true` turns the
+`*.workers.dev` URL **off** on the next deploy — it answers 404 from then on,
+and wrangler warns about it in passing. So the relay's address changes the
+moment you deploy the custom domain, and any build still pointing at the old URL
+loses its video until `VITE_SHIM_URL` is updated and the app is rebuilt. Deploy
+and update the variable in one sitting, or set `workers_dev = true` first and
+retire the old URL later.
 
 Cloudflare proxies a Worker's custom domain by definition — that orange cloud is
 the Worker itself, and is not the grey-cloud rule that the GitHub Pages records
