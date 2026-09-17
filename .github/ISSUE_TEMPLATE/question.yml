@@ -1,0 +1,11 @@
+name: Ask a question
+description: How does something work? Is something possible?
+title: '[Question] '
+labels: [question]
+body:
+  - type: textarea
+    id: question
+    attributes:
+      label: Your question
+    validations:
+      required: true

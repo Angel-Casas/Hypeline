@@ -1,0 +1,22 @@
+name: Suggest a feature
+description: Something Hypeline should do, or do better.
+title: '[Feature] '
+labels: [enhancement]
+body:
+  - type: textarea
+    id: idea
+    attributes:
+      label: The idea
+      description: What would you like Hypeline to do? A sentence or two is plenty.
+    validations:
+      required: true
+  - type: textarea
+    id: why
+    attributes:
+      label: Why it helps
+      description: When would you use it? What do you do today instead?
+  - type: textarea
+    id: notes
+    attributes:
+      label: Anything else
+      description: Sketches, links, examples from other tools.

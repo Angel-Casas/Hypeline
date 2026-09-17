@@ -1,0 +1,74 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,800&display=swap">
+  <style>
+    body { margin: 0; background: #eef0fb; }
+    a { color: #4a4f9c; } a:hover { color: #33377a; }
+    .msg { display: flex; gap: 10px; align-items: baseline; font-size: 15px; line-height: 1.4; }
+    .u { font-weight: 600; white-space: nowrap; }
+    .t { color: #8b8fb8; font-variant-numeric: tabular-nums; font-size: 12px; min-width: 52px; }
+  </style>
+</helmet>
+<div style="position: relative; width: 1440px; height: 1000px; overflow: hidden; background: #eef0fb; color: #23264a; font-family: 'Bricolage Grotesque', 'Helvetica Neue', Arial, sans-serif; display: grid; grid-template-columns: 820px 1fr;">
+  <!-- left: the message -->
+  <div style="padding: 64px 72px; display: flex; flex-direction: column; justify-content: space-between;">
+    <div style="font-weight: 800; font-size: 20px;">Hypeline</div>
+    <div>
+      <h1 style="margin: 0; font-weight: 800; font-size: 76px; line-height: 1.0; letter-spacing: -0.03em; max-width: 680px;">Chat is the best editor you never hired.</h1>
+      <p style="margin: 26px 0 0 0; font-size: 19px; line-height: 1.5; max-width: 560px; color: #4b4f78;">Every “CLIP IT” in the replay is a timestamp. Hypeline turns thousands of them into a heatmap of your VOD, then cuts the clip right here in the browser.</p>
+      <div style="margin-top: 36px; display: flex; flex-direction: column; gap: 10px; max-width: 560px;">
+        <div style="display: flex; background: #ffffff; border-radius: 14px; padding: 6px; box-shadow: 0 1px 0 #d8dbf0, 0 10px 30px rgba(74,79,156,0.10);">
+          <input value="Paste a Twitch VOD link" style="flex: 1; border: 0; background: transparent; padding: 12px 14px; font-family: inherit; font-size: 16px; color: #23264a; outline: none;">
+          <button style="border: 0; background: #23264a; color: #ffffff; padding: 12px 20px; border-radius: 10px; font-family: inherit; font-size: 15px; font-weight: 600; cursor: pointer;">Read the chat</button>
+        </div>
+        <div style="font-size: 13px; color: #8b8fb8;">Nothing is uploaded. Works on VODs that are still live.</div>
+      </div>
+    </div>
+    <div style="display: flex; gap: 28px; font-size: 14px; color: #6d719c;">
+      <span>Free &amp; open source</span><span>No account</span><span>AI with your own NanoGPT key</span>
+    </div>
+  </div>
+
+  <!-- right: the chat column, the spike happening -->
+  <div style="position: relative; background: #ffffff; margin: 40px 40px 40px 0; border-radius: 24px; overflow: hidden; display: flex; flex-direction: column;">
+    <div style="padding: 16px 22px; border-bottom: 1px solid #e6e8f6; display: flex; justify-content: space-between; font-size: 13px; color: #8b8fb8;">
+      <span>Chat replay · tokyosims · 6h24</span><span>5,626 messages</span>
+    </div>
+    <div style="padding: 18px 22px; display: flex; flex-direction: column; justify-content: flex-end; gap: 11px; flex: 1;">
+      <div class="msg"><span class="t">0:33:52</span><span class="u" style="color: #6a8f5f;">mochi_rae</span><span>wait is she actually going in</span></div>
+      <div class="msg"><span class="t">0:33:58</span><span class="u" style="color: #b0679a;">dvnte</span><span>no way</span></div>
+      <div class="msg"><span class="t">0:34:04</span><span class="u" style="color: #4a4f9c;">kairo_tv</span><span>NO WAY</span></div>
+      <div style="margin: 6px 0; padding: 12px 14px; background: #ffe9ef; border-radius: 12px; display: flex; flex-direction: column; gap: 8px;">
+        <div class="msg"><span class="t">0:34:11</span><span class="u" style="color: #d9457d;">pennyfromtheblock</span><span style="font-weight: 600;">CLIP IT</span></div>
+        <div class="msg"><span class="t">0:34:12</span><span class="u" style="color: #6a8f5f;">mochi_rae</span><span style="font-weight: 600;">CLIP IT CLIP IT</span></div>
+        <div class="msg"><span class="t">0:34:12</span><span class="u" style="color: #c9863c;">yoshi__</span><span>LMAOOOOOO</span></div>
+        <div class="msg"><span class="t">0:34:13</span><span class="u" style="color: #b0679a;">dvnte</span><span>HE DID IT</span></div>
+        <div class="msg"><span class="t">0:34:14</span><span class="u" style="color: #4a4f9c;">kairo_tv</span><span style="font-weight: 600;">someone clip that</span></div>
+        <div class="msg"><span class="t">0:34:15</span><span class="u" style="color: #5d9aa8;">frostbyte</span><span>W W W W</span></div>
+      </div>
+      <div class="msg"><span class="t">0:34:31</span><span class="u" style="color: #c9863c;">yoshi__</span><span>ok im dead</span></div>
+      <div class="msg"><span class="t">0:34:40</span><span class="u" style="color: #5d9aa8;">frostbyte</span><span>how do i find that later</span></div>
+      <div class="msg"><span class="t">0:34:52</span><span class="u" style="color: #b0679a;">dvnte</span><span>scrubbing 6 hours for that lol</span></div>
+      <div class="msg"><span class="t">0:35:07</span><span class="u" style="color: #6a8f5f;">mochi_rae</span><span>it was like 34 mins in?? someone clip</span></div>
+      <div class="msg"><span class="t">0:35:19</span><span class="u" style="color: #d9457d;">pennyfromtheblock</span><span>the reaction was the best part</span></div>
+      <div class="msg"><span class="t">0:35:33</span><span class="u" style="color: #c9863c;">yoshi__</span><span>need that in vertical for my page</span></div>
+      <div class="msg"><span class="t">0:35:41</span><span class="u" style="color: #4a4f9c;">kairo_tv</span><span>with captions pls</span></div>
+      <div class="msg"><span class="t">0:36:02</span><span class="u" style="color: #5d9aa8;">frostbyte</span><span>ok back to the game</span></div>
+    </div>
+    <!-- hypeline's answer, pinned at the bottom like a system message -->
+    <div style="margin: 0 14px 14px 14px; padding: 14px 16px; background: #d9f2e6; border-radius: 14px; display: flex; justify-content: space-between; align-items: center; font-size: 14px;">
+      <div><span style="font-weight: 600;">Hypeline</span> · moment at <span style="font-variant-numeric: tabular-nums;">0:34:15</span> · 6.2× baseline · 41 chatters</div>
+      <div style="font-weight: 600; color: #1f6f52;">clip this →</div>
+    </div>
+  </div>
+</div>
+</x-dc>
+</body>
+</html>

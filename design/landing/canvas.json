@@ -1,0 +1,95 @@
+{
+  "artboards": [
+    {
+      "file": "Main.dc.html",
+      "x": 0,
+      "y": 0,
+      "w": 520,
+      "h": 1000,
+      "title": "Index"
+    },
+    {
+      "file": "Heatmap.dc.html",
+      "x": 640,
+      "y": 0,
+      "w": 1440,
+      "h": 1000,
+      "title": "01 \u00b7 Heatmap"
+    },
+    {
+      "file": "Riso.dc.html",
+      "x": 2180,
+      "y": 0,
+      "w": 1440,
+      "h": 1000,
+      "title": "02 \u00b7 Riso"
+    },
+    {
+      "file": "ChatLog.dc.html",
+      "x": 640,
+      "y": 1140,
+      "w": 1440,
+      "h": 1000,
+      "title": "03 \u00b7 ChatLog"
+    },
+    {
+      "file": "Desk.dc.html",
+      "x": 2180,
+      "y": 1140,
+      "w": 1440,
+      "h": 1000,
+      "title": "04 \u00b7 Desk"
+    },
+    {
+      "file": "Swiss.dc.html",
+      "x": 640,
+      "y": 2280,
+      "w": 1440,
+      "h": 1000,
+      "title": "05 \u00b7 Swiss"
+    },
+    {
+      "file": "Windows.dc.html",
+      "x": 2180,
+      "y": 2280,
+      "w": 1440,
+      "h": 1000,
+      "title": "06 \u00b7 Windows"
+    },
+    {
+      "file": "Vertical.dc.html",
+      "x": 640,
+      "y": 3420,
+      "w": 1440,
+      "h": 1000,
+      "title": "07 \u00b7 Vertical"
+    },
+    {
+      "file": "Blueprint.dc.html",
+      "x": 2180,
+      "y": 3420,
+      "w": 1440,
+      "h": 1000,
+      "title": "08 \u00b7 Blueprint"
+    },
+    {
+      "file": "FilmStrip.dc.html",
+      "x": 640,
+      "y": 4560,
+      "w": 1440,
+      "h": 1000,
+      "title": "09 \u00b7 FilmStrip"
+    },
+    {
+      "file": "Sentence.dc.html",
+      "x": 2180,
+      "y": 4560,
+      "w": 1440,
+      "h": 1000,
+      "title": "10 \u00b7 Sentence"
+    }
+  ],
+  "launch": {
+    "view": "canvas"
+  }
+}

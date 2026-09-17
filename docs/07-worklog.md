@@ -1,0 +1,1180 @@
+# 07 — Worklog
+
+Newest at the bottom. A few lines per session: what changed · blocked · next.
+
+---
+
+## 2026-09-12 — Project kickoff (Angel + Claude)
+
+**What changed.** Explored the Twitch clipping market and landed on a
+direction: a free, MIT, browser-only Vue 3 PWA that uses the VOD chat replay
+as the hype detector, never uploads, and offers BYOK AI through NanoGPT
+(referral link = income). Decided stack (TS, Tailwind + Reka UI, Pinia,
+Vitest/Playwright, PWA). Wrote `CLAUDE.md` and `docs/00–07`.
+
+Research: NanoGPT is OpenAI-compatible with STT, image, video, balance,
+usage and referral-link endpoints; Whisper is ~$0.0005/min. Twitch chat
+replay and VOD playlists are reachable via unofficial GQL; a small Chrome
+extension already draws chat-density bars on VOD pages (validates the
+signal). CORS behaviour for Twitch GQL/usher/CDN and NanoGPT from a browser
+is **unverified** for Twitch; NanoGPT is confirmed browser-callable (Angel
+uses it that way in other apps).
+
+**Blocked.** Nothing yet.
+
+**Next.** M0 spikes, starting with S1 (CORS). Its result decides whether
+"PWA only" holds or we need a tiny proxy/extension (new ADR). Then S2/S3
+on a real chat dump to see if the heatmap finds the moments.
+
+## 2026-09-12 (later) — S1 first run
+
+**What changed.** Ran S1 from localhost. GQL chat replay and playback token
+both work from the browser → the heatmap needs no server. usher.ttvnw.net is
+CORS-blocked. Added (c2) to the spike: derive the CDN playlist from
+`video.seekPreviewsURL` and fetch a segment directly. Research doc updated
+with a fallback ladder.
+
+**Blocked.** Playback/segment strategy until (c2)/(d) run.
+
+**Next.** Re-run the spike (c2, d). If CDN is open → ADR-9 "CDN-direct
+playback, no usher". If not → ADR-9 picks from the fallback ladder. Then
+S2 (full chat dump) — can start in parallel since GQL works.
+
+## 2026-09-12 (later still) — S1 closed
+
+**What changed.** Second run: usher returns 200 with no ACAO; CloudFront
+CDN the same (storyboard-derived playlist URL is correct but unreadable).
+S1 closed. Wrote ADR-9 (proposed): Twitch embed player for viewing in M1,
+stateless open-source CORS shim on Cloudflare Workers for segment bytes in
+M2, fetch layer swappable for future no-proxy modes. Added S1b/S1c spikes.
+
+**Blocked.** Nothing. ADR-9 accepted (Cloudflare shim).
+
+**Next.** S1b (shim spike) and S1c (embed seek spike), then S2/S3 (chat
+dump + scoring). S2/S3 don't depend on S1b and can go first if preferred.
+
+## 2026-09-12 (evening) — S2 + S3 done
+
+**What changed.** Dumped the full chat of VOD 2871164819 (tokyosims, 6h24,
+~15 msg/min) from the cloud shell in 53 s. Found that cursor paging trips
+Twitch's integrity check but offset paging doesn't — the browser client
+must page by `contentOffsetSeconds` + id de-dup. Wrote a scoring prototype
+(rate vs rolling baseline, reaction share, "clip it", unique users); on a
+deliberately quiet channel it surfaced ~10 real moments in the top 12, six
+of which chat itself labelled "clip that". Rendered a whole-VOD heatmap.
+Scripts, fixture and heatmap under `spikes/`.
+
+**Blocked.** Nothing.
+
+**Next.** S3b on a big and a tiny channel (send VOD ids). S1b (shim) and
+S1c (embed seek). Then M1 scaffold — the scoring port is the first real
+module, with `fixture_2871164819.jsonl` as its first test.
+
+## 2026-09-12 (night) — S3b, S1c done; S1b in progress
+
+**What changed.** Angel verified the tokyosims peaks by eye ("perfect
+match"). Ran S2/S3 on caseoh_ (103k msgs) and popkreep_ (2.3k msgs):
+scoring holds at both ends after adding bot filtering, a tech-trouble
+demotion, a per-user-scaled "clip it" bonus and a crowd-confidence
+weight (v0.2, in research doc). Learned: "clip it" is channel-dependent,
+sub/gift system messages are in the replay, end-of-VOD is signalled by
+`service error`, big VODs need parallel offset fetching. Wrote the S1b
+Cloudflare shim (worker.js + wrangler.toml + README) and added shim
+routing + a 60 s bandwidth test to the S1 page. Wrote S1c embed spike;
+Angel ran it — seek from JS works (parent must be localhost/hostname).
+Three fixtures saved under `spikes/s2-chat-dump/`.
+
+**Blocked.** S1b result (Angel deploying the Worker).
+
+**Update, same night.** S1b green through Angel's Worker: playlist,
+segments, 60 s = 53 MB / 29 s at source. Segments are MPEG-TS. **M0
+closed.** Worker now passes `cf-cache-status` through.
+
+**Next.** **M1 scaffold**: Vite + Vue 3 +
+TS + Tailwind + Reka UI + Pinia + Vitest; first module is
+`features/hype/scoring.ts` ported from `score.py` with the three fixtures
+as tests; then the chat fetcher (Worker, parallel offsets), the timeline
+heatmap, and the embed player.
+
+## 2026-09-12 (late) — M1 scaffold built
+
+**What changed.** Angel's rule recorded in CLAUDE.md: function before form,
+no design work until he says so. Built the M1 app: Vite + Vue 3 + TS +
+Tailwind v4 + Pinia + Router + Vitest + PWA. Modules: `lib/twitch/gql.ts`
+(unofficial GQL: VOD info + comments-by-offset, typed errors),
+`lib/twitch/chat.ts` (8-lane parallel offset walker, de-dup, tail; exact
+match with the Python dump: 5,626 msgs in 3.5 s), `lib/storage/db.ts`
+(IndexedDB cache), `features/hype/scoring.ts` (v0.2 port; regression tests
+on all three fixtures incl. 100k msgs in 0.6 s), `HypeTimeline.vue`,
+`MomentList.vue`, `TwitchPlayer.vue` (official embed, seek + time),
+`VodPage.vue`. 16 unit tests green, lint + vue-tsc clean, build 46 kB gz.
+Mocked-Twitch Playwright smoke test passes (paste → heatmap → click →
+seek → cache hit on reload).
+
+**Blocked.** Nothing. Not yet run in a real browser against live Twitch
+(sandbox limitation) — Angel does that first.
+
+**Next.** Angel: `npm install && npm run dev`, open http://localhost:5173,
+paste the tokyosims VOD. Then: deploy to Pages (check embed `parent` on
+the real hostname), public repo + CI, recent-VODs list. Then M2 (cutting).
+
+## 2026-09-12 (night, part 2) — M2 first slice: cutting works
+
+**What changed.** Angel confirmed M1 works on old and live VODs. Spiked
+real segments in Node (S4): TS/H.264/AAC, 10 s, keyframes 2 s, PTS offset
+vs VOD time. ADR-10: ffmpeg.wasm single-threaded, fast (copy) + precise
+(re-encode) modes. Built `lib/twitch/hls.ts` (playback token, usher URL,
+master/variant parsing, range selection; tests on real playlists),
+`lib/video/ffmpeg.ts` + `cut.ts` (parallel segment download, TS concat,
+ffmpeg exec with crop filter, progress from ffmpeg logs),
+`features/settings` (shim URL, quality), `features/clips` (store + panel:
+Set In/Out, mode, aspect, crop centre, export, in-page preview, download).
+`scripts/copy-ffmpeg-core.mjs` (postinstall) and
+`scripts/fetch-e2e-segments.mjs`. e2e `cut.mjs`: fast 15 s clip in ~1.5 s,
+precise 9:16 5 s clip in ~3.8 s, both ffprobe-verified. 25 unit tests, lint,
+build green.
+
+**Blocked.** Nothing.
+
+**Next.** Angel: `npm install` (postinstall copies the ffmpeg core), set the
+Worker URL in Settings, export a clip for real. Then: persist the clip
+library, timeline in/out handles, draggable crop over the preview,
+harden the shim (Origin lock, rate limit) and move it into `shim/`.
+Deploy to Pages + public repo are still pending from M1.
+
+## 2026-09-13 — M2 second slice: it's an editor now
+
+**What changed.** Angel exported two real clips through his Worker (after a
+Vite-dev fix: ffmpeg core via blob URLs). Then: clips persist in IndexedDB
+(schema v2, `clips` store with a byVod index; loaded when a VOD opens);
+timeline shows the in/out range with draggable handles and a second,
+zoomed strip around the clip (sticky window so drags don't shift the
+mapping); draggable crop window over the player for 9:16 / 1:1; keyboard
+shortcuts (I/O/[ ]/arrows/J/K/L/Space/E) via `useShortcuts`; Settings shows
+local storage usage. e2e `cut.mjs` now also checks persistence across
+reload, handle dragging and the O key. Lint/tests/build green.
+
+**Blocked.** Nothing.
+
+**Next (M2 leftovers).** Purge-per-VOD in Settings; harden + relocate the
+shim (`shim/`, Origin lock, rate limit); "webcam corner" two-region layout
+later. Then either ship (Pages + public repo + CI) or M3 (NanoGPT).
+
+**Delivery note.** The earlier stale-file incident: after committing, verify
+md5 on the device; fall back to writing via device_bash if they differ.
+
+## 2026-09-13 — M3 first slice: BYOK AI on a range
+
+**What changed.** Shim hardened and moved to `shim/` (origin allowlist,
+rate limit). M3: `lib/nanogpt` (OpenAI-compatible client: models with
+pricing, balance, chat with json_schema, multipart transcription; cost
+extraction; typed errors), `pricing.ts` (estimates, default-model pick),
+`prompts.ts` (versioned explain prompt + schema + defensive parse),
+`lib/video/audio.ts` (16 kHz mono WAV from segments; segment download
+shared with cut.ts), IndexedDB v3 `ai` store, `aiStore` + `AiPanel`
+(onboarding with referral link, model pickers, transcribe / explain with
+estimate → actual cost, apply suggested range, lifetime spend). Settings
+now hold key/base URL/models. 34 unit tests; e2e `ai.mjs` mocks NanoGPT and
+verifies a real 469 KB WAV upload, schema'd chat call, applied range, and
+IndexedDB caching across reload. Lint/build green.
+
+**Angel's rule (2026-09-13).** No GitHub / Cloudflare Pages publishing
+until the app is complete. Everything stays local.
+
+**Blocked.** Real NanoGPT run needs Angel's key (never share it with me).
+`REFERRAL_URL` placeholder needs his real link.
+
+**Next.** Angel tests transcribe + explain on a real moment. Then M3
+leftovers: burned-in captions (needs word timestamps → check whether the
+STT endpoint supports `response_format=verbose_json`; else caption by
+sentence with even timing), thumbnail via image model, key encryption
+option. Then M4 (whole-VOD transcript + natural-language search).
+
+## 2026-09-13 (cont.) — Captions burned in
+
+**What changed.** S5 spike: NanoGPT Whisper has no timestamps; our wasm
+core has libass + freetype. Built `lib/video/captions.ts` (sentence-first
+packing with tiny-fragment folding, proportional timing, ASS writer with
+three styles, post-crop sizing) + tests; `cut.ts` accepts `captions`
+(font copied into ffmpeg FS once, `crop,subtitles` chain, forces
+re-encode); clip store exposes captions toggle/style/uppercase and derives
+cues from the AI store's transcript for the exact range; ClipPanel shows
+the controls (disabled until the range is transcribed). e2e `ai.mjs` now
+exports a captioned 9:16 clip and checks the frame's caption band. 41 unit
+tests, lint/build green. Bundled DejaVu Sans Bold + licence in `public/fonts`.
+
+**Blocked.** Nothing.
+
+**Next.** Thumbnail via image model (frame + prompt) and/or a caption
+preview overlay on the player; key encryption option; then M4 (whole-VOD
+transcript + natural-language search). Angel: try transcribe → captions →
+export on a real moment.
+
+## 2026-09-13 (cont.) — M4 first slice: whole-VOD transcript + search
+
+**What changed.** Found Twitch's `audio_only` variant (S6) and switched all
+transcription to it. AI store: `transcribeBulk` (120 s chunks, resumable,
+cancel, per-chunk cache, live cost), `bulkEstimate` (chunks/$/MB with
+cached ones subtracted), `searchVod` (labelled chunks + strict schema,
+100k-token cap), `loadBulk` on VOD open. New `SearchPanel` (from/to,
+estimate, progress, query, hits with seek + clip this) and
+`CaptionPreview` over the player. Search prompt/schema/parser in
+`prompts.ts` with tests. e2e `search.mjs` (real audio extraction, mocked
+STT/chat, cache check, reload). Fixture range widened by one segment
+(`e2e:fixtures` now fetches 2035–2075). 44 unit tests, all four e2e green.
+
+**Blocked.** Nothing.
+
+**Next.** Real-key run by Angel on a long VOD (watch NanoGPT rate limits
+on ~180 sequential STT calls; add small concurrency if fine). Then:
+thumbnails (image model), key encryption, purge-per-VOD, and the M5 bets
+(style clone, moment feed, streamer directory).
+
+## 2026-09-13 (cont.) — 413 on bulk transcription → MP3 uploads
+
+**What changed.** Angel's first real bulk run hit NanoGPT's 3 MB direct
+upload cap (a 120 s WAV is 3.84 MB). Transcription audio is now MP3 16 kHz
+mono 32 kbps (~8× smaller, 60 KB per 15 s); `MAX_UPLOAD_BYTES` guard with a
+clear message. Both AI e2e tests updated and green.
+
+**Next.** Angel re-runs bulk transcription + search for real.
+
+## 2026-09-13 (cont.) — Split layout + home page
+
+**What changed.** New aspect `split` (9:16, facecam strip on top, main view
+below): `splitFilter` builds a `filter_complex` (split → two crops → scale
+→ vstack) sized to the source height, even dimensions, clamped boxes;
+`SplitOverlay.vue` gives a draggable/resizable cam box and a draggable main
+window over the player; cam-strip height slider; captions sized to the
+stacked frame. e2e `cut.mjs` exports a split clip (406×720 verified) and
+persistence now checks 3 clips. Home page at `/` (placeholder, plain by
+Angel's request): VOD input + recent cached VODs with clips/transcript
+counts, open and purge. VodPage title links home. 46 unit tests, lint,
+build, e2e green.
+
+**Next.** Thumbnail/frame grab with title text; key encryption option;
+quota warning; M5 bets (moment feed, streamer directory, style clone) each
+need an ADR before starting. Design pass when Angel says so.
+
+## 2026-09-13 (cont.) — Thumbnail frame grab
+
+**What changed.** `lib/video/thumbnail.ts`: downloads the one segment
+covering the target second, `-ss` input seek + `-frames:v 1` through the
+same crop / split filter graph as the export, optional title via a
+`titleAss` ASS style (yellow, bold, outlined, bottom centre, wrapped by
+libass; font size = min(9% height, 11% width)). Clip store: `thumbTitle`,
+`grabThumbnailAt(vodId, sec)`, result kept in memory only. ClipPanel:
+title input, "use AI title" (when Explain matches the range), "Grab frame
+at playhead" / "at In", preview + PNG download. Split layout: Angel says it
+needs a live preview — parked in the roadmap's Upgrade backlog. 47 unit
+tests, lint, build, e2e green (cut.mjs now checks a titled split
+thumbnail's size and yellow pixels; saves `e2e/last-thumb.png`).
+
+**Next.** Optional passphrase for the API key; storage quota warning; then
+M5 bets need ADRs. Design pass when Angel says so.
+
+## 2026-09-13 (cont.) — Storage quota warning
+
+**What changed.** `lib/storage/quota.ts` (pure helpers, tested):
+`quotaLevel` (warn ≥ 70% or < 300 MB free; critical ≥ 90% or < 100 MB),
+`wouldExceed` with a 100 MB headroom, `estimateClipBytes` from the variant
+bandwidth, `isQuotaError`; `estimateQuota` / `requestPersist` wrappers.
+`quotaStore` + `QuotaBanner.vue` on both pages. Clip export checks the
+estimate before downloading anything and reports a clear message; a failed
+`putClip` keeps the clip in memory and turns the banner red. VOD/chat
+caching no longer fails the load when storage is full. Settings shows the
+browser quota and a "Request persistent storage" button. Angel: no
+passphrase for the API key (decided 2026-09-13) — dropped from the list.
+53 unit tests, lint, build, 5 e2e suites green (`e2e/quota.mjs` stubs
+`navigator.storage.estimate`).
+
+**Next.** Main features are now all in. Remaining before the design pass:
+Angel's real-VOD check of thumbnail + quota; then decide M5 bets (each
+needs an ADR) or start the design pass when Angel says so.
+
+## 2026-09-13 — Design pass begins: landing directions
+
+**What changed.** Angel opened the design pass: "genuinely good aesthetics
+with pastel colours, unique, not stock". Ten landing-page directions
+authored as design-canvas artboards in `design/landing/*.dc.html`
+(Heatmap, Riso, ChatLog, Desk, Swiss, Windows, Vertical, Blueprint,
+FilmStrip, Sentence) plus an index (`Main.dc.html`) and `canvas.json`;
+published as the "Hypeline Landing Directions" canvas. Each board is a
+different thesis of what the page is, all on real app facts, one CTA.
+The seeded canvas HTML is gitignored (2 MB editor payload).
+
+**Next.** Angel picks a direction (or a mix) → extract a design system
+(palette, type, radii, spacing, components) → apply to Home, VOD page,
+panels. Motion only after the system is set.
+
+## 2026-09-13 — Design pass: the hype thread, built into the app
+
+**What changed.** After the boards were rejected as flat, a live
+technique board, then a Stripe-inspired silk-ribbon prototype where the
+heatmap _is_ the ribbon (Angel's idea), then 10 → 9 → 9 thread variations
+(chosen: **Spindle · hue**) and 10 compositions (chosen: **Masthead**).
+Then built for real: `src/style.css` tokens + glass/ink utilities +
+atmosphere; `src/ui/HypeThread.vue` (WebGL, transparent, DPR-capped,
+off-screen pause, reduced-motion, CSS fallback) with
+`src/ui/thread/series.ts` (resample, smooth, percentile floor, gamma,
+per-moment hue families; 5 tests) and `shader.ts`; landing page rebuilt
+as the Masthead with `demo/demoSeries.json` generated from the tokyosims
+fixture (`scripts/gen-demo-series.ts`, tsx dev dep); `HypeTimeline`
+draws the thread under its SVG interaction layer (zoom strip too); all
+panels swapped from neutral/blue classes to the system; VodInput has a
+pill mode. e2e selectors updated (`svg:not(.hl-grain)`), offline font
+loads ignored. Docs: `08-design-system.md`, ADR-12, roadmap M6, CLAUDE.md
+rule updated. 58 unit tests, lint, build, 5 e2e suites green.
+Design artifacts (claude.ai): landing directions canvas, technique board,
+hype thread prototype, variations, studies, finalists, compositions,
+masthead. Sources under `design/`.
+
+**Next.** Angel runs it for real (`npm run dev`) and we polish on the
+live app: moment list, AI/search panels, mobile, the reveal when a VOD
+finishes loading. Self-host fonts for offline. Then M5 bets.
+
+## 2026-09-13 (cont.) — Thread fidelity fix
+
+**What changed.** Angel: "why does the thread look so bad now?" Two
+causes: the transparent canvas was blending colour twice (pre-mixed with
+paper in the shader, then again with the page) → bleached; and real chat
+is noisy → wobbly wire. Fixed: shader outputs pure silk + alpha on
+transparent canvases, a cooler back ribbon behind the main one (the fold),
+base width 0.045 + 0.24·h, stronger smoothing (landing sigma 22), 3%
+taper at both ends, hue follows moments (resting sky between them,
+distinct families per top moment), more colour variation across the
+width. Docs updated. 58 tests, lint, build, 5 e2e green.
+
+## 2026-09-13 (cont.) — Back to the approved masthead
+
+**What changed.** Angel: "it looks horrible" (side-by-side with the
+masthead prototype). Root cause: I had changed the thread's geometry
+while chasing real chat data (fat base band, extra back ribbon, other
+colour drift) and replaced the scroll reveal with a load animation.
+Reverted the shader to the approved numbers; the landing hero is pinned
+(280vh) and the thread draws with scroll again, with a "drawn / peaks"
+readout; the example thread is the prototype's curated five-moment curve
+(`seriesFromPeaks`) with the same card titles; palette anchored so the
+strongest moment is petal. Real-data tuning (floor/gamma/smoothing) now
+only applies to the VOD timeline. Lesson recorded in the design-system
+doc: never change the thread's geometry to fit data — shape the series.
+
+## 2026-09-13 (cont.) — Palette settled; tip fade fixed
+
+**What changed.** The grey smear left of the tip dot was the canvas not
+being cleared between frames (alpha accumulating); now cleared, blend off.
+Five thread palettes shown on `hypeline-thread-colours.html`; Angel chose
+**Stripe silk**, softened ~15% towards white (saturation ×1.05). Shader
+palette and the CSS tint tokens updated; design-system doc updated.
+
+## 2026-09-13 (cont.) — Thread behaviour
+
+**What changed.** Tapered thread ends (no cut edge); idle "creature" dot
+before the first scroll (breathe, bob, ripple); global mouse parallax
+replaced by a spring-driven jelly pull towards the pointer; canvas uniforms
+for the pull registered (a reformatted list had hidden the miss); recent
+VODs section removed from the landing page. Design-system doc updated.
+
+## 2026-09-13 (cont.) — Ripple on click
+
+**What changed.** Jelly pull removed entirely. Five candidate pointer
+interactions on `design/thread/hypeline-thread-interactions.html`; Angel
+kept **ripple on click**, now in the app (`shader.ts` `u_click`/`u_clickT`,
+`HypeThread` prop `ripple`, `page` on the landing). Lint/tests/build/e2e
+green. Idle-dot board `design/thread/hypeline-dot-idle.html` (Heartbeat,
+Moon, Drip, Eye, Peek) published for Angel to pick from. **Next:** build
+the chosen idle effect, then M6 polish.
+
+## 2026-09-13 (cont.) — Idle dot: Eye
+
+**What changed.** Angel chose **Eye** from the idle-dot board; the idle
+breathe/bob/ring is replaced by the eye (glint, looks towards the pointer,
+blinks) in `shader.ts` (`u_look`) and `HypeThread.vue`. Lint/tests/build/
+e2e green. **Next:** M6 polish on the real app (moment list, AI/search
+panels, mobile), reveal of the real thread when a VOD finishes loading.
+
+## 2026-09-13 (cont.) — Dashboard route
+
+**What changed.** Landing stripped to the essentials (Angel): example-VOD
+label, drawn/peaks HUD and the settings panel removed; the top-right button
+is now a `Dashboard` link. New `/dashboard` (`DashboardPage.vue`): VOD
+input, VODs cached in this browser with clip counts (open / remove),
+quota banner, Settings. `e2e/quota.mjs` reads the banner and Settings there.
+**Next:** M6 polish (the dashboard is plain — give it the same care as the
+landing), reveal of the real thread when a VOD finishes loading.
+
+## 2026-09-13 (cont.) — Landing fits one screen
+
+**What changed.** The footer line moved inside the pinned hero and the
+trailing section is gone, so the page ends exactly where the thread
+finishes (scrollHeight == track height at 1280×800, 1920×1080, 390×844).
+Pitch line slightly smaller/wider to clear the axis. All checks green.
+
+## 2026-09-13 (cont.) — Eye at the end; moment-card board
+
+**What changed.** The eye also sits at the tip once the thread is fully
+drawn (`u_end` / `endDot` prop, landing only — the VOD timeline keeps no
+dot). Board `design/thread/hypeline-moment-cards.html`: 20 designs for the
+peak moment cards (Glass … Ribbon) for Angel to narrow down. e2e cut.mjs's
+handle-drag check is timing-sensitive under swiftshader (passed on rerun).
+**Next:** build the chosen card design; M6 polish.
+
+## 2026-09-13 (cont.) — Moment cards: Tab + Pin
+
+**What changed.** Angel combined Tab (ink meta pill on the top edge) with
+Pin (hairline stem + dot on the peak); built on the landing (`HomePage.vue`
+cards), stem shortened to 20 px so the tallest card clears the tagline at
+1280×800. Design-system doc has the spec. **Bug found via e2e:** the
+timeline playhead line sat above the In handle and swallowed the
+pointerdown once the player had seeked to In (the earlier "flaky" drag
+check was this race) — playhead is now `pointer-events="none"`; the drag
+check waits for frames. All checks green.
+
+## 2026-09-13 (cont.) — Card motion board
+
+**What changed.** Angel noticed the card's backdrop blur arrives late on
+the landing (the glass layer gets promoted only when the opacity
+transition starts). Board `design/thread/hypeline-card-motion.html`: the
+Tab + Pin card with 10 entrance/exit animations (Rise fixed, Pin first,
+Pop, Unfold, Wipe, Bloom, Lift, Ripple, Type, Stagger); all keep the glass
+box pre-promoted (`will-change`) and animate the box/stem/dot separately
+from the wrapper. **Next:** build the chosen one on the landing.
+
+## 2026-09-13 (cont.) — Card motion: Stagger
+
+**What changed.** Angel chose **Stagger**; built on the landing (scoped
+CSS in `HomePage.vue`, classes `mc`, `mc-box/-tab/-title/-sub/-stem/-dot`).
+Blur-arrives-late fixed via `will-change` on the glass box. Reduced motion
+honoured. All checks green. **Next:** M6 polish (dashboard, VOD page).
+
+## 2026-09-13 (cont.) — Axis motion board
+
+**What changed.** Board `design/thread/hypeline-axis-motion.html`: 10
+scroll-driven animations for the timestamp axis (Reveal, Counter, Cursor,
+Rule, Odometer, Magnet, Ruler, Ink, Sweep, Drift), on the landing with the
+Tab + Pin cards and Stagger. **Next:** build the chosen one.
+
+## 2026-09-13 (cont.) — Axis: Ruler + Ink + Drift
+
+**What changed.** Built on the landing (`HomePage.vue`: `axis` computed
+with per-label colour/dir/edge, `.ax-ticks` + `.ax-lab` scoped CSS).
+Labels are positioned by time (not justify-between) so they align with the
+ruler; the 6:00 label is dropped when it would collide with 6:24:02.
+All checks green.
+
+## 2026-09-13 (cont.) — Axis: Drift → Reveal, + Magnet
+
+**What changed.** On the live landing (Angel): labels now reveal (rise in)
+instead of drifting, and the label nearest the tip lifts/scales/bolds
+(magnet, `near`/`hot` in the `axis` computed). Ruler ticks and the silk
+colours unchanged. All checks green.
+
+## 2026-09-13 (cont.) — 0:00:00 waits for the first scroll
+
+**What changed.** Axis labels (incl. 0:00:00) stay hidden until
+`progress > 0.005` (Angel: cleaner first view). All checks green.
+
+## 2026-09-13 (cont.) — CTA entrance board
+
+**What changed.** Board `design/thread/hypeline-cta-entrance.html`: the
+pitch, VOD pill and footer stay hidden until the thread is fully drawn
+(`progress ≥ 0.985`), then enter with one of 10 animations (Rise, Focus,
+Curtain, Words, Pill first, From below, Written, Ripple, Meet, Typed).
+**Next:** build the chosen one on the landing (also: the group should
+leave again when the user scrolls back up).
+
+## 2026-09-13 (cont.) — CTA: Pill first + silk ribbon
+
+**What changed.** Built on the landing: `.cta` group (`cta-pitch`,
+`cta-pill`, `cta-foot`) toggled by `ctaOn` (progress ≥ 0.985); pill
+springs open first; a turning conic ribbon of the silk colours rings the
+pill. Two gotchas recorded in the design-system doc (Tailwind `translate`
+vs `transform`; scoped `position: relative` overriding `absolute`). All
+checks green.
+
+## 2026-09-14 — Pill glow ring
+
+**What changed.** The uniform ribbon became a glow ring like Angel's
+reference: separate iridescent arcs with gaps, a sharp layer and a blurred
+glow layer turning at different speeds/directions. All checks green.
+
+## 2026-09-14 — Thread depth: three sheets, fibres
+
+**What changed.** `silk()` gained `detail/soft/veil`; main composites two
+soft hazy sheets behind a sharp, finely threaded front sheet (Angel: like
+Stripe — sharp in front, blurred behind, "hundreds of threads"). Card
+shadow lightened. All checks green. Previous shader kept in the session
+scratchpad only; if Angel dislikes it, the revert is: one `silk()` call
+with `detail 1, soft 0, veil 0` and the fibre term removed.
+
+## 2026-09-14 (cont.) — Thread depth v2 (Stripe reference)
+
+**What changed.** Angel: the first depth pass looked worse (grey halos,
+ring-like lines). Root cause of the grey: layer compositing mixed rgb by
+alpha instead of a straight-alpha over → black edges at low alpha. Fixed
+(`over()`), and `silk()` rewritten Stripe-style: smooth bands, streaks
+along the flow (coarse + fine, fine only when wide enough), crisp
+pixel-based edge in front, soft pale sheets behind. All checks green.
+
+## 2026-09-14 (cont.) — Thread depth v3: one ribbon
+
+**What changed.** Angel: the blurred sheets looked like different colours
+from the front. Cause: the noise `phase` also offset the palette. Now all
+sheets share colour, and depth is a `focus` field along the ribbon (in
+focus = crisp + streaks; receding = soft + paler + back sheets stronger).
+All checks green.
+
+## 2026-09-14 (cont.) — Thread depth v4: one continuous ribbon
+
+**What changed.** Angel: gaps between sheets at thin sections, and the
+crisp-over-soft edge read as two threads. Layers removed; depth is now
+inside the one ribbon (per-edge depth along the length + bands across the
+width → local edge softness, streak detail, paleness). All checks green.
+
+## 2026-09-14 (cont.) — Smooth edge
+
+**What changed.** Angel: the ribbon's edge looked polygonal. Series now
+16-bit in the texture + Catmull-Rom sampling in the shader (`u_n`). All
+checks green.
+
+## 2026-09-14 (cont.) — Landing done; dashboard layouts board
+
+**What changed.** Angel: landing page is done. Board
+`design/dashboard/hypeline-dashboard-layouts.html`: 10 dashboard layouts
+in the design system (Desk, Studio, Filmstrip, Cards, Focus, Library,
+Canvas, Editorial, Console, Split), with a static SVG stand-in for the
+thread. Note: the dashboard designs assume the dashboard _is_ the working
+surface (VOD input, thread, moments, player, clip, AI, library, settings) —
+i.e. it absorbs today's VOD page. **Next:** narrow down with Angel, then
+build.
+
+## 2026-09-14 (cont.) — Dashboard built (Desk + Library)
+
+**What changed.** Angel chose Desk + the Library rail. `DashboardPage.vue`
+rewritten as the app (absorbs `VodPage.vue`, deleted; `/vod/:id` →
+`/dashboard/:id`); `VodInput` gained `compact`; `MomentList` restyled;
+timeline markers are ink pins; e2e selectors updated (`section:has-text
+("Export clip") ul li`, `/\d+ moments/`, Settings toggle). All checks
+green. **Next:** Angel reviews the built dashboard; then M6 leftovers
+(mobile pass, reveal of the real thread on load, self-hosted fonts).
+
+## 2026-09-14 (cont.) — Dashboard ribbon + pins to the spine
+
+**What changed.** `HypeTimeline` no longer mounts `HypeThread`; it draws
+the clean SVG ribbon from the board (gradient, halo, thread pattern,
+spine). Pins now run from the spine to a dot above the peak; zoom windows
+normalise the ribbon to their own peak. All checks green.
+
+## 2026-09-14 (cont.) — Interactive timeline
+
+**What changed.** All eight interactions built (hover readout + chat
+burst, storyboard frame preview, pins ↔ list, brush, wheel zoom + minimap,
+clip/thumbnail marks, peak keys, seek pulse). New: `features/hype/burst.ts`
+(+test), `lib/twitch/storyboard.ts` (+test, format noted as observed —
+verify on a real VOD through the shim), `HypeTimeline` rewritten (view is
+controlled by the parent), `DashboardPage` owns `view`/`hoverMomentId`,
+`useShortcuts` gained `jumpPeak`/`selectPeak`. The clip-zoom strip is
+gone (main timeline zooms around a selected moment; e2e updated). 64 unit
+tests, e2e 5/5. **Next:** Angel tries it on a real VOD — especially the
+storyboard preview (needs the shim) and brush feel.
+
+## 2026-09-14 (cont.) — Click = clip; chat lag
+
+**What changed.** Moment rows have no button: a click enters clip mode
+(range + seek to In + zoom). Clip windows lead the spike by 10 s (ADR-13,
+`CHAT_LAG_SEC`). e2e expectations updated (0:33:50). All checks green.
+
+## 2026-09-14 (cont.) — Moment hover
+
+**What changed.** Hovering a moment row: row lifts + silk bar; on the
+timeline a spotlight band over its clip window, a ring from its pin and the
+readout above it (`focusMoment` in `HypeTimeline`). Fixed: the earlier
+hover wiring in `MomentList` had been lost in a later edit. All checks green.
+
+## 2026-09-14 (cont.) — Night mode
+
+**What changed.** Day / night (ADR-14): tokens + surface vars in
+`style.css`, `theme`/`dark`/`toggleTheme` in `settingsStore`, pre-apply in
+`index.html`, `ui/ThemeToggle.vue` on the landing and in the rail, shader
+`u_dark`, timeline strokes via CSS vars, `bg-lift` surfaces. Gotcha: GLSL
+helpers must be declared before use (`paperCol()` above `silk()`). All
+checks green.
+
+## 2026-09-14 (cont.) — Theme switch transition
+
+**What changed.** `toggleTheme(origin)` wraps the change in
+`document.startViewTransition`; CSS animates `::view-transition-new(root)`
+as a growing circle from the toggle. All checks green.
+
+## 2026-09-14 (cont.) — No more flat tops
+
+**What changed.** `seriesFromPeaks` clipped the sum of clustered moments at
+1 → flat-topped waves on the dashboard. It now normalises to the tallest
+point when the sum exceeds 1 (empty/quiet series untouched). Unit test
+added (65). All checks green.
+
+## 2026-09-14 (cont.) — Readout below the spine; ranges drag shut
+
+**What changed.** Hover readout moved under the spine (pins visible).
+Brushing a range back to ~nothing, or dragging a handle onto the other,
+clears the range (`clear-range` → `clipStore.clearRange()`). All checks
+green.
+
+## 2026-09-14 (cont.) — Timeline glides
+
+**What changed.** `HypeTimeline` draws an animated `shown` window that
+glides to the parent's `view` (pan + zoom together); wheel/minimap changes
+stay instant. Zoom windows use local contrast instead of max-normalisation
+(no flat slabs). e2e waits for the glide. All checks green.
+
+## 2026-09-14 (cont.) — Glide: smoother, and always
+
+**What changed.** Easing → smootherstep, 900 ms. Bug: after wheeling
+fully out the next selection teleported (a one-shot "instant" flag was
+left set when the emitted view equalled the current one). The wheel /
+minimap path now writes the shown window directly instead of flagging, so
+every parent-driven change glides. All checks green.
+
+## 2026-09-14 (cont.) — Loading choreography; van Wijk glide
+
+**What changed.** `chat.ts` progress reports per-lane coverage; the
+timeline (shown from the first batch) tweens its curve between rescores,
+reveals the ribbon per lane with scan heads, pops pins in. Glide now uses
+van Wijk–Nuij smooth pan-and-zoom so pan and zoom arrive together (Angel).
+All checks green.
+
+## 2026-09-14 (cont.) — Scan heads by night
+
+**What changed.** Timeline lights (scan heads, spotlight, seek pulse) use
+`--glow`: white by day, lilac by night; scan heads are soft radial ovals
+instead of full-height bars. All checks green.
+
+## 2026-09-14 (cont.) — Lane fronts in ink
+
+**What changed.** The loading scan-head glow (white, then lilac) is gone;
+each fetch lane's front is now an ink hairline + beating ink dot on the
+spine, and the covered ribbon fades out over a soft 22-unit leading edge
+(mask) instead of a hard clip. `--glow` stays for spotlight / seek pulse.
+Lint, build, unit and e2e green. **Next:** Angel's verdict — remove the
+markers entirely if disliked (the fade + tween stay either way).
+
+## 2026-09-14 (cont.) — Finished lanes go solid; stale HomePage resent
+
+**What changed.** Angel liked the ink fronts. Fix: a lane whose fetch has
+finished no longer keeps its soft leading edge (all fades vanished at once
+when the last lane ended). Also found `HomePage.vue` in Angel's folder was
+a stale pre-night-mode copy (no ThemeToggle, `text-white` tab pills) — a
+silent stale write; resent and md5-verified. Whole-tree md5 diff showed
+nothing else stale.
+
+## 2026-09-14 (cont.) — No flashbang
+
+**What changed.** `index.html` carries an inline `<style>` giving `html` its
+ground colour (and `color-scheme`) per `data-theme` before any stylesheet
+loads — the app CSS arrives via the module script, so a night reload used
+to paint white first. Verified with the CSS blocked: dark paints `#16121a`.
+
+## 2026-09-14 (cont.) — Scroll hint
+
+**What changed.** Landing: `↓ scroll down` under the resting eye, bobbing,
+fading out on the first scroll. Checks green.
+
+## 2026-09-14 (cont.) — Playhead clock
+
+**What changed.** `TwitchPlayer.vue` keeps its own clock instead of
+forwarding `getCurrentTime()` every 500 ms: a seek moves it at once (the
+embed keeps answering the old position while paused, so the bar used to
+stick), it runs between polls while playing (emitted at ~30 Hz via rAF, so
+the bar glides), polls correct it gently and snap only on a real jump.
+Checks green.
+
+## 2026-09-14 (cont.) — Red playhead
+
+**What changed.** Playhead (timeline + minimap) is red via `--color-playhead`.
+**Next:** mobile pass on the landing page (thread too compact, cards overlap).
+
+## 2026-09-14 (cont.) — Portrait landing (ADR-15)
+
+**What changed.** Vertical thread on portrait screens: `u_vert` in the
+shader, `vertical` prop on `HypeThread` (pointer / click mapped into the
+thread frame), and a portrait branch of the landing (cards alternating
+sides, left-edge ruler, hint under the eye). Desktop verified unchanged.
+Checks green. **Next:** Angel's verdict on a real phone; then the
+dashboard on mobile.
+
+## 2026-09-14 (cont.) — Eye / hint alignment
+
+**What changed.** The spine's slow sway is faded out at the thread's ends
+(`sway(T)` in the shader) so the resting eye holds still; the hint's tracked
+text is padded so the word is centred. Measured: eye 194.7 px, hint 195 px
+at 390 px wide. Checks green.
+
+## 2026-09-14 (cont.) — Dashboard on phones; one-line hint
+
+**What changed.** Landing hint is one line (`scroll down ↓`, arrow bobbing
+inline) so nothing has to align with the eye. Dashboard: top bar + Library
+drawer below `lg`, pinned player + Moments/Clip/AI tabs below `xl`,
+moment tap → Clip tab, wheel/keyboard hints hidden on phones. Verified at
+390×844 (idle, loaded, clip, AI, drawer). Checks green. **Next:** Angel to
+try on a phone; the URL pill placeholder on narrow screens.
+
+## 2026-09-15 — Portrait spacing, pitch copy, brisker silk
+
+**What changed.** Portrait landing: wordmark down to 11 vh, thread span
+30–68 %, pill / footer spaced (`portrait:` variants). Pitch copy is now
+one line, set in Cinzel (added to the Google Fonts link). The silk's internal clock (colour, waves, focus) runs 1.3× —
+the spine sway unchanged. Checks green.
+
+## 2026-09-15 (cont.) — Footer copy
+
+**What changed.** Landing footer ends in "AI" (was "AI with your own NanoGPT key").
+
+## 2026-09-15 (cont.) — Pitch in Gloock
+
+**What changed.** Pitch set in `font-display` (Gloock) like the moment-card titles; Cinzel removed from the fonts link.
+
+## 2026-09-15 (cont.) — Moments box board
+
+**What changed.** `design/dashboard/hypeline-moments-box.html`: ten redesigns of the Moments list (Ledger, Ranked, Cards, Thread strip, Chat quote, Filmstrip, Spine, Heat grid, Dial, Index), day + night. Published as an artifact for Angel to pick from. **Next:** build the chosen one in `MomentList.vue`.
+
+## 2026-09-15 (cont.) — Moments heat grid
+
+**What changed.** Angel picked a mix of board #6 + #8 + #9 (added as #11):
+`MomentList.vue` rebuilt as the heat grid with ring meters and storyboard
+frames; `silkAt` moved to `src/ui/thread/silk.ts`; the active moment is now
+the one inside the clip range (was playhead-only, so a clicked moment never
+showed active); `clippedIds` from the clip store; the phone top bar is more
+opaque so the VOD card doesn't read through it. Verified with a fake
+storyboard sprite (day / night / phone). Checks green.
+
+## 2026-09-15 (cont.) — Readout with a frame
+
+**What changed.** Timeline hover readout: frame beside the text (336 px wide, clamped to the box) instead of above it; it used to overflow the ribbon box and get painted over by the panels below when the shim provided frames. Checks green.
+
+## 2026-09-15 (cont.) — Round pins on phones
+
+**What changed.** Timeline pin dots / ring / lane fronts sized in screen px (ellipses scaled by the box's aspect) with a 28 px hit area; they were squashed to slivers on narrow screens. Checks green.
+
+## 2026-09-15 (cont.) — Forgiving handles
+
+**What changed.** In / Out handle grabs resolved by screen distance (12 px mouse, 26 px touch) with the grab offset kept; the old 12-unit rects were ~4 px on a phone so drags became brushes and lost the range. Verified with synthetic touch pointers at −20 / +10 / +24 / −40 px. Checks green.
+
+## 2026-09-15 (cont.) — Tap a handle to seek
+
+**What changed.** Tapping the In / Out line (within the grab reach, no drag) seeks to that exact second; a drag still moves it. Checks green.
+
+## 2026-09-15 (cont.) — Clip panel board
+
+**What changed.** `design/dashboard/hypeline-clip-panel.html`: ten redesigns of the Clip panel (Ticket, Stepped, Chips, Preview, Ledger, Summary bar, Filmstrip, Card deck, Gauge, Sentence), published as an artifact. **Next:** build the chosen one in `ClipPanel.vue`.
+
+## 2026-09-15 (cont.) — Clip panel: filmstrip
+
+**What changed.** `ClipPanel.vue` rebuilt as board #7: frame handles at In / Out (storyboard or silk), duration on a silk bar, segmented pills instead of selects (`seg`/`seg-opt` in style.css), `frameBackground()` shared with the moment chips. Verified with a fake storyboard; tapping a handle seeks. Checks green.
+
+## 2026-09-15 (cont.) — Clip panel tightened
+
+**What changed.** Removed the In/Out ← playhead buttons; `play from In` moved under the silk bar. Checks green.
+
+## 2026-09-15 (cont.) — AI panel board
+
+**What changed.** `design/dashboard/hypeline-ai-panel.html`: the no-key pastel state (three tints) plus ten redesigns of the AI box (Two acts, Receipt, Card result, Thread, Tabs, Spend meter, Instrument, Editorial, Search first, Deck), published as an artifact. **Next:** build the chosen one across `AiPanel.vue` / `SearchPanel.vue`.
+
+## 2026-09-15 (cont.) — AI panel: instrument
+
+**What changed.** `AiPanel.vue` rebuilt as board #7 and absorbs `SearchPanel.vue` (deleted); the NanoGPT key moved to `SettingsPanel.vue`; no-key state is the pastel card (tint B) linking to Settings (`settings` emit → `openSettings()` in the dashboard). e2e `ai.mjs` / `search.mjs` updated for the new labels. Checks green.
+
+## 2026-09-15 (cont.) — Silk button
+
+**What changed.** `btn-silk` utility (animated pastel gradient) used for Transcribe VOD in the AI panel. Checks green.
+
+## 2026-09-15 (cont.) — All AI actions silk
+
+**What changed.** Transcribe, Explain and Search are `btn-silk` too; the Transcribe-VOD row is always visible (disclosure removed). Checks green.
+
+## 2026-09-15 (cont.) — Silk primaries
+
+**What changed.** Export clip and Find the moments (rail / desk) are `btn-silk`; landing pill keeps ink inside its silk ring. Checks green.
+
+## 2026-09-15 (cont.) — Red ×, settings overlay
+
+**What changed.** Library rail: remove is a red ×, always visible. Settings is a modal over the blurred page (×, backdrop, Escape close it); the inline panel is gone; the AI no-key link opens it. Checks green.
+
+## 2026-09-15 (cont.) — Key remove ×
+
+**What changed.** The NanoGPT key's remove in Settings is the red × too.
+
+## 2026-09-15 (cont.) — Silk ring
+
+**What changed.** `silk-ring` utility (turning pastel hairline) on the rail's library box and Settings button. Checks green.
+
+## 2026-09-15 (cont.) — Pointer cursors, shortcuts popover
+
+**What changed.** Global `cursor: pointer` for pressables; `SHORTCUT_HELP` string replaced by a `SHORTCUTS` table and a `?` popover (`ui/ShortcutsHelp.vue`). Checks green.
+
+## 2026-09-15 (cont.) — Shortcuts win over the embed
+
+**What changed.** The player iframe can't keep focus (blurred on window blur), so shortcuts are consistent. Verified: focus returns to body, `[` seeks after a click on a moment. Checks green.
+
+## 2026-09-15 (cont.) — Relay baked in (ADR-16)
+
+**What changed.** `VITE_SHIM_URL` build default (`DEFAULT_RELAY_URL`), `settings.relayUrl` used everywhere, Settings → Advanced override, no 'shim' wording in the UI; VOD placeholder is `twitch.tv/videos/…`. **Next:** Angel puts his Worker URL in `.env` and sets `ALLOWED_ORIGINS` in `shim/wrangler.toml`.
+
+## 2026-09-15 (cont.) — Storyboard check
+
+**What changed.** Angel saw no frames on a new VOD. Verified the real storyboard format across four channels (matches the parser) and frames end-to-end through a local relay. Likely cause: a VOD cached before `seekPreviewsURL` existed — the store now refreshes such entries; storyboard failures now `console.warn` with the URL/status so the next report is diagnosable.
+
+## 2026-09-15 (cont.) — Scoring v0.3 + sensitivity
+
+**What changed.** Emote walls, moods (laugh / hype / shock / grief / confused) and copypasta as signals with sentence reasons; `sensitivityToOptions` + a slider in the Moments header (6 / 9 / 12 / 18 / 25 peaks). 68 unit tests, e2e green. **Next (Angel's list, in order):** clip preview, batch export + exact trim, transcript-blended scoring, gallery/presets/example VOD, fonts + chat import.
+
+## 2026-09-15 (cont.) — Clip preview
+
+**What changed.** `clipStore.previewClip()` (360p, first 10 s, real framing, ephemeral) + Preview button and player in the Clip panel with a stale marker. Verified on the real tokyosims VOD through a local relay: 9:16 preview in 6 s, 202×360 h264. Checks green.
+
+## 2026-09-15 (cont.) — Export queue; "exact" mode
+
+**What changed.** `exportSpec()` (a frozen range + settings) under
+`exportClip()`; a queue (`enqueueCurrent`, `enqueueMoments`, `runQueue`,
+`dequeue`, `clearQueueDone`) with per-job progress, one bar, download all;
+"queue all moments" on the Moments box. Exact trim: a smart cut
+(re-encode to the next keyframe + copy + concat) was tried natively — it
+decodes cleanly in ffmpeg but the concatenated MP4 carries one SPS for two
+different encodes, which browsers may not play; not shipped. Instead the
+existing re-encode is labelled **exact** and fast says **±2 s**. Verified
+the queue end-to-end on fixture segments (2 clips, no errors). Checks green.
+
+## 2026-09-15 (cont.) — Transcript-blended scoring
+
+**What changed.** `features/hype/speech.ts` (per-chunk boost 0.85–1.35 + quoted phrase), `scoreBuckets(..., speech)`, `vodStore.setSpeech` fed by the AI store on every transcript change. 70 unit tests, e2e green.
+
+## 2026-09-15 (cont.) — Gallery, presets, example VOD
+
+**What changed.** `/clips` gallery (`GalleryPage.vue`; `listAllClips`,
+`updateClipMeta`; `StoredClip.title/tags`; Web Share with the file where
+supported), rail link with the count, export presets in the Clip panel,
+"copy title & hook" in the AI instrument, "Try it with an example stream"
+on the empty desk. 70 unit tests, 5/5 e2e. **Next:** self-hosted fonts +
+chat-JSON import fallback, then the i18n and support buttons.
+
+## 2026-09-15 (cont.) — Self-hosted fonts + chat-file import
+
+**What changed.** Gloock / Manrope / JetBrains Mono served from `public/fonts/`
+(39 woff2 subsets, 448 KB; `src/fonts.css` keeps Google's unicode-ranges;
+latin + latin-ext precached, the rest runtime-cached; two preloads in
+`index.html`; Google Fonts gone). `lib/twitch/chatImport.ts` parses
+TwitchDownloader JSON (both shapes, or a bare array); `vodStore.importChat`
+attaches it to the requested VOD (or the one in the file), builds a VodInfo
+from the file if Twitch can't be asked, and caches it like a fetch. Buttons:
+in the error banner and on the empty desk. 74 unit tests, 6/6 e2e
+(`e2e/import.mjs` new). **Next:** explain the three parked ideas to Angel,
+then i18n + support buttons.
+
+## 2026-09-15 (cont.) — Live mode
+
+**What changed.** Angel picked the serverless half of the moment feed.
+`lib/twitch/irc.ts` (anonymous IRC over WebSocket, tags → ChatMessage,
+reconnect), `fetchLiveInfo` (stream + recording VOD), `features/live`
+(store: scoring from the join, warm-up, min score, feed, notifications,
+title badge; page: status card, live timeline, feed, second-screen aside),
+`?t=` landing on the dashboard, `twitch.tv/<channel>` accepted by the VOD
+input. Verified on xqc for 5 min: two real moments, two notifications while
+hidden. 84 unit tests, 7/7 e2e (`e2e/live.mjs` mocks GQL + the WebSocket
+with a faked clock). **Parked for good (Angel):** multi-channel feed,
+streamer directory, accounts. **Next:** i18n (10 languages), then the
+support overlay.
+
+## 2026-09-15 (cont.) — Frames on live VODs
+
+**What changed.** Angel's missing frames were a VOD whose stream was still
+on: Twitch serves the storyboard only after the stream ends. `VodInfo.status`
+from GQL; the VOD card says "live now" (links to live mode) and "frames not
+ready yet" (retry every 2 min); VODs cached while recording are re-fetched.
+Verified: quin69 (live) → note, kentakey_live (ended 2.5 h) → 12 framed
+chips. 84 unit tests, e2e unchanged.
+
+## 2026-09-15 (cont.) — Live mode: stream end → VOD
+
+**What changed.** Angel came back to a blank live page after the stream
+ended (the dev server's HMR had remounted the page with the store stopped,
+and the offline state had nothing to say). Now: a stream that ends while
+watched flips the store to `ended` and the page replaces itself with the
+dashboard on that VOD; returning to the tab re-checks the stream at once
+(not only on the 60 s timer); the page restarts an idle store on mount; the
+offline / idle card always says something. Covered in `e2e/live.mjs` and
+the store test.
+
+## 2026-09-15 (cont.) — Moment card
+
+**What changed.** The truncated caption under the heat grid is replaced by a
+popover card per moment (frame, time, rank, all reasons, counts), teleported
+and fixed-positioned; tap-to-open + "Clip this moment" on touch screens.
+Verified on desktop (both themes, frames through the relay) and on a phone
+viewport with touch. 84 unit tests, 7/7 e2e.
+
+## 2026-09-15 (cont.) — No edge stripes
+
+**What changed.** Angel: coloured left borders read as generated. The moment
+card's silk moved into a tinted drop shadow + the chips' 3 px foot under the
+frame; the live feed rows use an 8 px silk dot. Rule added to the design
+system.
+
+## 2026-09-15 (cont.) — Night on true black (trial)
+
+**What changed.** Night ground `#000`, ground-2 `#0c0a0f`, lift `#2a2333`,
+glass-sm darker, `index.html` pre-paint and PWA colours black, the thread
+shader's dark paper black. Old values noted in the design system for a
+revert if Angel prefers the plum.
+
+## 2026-09-16 — AI moments on the heatmap
+
+**What changed.** Transcript-search hits become `Moment`s (`source: 'ai'`,
+score = confidence, query + quote) in `aiStore.aiMoments`; the dashboard
+merges them with chat's for the timeline, the grid, the active/hover logic,
+peak jumping and "queue all"; accent pins / AI chips / card and readout
+variants; `clipAnchor()` in clipStore; clear link in the AI panel. Covered
+by `e2e/search.mjs` (chip, pin, card, In = 0:33:45). 84 unit, 7/7 e2e.
+
+## 2026-09-16 (cont.) — Transcription on the heatmap
+
+**What changed.** `aiStore.bulk.current` (the chunk in flight);
+`HypeTimeline` `transcript` prop → coverage band, target range, scanning
+light + breathing segment; wired from the dashboard. `e2e/search.mjs` holds
+the STT mock 1.5 s and checks the scan appears and the band remains.
+
+## 2026-09-16 (cont.) — ffmpeg crash on long transcriptions
+
+**What changed.** `runJob()` in `lib/video/ffmpeg.ts` (recycle every 20
+jobs, reload + one retry on a wasm crash), audio / cut / thumbnail wrapped,
+font per instance. 4 new unit tests (88). 7/7 e2e (real ffmpeg in cut, ai,
+search).
+
+## 2026-09-16 (cont.) — Silk ring on the player
+
+**What changed.** `silk-ring` on both player wrappers in `DashboardPage.vue`.
+
+## 2026-09-16 (cont.) — Moments header
+
+**What changed.** "Moments" is an ink `h2` like the other panels; the
+sensitivity slider is bigger (132 × 6 px track, 18 px thumb, ink-2 labels).
+
+## 2026-09-16 (cont.) — Live merged into the dashboard
+
+**What changed.** ADR-18. `vodStore` live mode (IRC append past the replay,
+growing length + live edge, rescoring, "new while live" feed, notifications,
+stop on stream end); `openChannel` resolves a channel to its recording VOD
+(with retries) and the landing sends `?channel=`; `HypeTimeline` `liveEdge`
+prop replaces `live`; `/live` redirects; `features/live/` deleted.
+`e2e/live.mjs` rewritten for the dashboard; verified on a real live channel
+(length and messages growing, edge shown). 86 unit tests, 7/7 e2e.
+
+## 2026-09-16 (cont.) — Live edge marker
+
+**What changed.** The edge blinked because the fractional edge ran past the
+whole-second length; it is clamped now. Marker is a dashed full-height line,
+a bigger dot and a red `● LIVE` pill.
+
+## 2026-09-16 (cont.) — Thicker ring on the player
+
+**What changed.** `silk-ring` reads its width from `--ring-w` (default
+1.5 px); the player frames set 3 px.
+
+## 2026-09-16 (cont.) — Silk frame
+
+**What changed.** `silk-frame` utility (padded silk pad under a clipped
+child) replaces `silk-ring` on the player frames: no dark corner pixels.
+
+## 2026-09-16 (cont.) — Playing past the join point while live
+
+**What changed.** `TwitchPlayer` `live` + `lengthSeconds` props: the embed is
+recreated at the target second when a seek or playback runs past what it
+loaded; `segmentsFor` refetches a grown playlist for cutting. Covered in
+`e2e/live.mjs` (reload at the edge, reload on a seek past it).
+
+## 2026-09-16 (cont.) — The home + rail home button
+
+**What changed.** ADR-19: `lib/twitch/helix.ts` (implicit grant, validate,
+follows, live, avatars, latest VOD per channel), `twitchStore`, the home on
+the empty desk (invitation / connected view with live + VOD cards), the rail
+home button, `vodStore.reset()` so `/dashboard` is always the home.
+`.env.example` documents `VITE_TWITCH_CLIENT_ID`. 4 unit tests (90), new
+`e2e/home.mjs` (8/8 e2e). **Angel:** register the app at
+dev.twitch.tv/console with redirect `http://localhost:5173/dashboard`, put
+the Client ID in `.env`, restart the dev server.
+
+## 2026-09-16 (cont.) — Storyboard failures visible
+
+**What changed.** Angel saw no frames on a finished VOD; the storyboard
+fetches fine here (direct and through his relay) so the cause is in his
+browser. `loadStoryboard` now throws `StoryboardError` (HTTP status /
+"could not reach the video relay" / bad format); the VOD line shows
+`no frames (reason) · retry` when it is not the fresh-VOD case, and the
+2-minute retry runs for every failure.
+
+## 2026-09-16 (cont.) — Subscribers-only VODs say so
+
+**What changed.** The "player stuck loading" was Twitch gating the VOD
+behind a sub (research entry). `checkPlaybackAccess` runs alongside every
+load (non-blocking); `vodStore.subOnly` drives `SubOnlyNotice` over the
+player (paper card on the black box: eyebrow, headline with the streamer,
+"watch on Twitch ↗"), a `subscribers only` tag in the VOD line, the locked
+Export / Preview / + Queue / thumbnail buttons with a one-line reason, and
+hides "queue all". 3 unit tests (93), new `e2e/subonly.mjs` (9/9 e2e).
+Angel's relay issue turned out to be a browser extension (fine in
+incognito); he cleared the Settings override. **Next:** i18n button, then
+the support overlay.
+
+## 2026-09-16 (cont.) — Ten languages (ADR-20)
+
+**What changed.** `vue-i18n` with every string extracted (429 keys, one
+namespace per file, `locales/en.json` is the source); nine machine-drafted catalogs
+(`docs/09-languages.md` lists them and how to correct them); the
+first-visit sheet and the rail globe (`src/ui/LanguageSheet.vue`,
+`LanguageMenu.vue`); `<html lang>` follows; `scripts/check-locales.mjs`.
+Two rail hints that were glued from pieces became whole messages. Every
+e2e suite seeds `hypeline.locale = en`; new `e2e/i18n.mjs` (German first
+visit, live preview, stored choice, globe to 日本語 and back, pt-PT → pt-BR,
+zh-HK → zh-TW, returning visitor). 93 unit, 10/10 e2e. **Next:** the
+support overlay (feature request / bug / question → GitHub).
+
+## 2026-09-17 — Live labels fit in every language
+
+**What changed.** Angel (Spanish): the heatmap's live pill wrapped to two
+lines and its dot went oval, and the VOD line's dot touched the word. The
+pill no longer wraps (`white-space: nowrap`, dot `flex: none`) and the
+VOD-line dot has a 5 px right margin. Checked against the Spanish live
+fixture; lint, live/i18n/smoke e2e green. **Next:** the support overlay.
+
+## 2026-09-17 (cont.) — The mark
+
+**What changed.** Angel asked for a logo to replace the rail's wordmark
+(space for a coming button). Ten candidates, then five variations of the
+"H Spine"; he chose **serif feet**. `src/ui/Logo.vue` (ink via
+`currentColor`, silk gradient, per-instance ids) sits in the dashboard rail
+and small-screen header in place of "Hypeline" (link keeps `aria-label`);
+the gallery shows mark + wordmark. Favicon `public/icons/mark.svg` (dark-
+aware), PNG app icons 192/512/apple-touch/maskable rendered from the tile
+form, manifest icons filled in. smoke/home/i18n e2e green. **Next:** the
+support overlay.
+
+## 2026-09-17 (cont.) — The mark moves
+
+**What changed.** Five hover motions offered (rise, shimmer, trace,
+handles, beat); Angel chose **Handles**. `Logo.vue` gained a `hover` prop:
+stems close in, peak tightens, keyed to the enclosing link's hover/focus,
+off under reduced motion. Rail (both sizes) and gallery links use it.
+Lint/build clean; verified in the preview that the rail mark moves on
+hover. **Next:** the support overlay.
+
+## 2026-09-17 (cont.) — The "?" and its three doors
+
+**What changed.** `SupportButton.vue` in every rail/header beside the globe;
+`lib/support.ts` builds prefilled GitHub new-issue links (feature / bug /
+question) from `VITE_GITHUB_REPO` (placeholder `your-name/hypeline` until
+the repo exists — `.env.example`), bug reports carry a non-personal context
+block (`__APP_VERSION__` from package.json via vite `define`). Issue forms
+in `.github/ISSUE_TEMPLATE/` match the links (the `context` field is what
+the app prefills). `support.*` strings in all ten catalogs. 2 unit tests
+(95), `e2e/support.mjs` (11/11 e2e). **Angel, when the repo exists:** set
+`VITE_GITHUB_REPO=owner/repo` in `.env`, push `.github/` with the app, and
+enable Issues; nothing else to do.
+
+## 2026-09-17 (cont.) — The tour and the example VOD (ADR-21)
+
+**What changed.** `features/tour/` (store + overlay), `features/vod/
+example.ts` (generated 90-min sample stream, six chat bursts → 12 moments,
+0 bot drops), `vodStore.load('example')` short-circuits to it and caches
+it; `isExample` locks ClipPanel/AiPanel with a reason and swaps the player
+for a black card; five `data-tour` anchors on the desk; first-visit start
+after the language sheet; Settings row "Show the tour"; × on the example
+sends the desk home. `example.*` and `tour.*` strings in all ten catalogs.
+`e2e/tour.mjs` (desktop + 390 px phone: every card inside the viewport,
+tabs follow the steps, Done persists, Settings restarts, delete works);
+every suite seeds `hypeline.tour.v1 = done`. 95 unit, 12/12 e2e. The
+"try an example stream" link on the home now opens this example (the real
+tokyosims VOD is still the design fixture in tests).
+
+## 2026-09-17 (cont.) — Rounded tour hole
+
+**What changed.** The veil was four rectangles, so the hole's corners were
+square under the rounded ring; it is now one veil with a rounded-rect mask
+subtracted (`mask-composite: exclude` / `-webkit-mask-composite: xor`),
+animated via mask-position/size. tour e2e green.
+
+## 2026-09-17 (cont.) — Settings → Storage
+
+**What changed.** Angel: 784 MB "used" after deleting every VOD (research
+entry: caches + LevelDB compaction lag). `lib/storage/cleanup.ts`:
+`storageBreakdown()` (VODs & chats, clips, AI results, app cache — count
+and bytes, measured directly) and `clearVods/Clips/Ai/AppCache`,
+`eraseEverything` (settings and key kept); `db.ts` gained
+`listAllChat/listAllAi/clearStore`, lost `storageUsage`. Settings shows
+the four rows with per-kind Clear, the browser total, the lag note, and a
+two-click "Erase everything"; clearing the open VOD sends the desk home;
+the dashboard re-reads the library when Settings closes. `storage.*`
+strings in ten languages; smoke e2e covers the flow. 95 unit, 12/12 e2e.
+
+## 2026-09-17 (cont.) — Storage: what is not ours
+
+**What changed.** Angel still saw 784 MB with every row at 0 KB (dev
+origin `localhost:5173`, no service worker). The section now also lists
+**other data on this site** — IndexedDB databases and caches that are not
+Hypeline's (other dev projects on the same port) — with its own Clear, and
+prints Chrome's `usageDetails` split (caches / indexedDB / service worker)
+when the browser offers it, so the lag case and the foreign-data case tell
+themselves apart. "Erase everything" drops the foreign data too. smoke +
+quota e2e green.
+
+## 2026-09-17 (cont.) — Four phone fixes
+
+**What changed.** From Angel's Android screenshots. (1) Dark-mode overlays
+lightened instead of dimming: new `--scrim*` tokens (ink by day, black by
+night) behind the rail drawer, settings, tour, language and help sheets.
+(2) The player no longer sticks below `xl`; the tab strip sticks instead
+and `showPlayer()` scrolls the video back when a moment sends you to Clip.
+(3) The tour's phone sheet flips to the top when the target sits low (it
+covered the AI panel), and steps scroll the target's top under the sticky
+bars; measured on a 412 px viewport: 0 % of each target covered (the rail
+drawer fills the screen, 22 %). (4) Heatmap blanking on scroll: `.hl-grain`
+loses its blend mode and `.hl-mesh` its animation on touch devices
+(research entry) — mitigation, Angel to recheck. 95 unit, 12/12 e2e.
+
+## 2026-09-17 (cont.) — The tour owns the drawer
+
+**What changed.** Re-taking the tour on a phone left the rail drawer open
+over the desk (Settings lives inside it there), so step 1 pointed at the
+heatmap from behind the drawer. Each step now declares the whole desk —
+tab _and_ drawer (`desk(tab, rail)`) — and `TourOverlay` stops re-applying
+the current step once the tour ends, which was re-opening the drawer on
+Done. `e2e/tour.mjs` covers the phone re-take: drawer closed on step 1,
+the hole on the heatmap, the rail step re-opens it, Done closes it. Angel
+confirms the cut-heatmap artifact is gone on the device.
+
+## 2026-09-17 (cont.) — Two fingers on the ribbon
+
+**What changed.** Phones had no way to zoom the heatmap (the wheel path is
+mouse/trackpad only). `HypeTimeline` now tracks touches in the **capture**
+phase (the moment pins stop propagation, so a finger on one was invisible)
+and pinches: distance sets the span, the midpoint's content point stays
+put, so two fingers zoom and pan in one gesture. The gesture cancels the
+brush it interrupted and suppresses taps — including the pin the fingers
+lift over, which used to fire `select` and re-zoom the view — until the
+next gesture's first finger. New `e2e/pinch.mjs` drives real two-finger
+touches over CDP: spread zooms in, two fingers together pan without
+changing the zoom, squeeze returns to the whole VOD, no page scroll, no
+accidental pick, and a single tap still works right after. 95 unit,
+13/13 e2e.
+
+## 2026-09-17 (cont.) — Installable, update toast, referral, repo
+
+**What changed.** ADR-22: `lib/pwa.ts` + `InstallChip` (rail, only when the
+browser offers it, "not now" remembered) + `UpdateToast` (bottom paper
+toast; Reload or Later — `registerType` moved from `autoUpdate` to
+`prompt`), strings in ten catalogs, `e2e/pwa.mjs`. ADR-23: the real
+referral link, framed as the 5 % discount it gives, in Settings and on the
+AI no-key card. The repo now exists
+(https://github.com/Angel-Casas/Hypeline): `VITE_GITHUB_REPO` defaults to
+it, so the "?" links work out of the box; new public `README.md`, `LICENSE`
+(MIT © 2026 Angel Casas), `_to_delete`/`*.tgz`/`Claude outputs/` ignored.
+The working folder is now a git repo on `main` with `origin` set and one
+initial commit (245 files, author Angel Casas); Angel pushes it himself.
+95 unit, 14/14 e2e.

@@ -1,0 +1,29 @@
+name: Report a bug
+description: Something broke or looks wrong.
+title: '[Bug] '
+labels: [bug]
+body:
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened
+      description: What did you do, what did you expect, what happened instead?
+    validations:
+      required: true
+  - type: input
+    id: vod
+    attributes:
+      label: VOD or channel (if any)
+      placeholder: twitch.tv/videos/…
+  - type: textarea
+    id: context
+    attributes:
+      label: Context
+      description: Filled in by the app when you come from the "?" button — leave it as is.
+      render: text
+  - type: textarea
+    id: console
+    attributes:
+      label: Console output (optional)
+      description: Press F12 → Console, copy anything red.
+      render: text

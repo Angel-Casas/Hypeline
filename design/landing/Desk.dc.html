@@ -1,0 +1,76 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;700&family=Manrope:wght@400;600;800&display=swap">
+  <style>
+    body { margin: 0; background: #f1ece4; }
+    a { color: #7d5a3c; } a:hover { color: #5c4029; }
+    .card { position: absolute; width: 250px; padding: 18px 18px 16px 18px; background: #fff; box-shadow: 0 2px 2px rgba(60,40,20,0.06), 0 12px 24px rgba(60,40,20,0.12); font-family: 'Manrope', sans-serif; }
+    .tape { position: absolute; left: 50%; top: -12px; width: 90px; height: 24px; margin-left: -45px; background: rgba(255,255,255,0.55); border: 1px solid rgba(0,0,0,0.05); transform: rotate(-2deg); }
+    .hand { font-family: 'Caveat', 'Comic Sans MS', cursive; }
+    .ts { font-size: 12px; letter-spacing: 0.08em; color: #8a7d70; font-variant-numeric: tabular-nums; }
+  </style>
+</helmet>
+<div style="position: relative; width: 1440px; height: 1000px; overflow: hidden; background: #f1ece4 radial-gradient(#e6dfd4 1px, transparent 1.2px); background-size: 22px 22px; color: #2f2622; font-family: 'Manrope', 'Helvetica Neue', Arial, sans-serif;">
+  <div style="position: absolute; left: 56px; top: 44px; font-weight: 800; font-size: 18px; letter-spacing: 0.02em;">Hypeline</div>
+
+  <!-- headline on a large notepad sheet -->
+  <div style="position: absolute; left: 56px; top: 120px; width: 560px; padding: 44px 44px 40px 44px; background: #fffdf8; box-shadow: 0 2px 2px rgba(60,40,20,0.05), 0 18px 40px rgba(60,40,20,0.14); transform: rotate(-1.2deg); background-image: repeating-linear-gradient(transparent 0 35px, #e9e2d6 35px 36px); background-position: 0 24px;">
+    <h1 style="margin: 0; font-weight: 800; font-size: 52px; line-height: 1.05; letter-spacing: -0.02em;">Your VOD, pinned down to the moments.</h1>
+    <p style="margin: 22px 0 0 0; font-size: 17px; line-height: 1.55; color: #5e544c;">Hypeline reads the chat replay and leaves a card on every spike — timestamp, why chat went off, and a one-click cut. All of it in your browser.</p>
+    <div class="hand" style="margin-top: 18px; font-size: 26px; color: #b04a6b; transform: rotate(-2deg); display: inline-block;">nothing uploaded, promise ✓</div>
+  </div>
+
+  <!-- input as a label maker strip -->
+  <div style="position: absolute; left: 60px; top: 600px; width: 560px; display: flex; flex-direction: column; gap: 10px;">
+    <div class="hand" style="font-size: 24px; color: #5e544c;">start here → paste a VOD link</div>
+    <div style="display: flex; background: #2f2622; padding: 8px; box-shadow: 0 10px 24px rgba(60,40,20,0.2);">
+      <input value="https://www.twitch.tv/videos/" style="flex: 1; border: 0; background: #fffdf8; padding: 14px; font-family: 'Manrope', sans-serif; font-size: 15px; color: #2f2622; outline: none;">
+      <button style="border: 0; background: #f6c6cf; color: #2f2622; margin-left: 8px; padding: 0 22px; font-family: 'Manrope', sans-serif; font-weight: 800; font-size: 15px; cursor: pointer;">Pin the moments</button>
+    </div>
+    <div style="font-size: 13px; color: #8a7d70;">Free · MIT · no account · AI features use your own NanoGPT key</div>
+  </div>
+
+  <!-- pinned moment cards -->
+  <div class="card" style="left: 720px; top: 110px; transform: rotate(2.5deg); background: #fde7e1;">
+    <div class="tape"></div>
+    <div class="ts">0:34:15 · 6.2× baseline</div>
+    <div class="hand" style="font-size: 28px; line-height: 1.1; margin-top: 8px;">“HE ACTUALLY DID IT”</div>
+    <div style="font-size: 13px; color: #5e544c; margin-top: 10px;">41 chatters · “clip it” ×14</div>
+  </div>
+  <div class="card" style="left: 1010px; top: 160px; transform: rotate(-3deg); background: #dff1ea;">
+    <div class="tape"></div>
+    <div class="ts">1:12:40 · 3.4×</div>
+    <div class="hand" style="font-size: 28px; line-height: 1.1; margin-top: 8px;">sub train hits 50</div>
+    <div style="font-size: 13px; color: #5e544c; margin-top: 10px;">gift bombs · emote wall</div>
+  </div>
+  <div class="card" style="left: 800px; top: 400px; transform: rotate(-1.5deg); background: #e6e3f7;">
+    <div class="tape"></div>
+    <div class="ts">2:03:08 · 2.1×</div>
+    <div class="hand" style="font-size: 28px; line-height: 1.1; margin-top: 8px;">mic cuts out mid-story</div>
+    <div style="font-size: 13px; color: #5e544c; margin-top: 10px;">demoted: tech trouble, not hype</div>
+  </div>
+  <div class="card" style="left: 1090px; top: 470px; transform: rotate(4deg); background: #fbf0c8;">
+    <div class="tape"></div>
+    <div class="ts">2:48:52 · 4.0×</div>
+    <div class="hand" style="font-size: 28px; line-height: 1.1; margin-top: 8px;">“NO WAY” ×31</div>
+    <div style="font-size: 13px; color: #5e544c; margin-top: 10px;">9:16 cam + game · captions on</div>
+  </div>
+  <!-- a string between two pins, like a corkboard -->
+  <svg width="1440" height="1000" style="position: absolute; left: 0; top: 0; pointer-events: none;">
+    <path d="M845,110 C900,60 1050,80 1135,160" stroke="#b04a6b" stroke-width="1.5" fill="none" stroke-dasharray="4 5"></path>
+    <path d="M925,400 C980,330 1120,360 1215,470" stroke="#b04a6b" stroke-width="1.5" fill="none" stroke-dasharray="4 5"></path>
+    <circle cx="845" cy="110" r="5" fill="#b04a6b"></circle><circle cx="1135" cy="160" r="5" fill="#b04a6b"></circle>
+    <circle cx="925" cy="400" r="5" fill="#b04a6b"></circle><circle cx="1215" cy="470" r="5" fill="#b04a6b"></circle>
+  </svg>
+  <div class="hand" style="position: absolute; left: 800px; top: 700px; font-size: 24px; color: #5e544c; transform: rotate(-2deg); width: 560px; line-height: 1.25;">every card is a real chat spike from a 6-hour VOD — found in 4 seconds, zero AI cost</div>
+</div>
+</x-dc>
+</body>
+</html>

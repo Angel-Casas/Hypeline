@@ -1,0 +1,311 @@
+<title>Hypeline AI Panel</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gloock&family=Manrope:wght@400;500;600;800&family=JetBrains+Mono:wght@400;500;700&display=swap">
+<style>
+  :root {
+    --ground: #fbf9fa; --ground-2: #f3eef2; --ink: #221c2a; --ink-2: #3b3444; --muted: #6f6779;
+    --petal: #ffd0e4; --apricot: #ffdcc4; --butter: #fff0bd; --sky: #cfdcff; --lilac: #ddd0ff;
+    --lift: #ffffff; --line: rgba(34,28,42,.12); --danger: #b03a4a; --warn: #8a6a10; --accent: #7a4f8e;
+    --glass: rgba(255,255,255,.42); --glass-line: rgba(255,255,255,.85); --glass-inset: #fff;
+    --field: rgba(255,255,255,.7); --mesh: .55;
+    --display: 'Gloock', 'Iowan Old Style', Georgia, serif; --body: 'Manrope', 'Helvetica Neue', Arial, sans-serif; --mono: 'JetBrains Mono', Menlo, Consolas, monospace;
+    color-scheme: light;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --ground: #16121a; --ground-2: #1e1824; --ink: #f3edf6; --ink-2: #d6cddb; --muted: #9b91a6;
+      --petal: #5a2f45; --apricot: #5a3d2a; --butter: #5a4b1e; --sky: #273258; --lilac: #3b2c60;
+      --lift: #3a3146; --line: rgba(255,255,255,.12); --danger: #ff8fa0; --warn: #e6c25a; --accent: #c9a3df;
+      --glass: rgba(40,33,48,.55); --glass-line: rgba(255,255,255,.14); --glass-inset: rgba(255,255,255,.08);
+      --field: rgba(255,255,255,.06); --mesh: .28; color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
+    --ground: #16121a; --ground-2: #1e1824; --ink: #f3edf6; --ink-2: #d6cddb; --muted: #9b91a6;
+    --petal: #5a2f45; --apricot: #5a3d2a; --butter: #5a4b1e; --sky: #273258; --lilac: #3b2c60;
+    --lift: #3a3146; --line: rgba(255,255,255,.12); --danger: #ff8fa0; --warn: #e6c25a; --accent: #c9a3df;
+    --glass: rgba(40,33,48,.55); --glass-line: rgba(255,255,255,.14); --glass-inset: rgba(255,255,255,.08);
+    --field: rgba(255,255,255,.06); --mesh: .28; color-scheme: dark;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--ground); color: var(--ink); font-family: var(--body); font-size: 14px; line-height: 1.45; padding-inline: 20px; padding-block: 0 40px; }
+  ::selection { background: #ffe79a; color: #221c2a; }
+  .mesh { position: fixed; inset: -20vmax; z-index: 0; pointer-events: none; filter: blur(70px) saturate(1.05); opacity: var(--mesh);
+    background: radial-gradient(38vmax 30vmax at 20% 25%, #ffd0e4 0%, transparent 60%), radial-gradient(34vmax 28vmax at 78% 18%, #cfdcff 0%, transparent 60%), radial-gradient(30vmax 26vmax at 70% 80%, #fff0bd 0%, transparent 60%), radial-gradient(28vmax 24vmax at 18% 84%, #ddd0ff 0%, transparent 60%); }
+  main { position: relative; z-index: 2; max-width: 1400px; margin: 0 auto; }
+  header { display: flex; align-items: flex-end; justify-content: space-between; gap: 16px; flex-wrap: wrap; padding: 28px 0 22px; }
+  header h1 { font-family: var(--display); font-weight: 400; font-size: 34px; line-height: 1; margin: 0 0 6px; letter-spacing: -.01em; }
+  header p { margin: 0; color: var(--muted); font-size: 13px; max-width: 70ch; }
+  .eyebrow { font-family: var(--mono); font-size: 10.5px; letter-spacing: .14em; text-transform: uppercase; color: var(--muted); }
+  .toggle { background: var(--glass); border: 1px solid var(--glass-line); color: var(--ink); border-radius: 999px; padding: 7px 14px; font: 600 12px var(--body); cursor: pointer; backdrop-filter: blur(12px); }
+  .toggle:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(400px, 1fr)); gap: 24px; align-items: start; }
+  @media (max-width: 440px) { .grid { grid-template-columns: 1fr; } }
+  .study { display: flex; flex-direction: column; gap: 10px; }
+  .cap { display: grid; grid-template-columns: 30px 1fr; gap: 10px; align-items: baseline; padding: 0 4px; }
+  .cap b { font: 700 12px var(--mono); color: var(--ink); background: var(--lift); border: 1px solid var(--line); border-radius: 999px; width: 26px; height: 26px; display: grid; place-items: center; }
+  .cap h2 { margin: 0; font: 600 14px var(--body); }
+  .cap p { margin: 2px 0 0; font-size: 12px; color: var(--muted); }
+  .glass { background: var(--glass); border: 1px solid var(--glass-line); backdrop-filter: blur(20px) saturate(1.5); -webkit-backdrop-filter: blur(20px) saturate(1.5); box-shadow: 0 14px 40px rgba(34,28,42,.07), inset 0 1px 0 var(--glass-inset); border-radius: 18px; }
+  .panel { padding: 16px; display: flex; flex-direction: column; gap: 12px; font-size: 13px; }
+  .mono { font-family: var(--mono); font-variant-numeric: tabular-nums; }
+  .display { font-family: var(--display); }
+  .muted { color: var(--muted); }
+  .btn { display: inline-flex; align-items: center; justify-content: center; gap: 6px; padding: 8px 14px; border-radius: 999px; border: 0; font: 600 13px var(--body); cursor: pointer; white-space: nowrap; }
+  .btn-ink { background: var(--ink); color: var(--ground); }
+  .btn-ghost { background: color-mix(in srgb, var(--lift) 60%, transparent); border: 1px solid var(--line); color: var(--ink); }
+  .btn-sm { padding: 5px 10px; font-size: 12px; }
+  .btn .cost { font: 500 10.5px var(--mono); color: var(--muted); }
+  .btn-ink .cost { color: color-mix(in srgb, var(--ground) 70%, transparent); }
+  .link { color: var(--accent); text-decoration: underline; font-size: 12px; cursor: pointer; background: none; border: 0; padding: 0; font-family: var(--body); }
+  .field { background: var(--field); border: 1px solid var(--line); border-radius: 10px; padding: 6px 10px; font: 13px var(--mono); color: var(--ink); }
+  .field.ph { color: var(--muted); }
+  .seg { display: inline-flex; padding: 3px; gap: 2px; border-radius: 999px; background: color-mix(in srgb, var(--ink) 7%, transparent); }
+  .seg span { padding: 4px 10px; border-radius: 999px; font: 600 11.5px var(--body); color: var(--muted); cursor: pointer; white-space: nowrap; }
+  .seg span.on { background: var(--ink); color: var(--ground); }
+  .row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+  .between { justify-content: space-between; }
+  .lbl { font: 500 11px var(--mono); letter-spacing: .1em; text-transform: uppercase; color: var(--muted); }
+  .hr { height: 1px; background: var(--line); }
+  .chip { font: 11px var(--mono); padding: 3px 9px; border-radius: 999px; background: color-mix(in srgb, var(--lift) 55%, transparent); border: 1px solid var(--line); white-space: nowrap; }
+  .result { padding: 10px 12px; border-radius: 12px; background: color-mix(in srgb, var(--lift) 45%, transparent); border: 1px solid var(--glass-line); display: flex; flex-direction: column; gap: 4px; }
+  .result .meta { font: 10.5px var(--mono); color: var(--muted); }
+  .title { font-family: var(--display); font-size: 19px; line-height: 1.1; letter-spacing: -.005em; }
+  .hook { color: var(--ink-2); font-size: 13px; }
+  .why { color: var(--muted); font-size: 12px; }
+  .stars { display: inline-flex; gap: 3px; vertical-align: middle; }
+  .stars i { width: 8px; height: 8px; border-radius: 50%; background: color-mix(in srgb, var(--ink) 15%, transparent); }
+  .stars i.on { background: linear-gradient(135deg, #ae81ff, #ff77b5); }
+  .transcript { font-size: 12.5px; color: var(--ink-2); line-height: 1.5; }
+  .hit { display: grid; grid-template-columns: 58px 1fr auto; gap: 8px; align-items: baseline; padding: 6px 0; border-top: 1px dotted var(--line); font-size: 12.5px; }
+  .hit .t { font: 500 11.5px var(--mono); color: var(--accent); text-decoration: underline; }
+  .hit .q { color: var(--ink); } .hit .q small { color: var(--muted); font-size: 11.5px; }
+  .progress { height: 3px; border-radius: 3px; background: color-mix(in srgb, var(--ink) 12%, transparent); position: relative; overflow: hidden; }
+  .progress i { position: absolute; inset: 0 auto 0 0; width: var(--p, 40%); background: linear-gradient(90deg, #8eb0ff, #ae81ff, #ff77b5, #ffa968, #ffde68); border-radius: 3px; }
+  .cover { height: 6px; border-radius: 6px; background: color-mix(in srgb, var(--ink) 8%, transparent); position: relative; overflow: hidden; }
+  .cover i { position: absolute; top: 0; bottom: 0; background: linear-gradient(90deg, #ae81ff, #ff77b5); }
+  select.field { appearance: none; padding-right: 22px; background-image: linear-gradient(45deg, transparent 50%, var(--muted) 50%), linear-gradient(135deg, var(--muted) 50%, transparent 50%); background-position: calc(100% - 13px) 55%, calc(100% - 9px) 55%; background-size: 4px 4px; background-repeat: no-repeat; }
+
+  /* no-key state */
+  .nokey { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 16px; margin-bottom: 26px; }
+  .nokey .box { border-radius: 18px; padding: 18px 20px; display: flex; flex-direction: column; gap: 6px; min-height: 120px; justify-content: center; }
+  .nokey .box.a { background: linear-gradient(135deg, var(--lilac), var(--petal)); }
+  .nokey .box.b { background: linear-gradient(135deg, var(--sky), var(--lilac)); }
+  .nokey .box.c { background: linear-gradient(135deg, var(--butter), var(--apricot)); }
+  .nokey .box h3 { margin: 0; font-family: var(--display); font-weight: 400; font-size: 20px; line-height: 1.1; }
+  .nokey .box p { margin: 0; font-size: 12.5px; color: var(--ink-2); }
+  .nokey .box .link { color: var(--ink); }
+
+  /* 2 Receipt */
+  .v2 .ledger { font: 12px var(--mono); display: flex; flex-direction: column; gap: 4px; }
+  .v2 .ledger div { display: flex; align-items: baseline; gap: 6px; }
+  .v2 .ledger div .l { flex: 1; border-bottom: 1px dotted var(--line); transform: translateY(-4px); }
+  .v2 .ledger .total { border-top: 1px solid var(--ink); padding-top: 4px; margin-top: 2px; font-weight: 700; }
+  .v2 .tear { height: 0; border-top: 2px dashed var(--line); margin: 4px 0; }
+
+  /* 3 Card result */
+  .v3 .hero { padding: 14px; border-radius: 14px; background: color-mix(in srgb, var(--lift) 50%, transparent); border: 1px solid var(--glass-line); }
+  .v3 .hero .title { font-size: 24px; }
+  .v3 .sug { display: inline-flex; align-items: center; gap: 8px; padding: 4px 6px 4px 12px; border-radius: 999px; border: 1px solid var(--line); font: 11.5px var(--mono); }
+
+  /* 4 Chat thread */
+  .v4 .bubble { max-width: 88%; padding: 8px 12px; border-radius: 14px; font-size: 12.5px; }
+  .v4 .me { align-self: flex-end; background: var(--ink); color: var(--ground); border-bottom-right-radius: 4px; font-family: var(--mono); font-size: 11.5px; }
+  .v4 .them { align-self: flex-start; background: color-mix(in srgb, var(--lift) 55%, transparent); border: 1px solid var(--glass-line); border-bottom-left-radius: 4px; }
+  .v4 .stream { display: flex; flex-direction: column; gap: 6px; }
+  .v4 .composer { display: grid; grid-template-columns: 1fr auto; gap: 6px; padding: 4px; border-radius: 999px; border: 1px solid var(--line); background: var(--field); }
+  .v4 .composer .field { border: 0; background: transparent; }
+
+  /* 6 Spend meter */
+  .v6 .meter { position: relative; height: 22px; border-radius: 999px; background: color-mix(in srgb, var(--ink) 7%, transparent); overflow: hidden; }
+  .v6 .meter i { position: absolute; top: 0; bottom: 0; left: 0; width: var(--p); background: linear-gradient(90deg, #8eb0ff, #ae81ff, #ff77b5, #ffa968, #ffde68); }
+  .v6 .meter b { position: absolute; top: 0; bottom: 0; left: var(--s); width: 2px; background: var(--ink); }
+  .v6 .meter span { position: absolute; inset: 0; display: grid; place-items: center; font: 700 10.5px var(--mono); }
+
+  /* 7 Instrument */
+  .v7 .panel { gap: 8px; }
+  .v7 .dial { display: grid; grid-template-columns: 90px 1fr auto; gap: 8px; align-items: center; font: 11.5px var(--mono); padding: 5px 0; border-bottom: 1px solid var(--line); }
+  .v7 .dial .k { color: var(--muted); letter-spacing: .08em; text-transform: uppercase; font-size: 10px; }
+  .v7 .status { font: 11px var(--mono); color: var(--muted); display: flex; gap: 10px; align-items: center; }
+  .v7 .led { width: 7px; height: 7px; border-radius: 50%; background: #ffa968; box-shadow: 0 0 8px #ffa968; }
+  .v7 .run { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+
+  /* 8 Editorial */
+  .v8 .quote { font-family: var(--display); font-size: 17px; line-height: 1.35; color: var(--ink); padding-left: 12px; border-left: 2px solid var(--ink); }
+  .v8 .quote small { display: block; font: 10.5px var(--mono); color: var(--muted); margin-top: 6px; }
+  .v8 .cap2 { font-size: 12.5px; color: var(--ink-2); }
+  .v8 .cap2 b { font-family: var(--display); font-weight: 400; font-size: 16px; display: block; margin-bottom: 2px; }
+
+  /* 9 Search first */
+  .v9 .big { display: grid; grid-template-columns: 1fr auto; gap: 6px; padding: 5px 5px 5px 14px; border-radius: 999px; border: 1.5px solid var(--ink); background: var(--field); }
+  .v9 .big .field { border: 0; background: transparent; padding: 6px 0; }
+  .v9 .cover { height: 8px; }
+
+  /* 10 Deck */
+  .v10 .deck { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .v10 .card { padding: 10px 12px; border-radius: 12px; background: color-mix(in srgb, var(--lift) 45%, transparent); border: 1px solid var(--glass-line); display: flex; flex-direction: column; gap: 6px; font-size: 12px; }
+  .v10 .card .lbl { font-size: 10px; }
+  .v10 .card.wide { grid-column: 1 / -1; }
+</style>
+<div class="mesh" aria-hidden="true"></div>
+<main>
+  <header>
+    <div>
+      <div class="eyebrow">Hypeline · dashboard · 2026-09-15</div>
+      <h1>Ten ways to ask the AI</h1>
+      <p>The AI box (and the transcript search that lives under it) with the same state everywhere: key set, balance $4.82, $0.013 spent here, range 0:33:50 → 0:34:35 already transcribed and explained, 1 h 12 min of the VOD transcribed for search, two hits for “the grandma story”. First, the state you asked for when there is no key.</p>
+    </div>
+    <button class="toggle" id="theme" type="button">Night</button>
+  </header>
+
+  <div class="eyebrow" style="margin-bottom:10px">No key yet · the whole box is a pastel card (three tints to choose from)</div>
+  <div class="nokey">
+    <div class="box a"><h3>AI needs your NanoGPT key</h3><p>Transcripts, titles and search run on your own key — pay as you go, never leaves this browser. <span class="link">Add it in Settings</span> (Library rail).</p></div>
+    <div class="box b"><div class="eyebrow" style="color:var(--ink-2)">AI · off</div><h3>Bring your own key</h3><p>Paste a NanoGPT key in <span class="link">Settings</span> to transcribe, title and search this VOD.</p></div>
+    <div class="box c"><h3>No key, no AI — yet.</h3><p>Everything else works without one. When you want transcripts and titles, add a NanoGPT key in <span class="link">Settings</span>.</p></div>
+  </div>
+
+  <div class="grid">
+
+    <section class="study v1">
+      <div class="cap"><b>1</b><div><h2>Two acts</h2><p>One box in two bands — “This moment” (transcribe, explain) and “Whole VOD” (transcribe for search, search) — so the two scopes never blur. Costs ride on the buttons as mono chips; results are quiet cards.</p></div></div>
+      <div class="glass panel">
+        <div class="row between"><span style="font-weight:600">AI</span><span class="mono muted" style="font-size:11px">balance $4.82 · spent here $0.013</span></div>
+        <div class="lbl">This moment · 0:33:50 → 0:34:35</div>
+        <div class="row" style="gap:6px"><button class="btn btn-ghost btn-sm">Transcribe <span class="cost">~$0.005</span></button><button class="btn btn-ink btn-sm">Explain <span class="cost">~$0.002</span></button></div>
+        <div class="result"><div class="meta">gpt-4.1-mini · $0.002 · clip-worthiness <span class="stars"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i></i></span></div><div class="title">She actually called grandma</div><div class="hook">Chat begged for a week. Tonight she dialled.</div><div class="row" style="gap:8px"><span class="why">Suggested +3 s → −5 s</span><span class="link">apply</span></div></div>
+        <div class="hr"></div>
+        <div class="lbl">Whole VOD · 1:12:00 of 6:24:02 transcribed</div>
+        <div class="row" style="gap:6px"><span class="field ph" style="flex:1;min-width:140px">“every time he blames his mouse”</span><button class="btn btn-ink btn-sm">Search <span class="cost">~$0.01</span></button></div>
+        <div class="hit"><span class="t">0:18:22</span><span class="q">“okay grandma picks up on the third ring” <small>— the call itself · 5/5</small></span><span class="link">clip</span></div>
+        <div class="hit"><span class="t">2:03:08</span><span class="q">“she said she'd call grandma later” <small>— setup · 3/5</small></span><span class="link">clip</span></div>
+        <div class="row between" style="font-size:11px"><span class="muted">gpt-4.1-mini · whisper-1</span><span class="link">models</span></div>
+      </div>
+    </section>
+
+    <section class="study v2">
+      <div class="cap"><b>2</b><div><h2>Receipt</h2><p>Bring-your-own-key means money, so the box is a bill: mono line items with dotted leaders and the price at the right, a running total, the balance on top, and the results under a tear line.</p></div></div>
+      <div class="glass panel">
+        <div class="row between"><span class="mono" style="font-size:12px;font-weight:700">NANOGPT · BALANCE $4.82</span><span class="link">models</span></div>
+        <div class="ledger">
+          <div><span>Transcribe 0:33:50 → 0:34:35 (45 s)</span><span class="l"></span><span>$0.005</span><button class="btn btn-ghost btn-sm">run</button></div>
+          <div><span>Explain this moment</span><span class="l"></span><span>$0.002</span><button class="btn btn-ink btn-sm">run</button></div>
+          <div><span>Transcribe VOD to the end (156 chunks)</span><span class="l"></span><span>$1.87</span><button class="btn btn-ghost btn-sm">run</button></div>
+          <div><span>Search “the grandma story”</span><span class="l"></span><span>$0.01</span><button class="btn btn-ghost btn-sm">run</button></div>
+          <div class="total"><span>Spent here so far</span><span class="l"></span><span>$0.013</span></div>
+        </div>
+        <div class="tear"></div>
+        <div class="result"><div class="meta">explain · $0.002 · 4/5</div><div class="title">She actually called grandma</div><div class="hook">Chat begged for a week. Tonight she dialled.</div></div>
+        <div class="hit"><span class="t">0:18:22</span><span class="q">“okay grandma picks up on the third ring” <small>5/5</small></span><span class="link">clip</span></div>
+      </div>
+    </section>
+
+    <section class="study v3">
+      <div class="cap"><b>3</b><div><h2>Card result</h2><p>The answer is the hero: a Gloock title you could paste on the clip, the hook under it, clip-worthiness as five silk dots, the suggested trim as an apply-pill. Actions and models shrink to a footer.</p></div></div>
+      <div class="glass panel">
+        <div class="hero"><div class="meta muted" style="font-size:10.5px;font-family:var(--mono)">0:33:50 → 0:34:35 · gpt-4.1-mini · $0.002</div><div class="title">She actually called grandma</div><div class="hook" style="margin-top:4px">Chat begged for a week. Tonight she dialled — and grandma picked up on the third ring.</div><div class="row" style="margin-top:8px;gap:10px"><span class="stars"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i></i></span><span class="why">worth clipping</span><span class="sug">+3 s → −5 s <button class="btn btn-ink btn-sm">apply</button></span></div></div>
+        <div class="transcript">“…no I'm doing it, I'm doing it, stop — hello? Grandma? It's me…” <span class="link">full transcript</span></div>
+        <div class="row" style="gap:6px"><button class="btn btn-ghost btn-sm">Transcribe again <span class="cost">~$0.005</span></button><button class="btn btn-ghost btn-sm">Explain again <span class="cost">~$0.002</span></button><span class="link" style="margin-left:auto">search the VOD</span></div>
+        <div class="row between" style="font-size:11px"><span class="muted">gpt-4.1-mini · whisper-1 · balance $4.82</span><span class="link">change</span></div>
+      </div>
+    </section>
+
+    <section class="study v4">
+      <div class="cap"><b>4</b><div><h2>Thread</h2><p>Every request and answer is a bubble: yours in ink on the right (with the cost), the model's on the left. Explain, transcribe and search all land in one scrollable thread; the composer at the bottom is the search box.</p></div></div>
+      <div class="glass panel">
+        <div class="row between"><span style="font-weight:600">AI</span><span class="mono muted" style="font-size:11px">$4.82 · spent $0.013</span></div>
+        <div class="stream">
+          <div class="bubble me">transcribe 0:33:50 → 0:34:35 · $0.005</div>
+          <div class="bubble them transcript">“…no I'm doing it, I'm doing it, stop — hello? Grandma? It's me…”</div>
+          <div class="bubble me">explain this moment · $0.002</div>
+          <div class="bubble them"><div class="title" style="font-size:17px">She actually called grandma</div><div class="hook">Chat begged for a week. Tonight she dialled.</div><div class="row" style="gap:8px;margin-top:4px"><span class="stars"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i></i></span><span class="link">apply +3 s → −5 s</span></div></div>
+          <div class="bubble me">search “the grandma story” · $0.01</div>
+          <div class="bubble them"><div class="hit" style="border:0;padding:2px 0"><span class="t">0:18:22</span><span class="q">“grandma picks up on the third ring”</span><span class="link">clip</span></div><div class="hit" style="padding:2px 0"><span class="t">2:03:08</span><span class="q">“she'd call grandma later”</span><span class="link">clip</span></div></div>
+        </div>
+        <div class="row" style="gap:6px"><button class="btn btn-ghost btn-sm">Transcribe <span class="cost">~$0.005</span></button><button class="btn btn-ghost btn-sm">Explain <span class="cost">~$0.002</span></button></div>
+        <div class="composer"><span class="field ph">Search the transcript…</span><button class="btn btn-ink btn-sm">Search</button></div>
+      </div>
+    </section>
+
+    <section class="study v5">
+      <div class="cap"><b>5</b><div><h2>Tabs</h2><p>Moment · Search · Models as a segmented bar; each tab is small and single-purpose, and the Models tab takes the pickers and the key out of the everyday view. Balance stays in the header.</p></div></div>
+      <div class="glass panel">
+        <div class="row between"><span class="seg"><span class="on">Moment</span><span>Search</span><span>Models</span></span><span class="mono muted" style="font-size:11px">$4.82</span></div>
+        <div class="row between" style="font-size:12px"><span class="mono">0:33:50 → 0:34:35 · 45 s</span><span class="muted">transcribed</span></div>
+        <div class="row" style="gap:6px"><button class="btn btn-ghost btn-sm">Transcribe <span class="cost">~$0.005</span></button><button class="btn btn-ink btn-sm">Explain <span class="cost">~$0.002</span></button></div>
+        <div class="result"><div class="meta">gpt-4.1-mini · $0.002 · 4/5</div><div class="title">She actually called grandma</div><div class="hook">Chat begged for a week. Tonight she dialled.</div><div class="why">Suggested +3 s → −5 s · <span class="link">apply</span></div></div>
+        <div class="transcript">“…no I'm doing it, I'm doing it, stop — hello? Grandma? It's me…”</div>
+      </div>
+    </section>
+
+    <section class="study v6">
+      <div class="cap"><b>6</b><div><h2>Spend meter</h2><p>The balance is a silk meter with a tick for what this VOD has cost; every action is a chip that says its price before you press it. Nothing surprises the wallet.</p></div></div>
+      <div class="glass panel">
+        <div class="row between"><span style="font-weight:600">AI</span><span class="mono muted" style="font-size:11px">gpt-4.1-mini · whisper-1</span></div>
+        <div class="meter" style="--p:96%;--s:0.3%"><i></i><b></b><span>$4.82 left · $0.013 spent on this VOD</span></div>
+        <div class="row" style="gap:6px"><button class="btn btn-ghost btn-sm">Transcribe range <span class="cost">$0.005</span></button><button class="btn btn-ghost btn-sm">Explain <span class="cost">$0.002</span></button><button class="btn btn-ghost btn-sm">Transcribe VOD <span class="cost">$1.87</span></button></div>
+        <div class="result"><div class="meta">explain · 4/5</div><div class="title">She actually called grandma</div><div class="hook">Chat begged for a week. Tonight she dialled.</div></div>
+        <div class="row" style="gap:6px"><span class="field ph" style="flex:1;min-width:140px">Search the transcript…</span><button class="btn btn-ink btn-sm">Search <span class="cost">$0.01</span></button></div>
+        <div class="hit"><span class="t">0:18:22</span><span class="q">“grandma picks up on the third ring” <small>5/5</small></span><span class="link">clip</span></div>
+      </div>
+    </section>
+
+    <section class="study v7">
+      <div class="cap"><b>7</b><div><h2>Instrument</h2><p>A control-room panel: mono readouts in rows (range, models, coverage, cost), a status line with an LED and a thin silk progress, and two run buttons. For people who like to see the machine.</p></div></div>
+      <div class="glass panel">
+        <div class="dial"><span class="k">Range</span><span>0:33:50 → 0:34:35 · 45 s</span><span class="muted">transcribed</span></div>
+        <div class="dial"><span class="k">Chat model</span><span>gpt-4.1-mini</span><span class="muted">$0.4 / $1.6 per M</span></div>
+        <div class="dial"><span class="k">Speech</span><span>whisper-1</span><span class="muted">$0.006 / min</span></div>
+        <div class="dial"><span class="k">Coverage</span><span><div class="cover" style="margin-top:6px"><i style="left:0;width:19%"></i></div></span><span class="muted">1:12:00 / 6:24:02</span></div>
+        <div class="dial" style="border:0"><span class="k">Wallet</span><span>$4.82</span><span class="muted">spent here $0.013</span></div>
+        <div class="status"><span class="led"></span> asking the model… <div class="progress" style="flex:1;--p:62%"><i></i></div></div>
+        <div class="run"><button class="btn btn-ghost">Transcribe <span class="cost">$0.005</span></button><button class="btn btn-ink">Explain <span class="cost">$0.002</span></button></div>
+        <div class="row" style="gap:6px"><span class="field ph" style="flex:1">search…</span><button class="btn btn-ghost btn-sm">Search</button></div>
+      </div>
+    </section>
+
+    <section class="study v8">
+      <div class="cap"><b>8</b><div><h2>Editorial</h2><p>The transcript is a pull-quote in Gloock with a rule on its left and the timestamp under it; the explanation is a caption beneath. Almost no chrome — the words are the design.</p></div></div>
+      <div class="glass panel">
+        <div class="row between"><span class="lbl">0:33:50 → 0:34:35</span><span class="mono muted" style="font-size:11px">$4.82 · spent $0.013</span></div>
+        <div class="quote">“No I'm doing it, I'm doing it, stop — hello? Grandma? It's me…”<small>whisper-1 · $0.005 · <span class="link">read all</span></small></div>
+        <div class="cap2"><b>She actually called grandma</b>Chat begged for a week. Tonight she dialled. <span class="muted">4/5 · suggested +3 s → −5 s ·</span> <span class="link">apply</span></div>
+        <div class="hr"></div>
+        <div class="row" style="gap:6px"><button class="btn btn-ghost btn-sm">Transcribe <span class="cost">~$0.005</span></button><button class="btn btn-ghost btn-sm">Explain <span class="cost">~$0.002</span></button><span class="link" style="margin-left:auto">search the VOD</span></div>
+      </div>
+    </section>
+
+    <section class="study v9">
+      <div class="cap"><b>9</b><div><h2>Search first</h2><p>The search pill leads (the landing page's shape), with a silk coverage bar under it showing how much of the VOD is transcribed and a button to extend it; the per-moment actions come after.</p></div></div>
+      <div class="glass panel">
+        <div class="big"><span class="field ph">“every time he blames his mouse”</span><button class="btn btn-ink btn-sm">Search <span class="cost">~$0.01</span></button></div>
+        <div class="cover"><i style="left:0;width:19%"></i></div>
+        <div class="row between" style="font-size:11px"><span class="muted">1:12:00 of 6:24:02 transcribed · 36 chunks cached</span><span class="link">transcribe the rest · $1.87</span></div>
+        <div class="hit"><span class="t">0:18:22</span><span class="q">“okay grandma picks up on the third ring” <small>— the call · 5/5</small></span><span class="link">clip</span></div>
+        <div class="hit"><span class="t">2:03:08</span><span class="q">“she said she'd call grandma later” <small>— setup · 3/5</small></span><span class="link">clip</span></div>
+        <div class="hr"></div>
+        <div class="row between"><span class="lbl">This moment · 45 s</span><div class="row" style="gap:6px"><button class="btn btn-ghost btn-sm">Transcribe <span class="cost">$0.005</span></button><button class="btn btn-ghost btn-sm">Explain <span class="cost">$0.002</span></button></div></div>
+        <div class="row between" style="font-size:11px"><span class="muted">gpt-4.1-mini · whisper-1 · $4.82</span><span class="link">models</span></div>
+      </div>
+    </section>
+
+    <section class="study v10">
+      <div class="cap"><b>10</b><div><h2>Deck</h2><p>Four small cards — Transcript, Explain, Search, Models — each with one job, its price and its own result. Easy to rearrange on a phone, easy to grow when new AI features arrive.</p></div></div>
+      <div class="glass panel">
+        <div class="deck">
+          <div class="card"><div class="lbl">Transcript · $0.005</div><div class="transcript">“…stop — hello? Grandma? It's me…”</div><button class="btn btn-ghost btn-sm" style="align-self:flex-start">Transcribe range</button></div>
+          <div class="card"><div class="lbl">Explain · $0.002</div><div class="title" style="font-size:16px">She actually called grandma</div><div class="why">4/5 · <span class="link">apply +3 → −5 s</span></div></div>
+          <div class="card wide"><div class="lbl">Search · 1:12:00 transcribed</div><div class="row" style="gap:6px"><span class="field ph" style="flex:1;min-width:120px">“the grandma story”</span><button class="btn btn-ink btn-sm">Search</button></div><div class="hit"><span class="t">0:18:22</span><span class="q">“grandma picks up on the third ring”</span><span class="link">clip</span></div></div>
+          <div class="card wide"><div class="lbl">Models · balance $4.82 · spent $0.013</div><div class="row" style="gap:6px"><select class="field"><option>gpt-4.1-mini · $0.4/1.6 per M</option></select><select class="field"><option>whisper-1 · $0.006/min</option></select></div></div>
+        </div>
+      </div>
+    </section>
+
+  </div>
+</main>
+<script>
+  const root = document.documentElement, btn = document.getElementById('theme');
+  const dark = () => root.dataset.theme === 'dark' || (!root.dataset.theme && matchMedia('(prefers-color-scheme: dark)').matches);
+  const label = () => (btn.textContent = dark() ? 'Day' : 'Night');
+  btn.addEventListener('click', () => { root.dataset.theme = dark() ? 'light' : 'dark'; label(); });
+  label();
+</script>

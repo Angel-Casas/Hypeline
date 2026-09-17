@@ -1,0 +1,47 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Young+Serif&family=Hanken+Grotesk:wght@400;500&display=swap">
+  <style>
+    body { margin: 0; background: #fbf8f1; }
+    a { color: #4a5a3a; } a:hover { color: #2f3a25; }
+    .mark { position: relative; white-space: nowrap; isolation: isolate; }
+    .mark::before { content: ""; position: absolute; left: -0.08em; right: -0.08em; top: 0.18em; bottom: 0.05em; z-index: -1; border-radius: 0.3em 0.5em 0.4em 0.6em; transform: rotate(-0.6deg); }
+    .m-pink::before { background: #f9cfd8; } .m-mint::before { background: #cfeadb; } .m-lilac::before { background: #e0d8f5; } .m-butter::before { background: #f8e7b3; }
+  </style>
+</helmet>
+<div style="position: relative; width: 1440px; height: 1000px; overflow: hidden; background: #fbf8f1; color: #24211c; font-family: 'Hanken Grotesk', 'Helvetica Neue', Arial, sans-serif; padding: 48px 80px; box-sizing: border-box; display: flex; flex-direction: column; justify-content: space-between;">
+  <div style="display: flex; justify-content: space-between; font-size: 14px; color: #7b766c;">
+    <span style="color: #24211c; font-weight: 500;">Hypeline</span>
+    <span>free · open source · no server</span>
+  </div>
+
+  <div style="font-family: 'Young Serif', Georgia, serif; font-size: 78px; line-height: 1.22; letter-spacing: -0.015em; max-width: 1280px; text-wrap: pretty;">
+    Paste a <span class="mark m-lilac">Twitch VOD</span>, and the <span class="mark m-pink">chat replay</span> will show you where the moment is. Then your browser <span class="mark m-mint">cuts the clip</span> — nothing is <span class="mark m-butter">uploaded</span>.
+  </div>
+
+  <div style="display: flex; align-items: flex-end; justify-content: space-between; gap: 40px;">
+    <div style="display: flex; flex-direction: column; gap: 10px; width: 640px;">
+      <div style="display: flex; align-items: baseline; gap: 14px; border-bottom: 2px solid #24211c; padding-bottom: 8px;">
+        <span style="font-family: 'Young Serif', serif; font-size: 22px;">→</span>
+        <input value="https://www.twitch.tv/videos/…" style="flex: 1; border: 0; background: transparent; font-family: 'Hanken Grotesk', sans-serif; font-size: 20px; color: #24211c; outline: none;">
+        <button style="border: 0; background: transparent; font-family: 'Hanken Grotesk', sans-serif; font-size: 16px; font-weight: 500; color: #24211c; cursor: pointer; padding: 0;">Find the moments</button>
+      </div>
+      <div style="font-size: 13px; color: #7b766c;">Works on VODs that are still live. Captions, titles and search use your own NanoGPT key.</div>
+    </div>
+    <div style="display: flex; gap: 36px; font-size: 14px; line-height: 1.5; color: #524e46; max-width: 520px;">
+      <div><div style="font-family: 'Young Serif', serif; font-size: 30px; color: #24211c;">4 s</div>to read 5,626 chat messages</div>
+      <div><div style="font-family: 'Young Serif', serif; font-size: 30px; color: #24211c;">0 B</div>of video leaves your machine</div>
+      <div><div style="font-family: 'Young Serif', serif; font-size: 30px; color: #24211c;">$0</div>unless you add an AI key</div>
+    </div>
+  </div>
+</div>
+</x-dc>
+</body>
+</html>

@@ -1,0 +1,86 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;600;800&family=Pixelify+Sans:wght@500&display=swap">
+  <style>
+    body { margin: 0; background: #cfe3ef; }
+    a { color: #2b3a5c; } a:hover { color: #16213d; }
+    .win { position: absolute; background: #fdfcf9; border: 2px solid #2b3a5c; box-shadow: 6px 6px 0 #2b3a5c; font-family: 'Public Sans', sans-serif; }
+    .bar { display: flex; align-items: center; gap: 8px; padding: 6px 10px; border-bottom: 2px solid #2b3a5c; background: repeating-linear-gradient(#2b3a5c 0 1px, transparent 1px 4px); background-position: 0 6px; }
+    .bar span.title { background: #fdfcf9; padding: 0 8px; font-size: 13px; font-weight: 600; }
+    .dot { width: 12px; height: 12px; border: 2px solid #2b3a5c; background: #fdfcf9; }
+  </style>
+</helmet>
+<div style="position: relative; width: 1440px; height: 1000px; overflow: hidden; background: #cfe3ef; background-image: radial-gradient(#b6d1e2 1.2px, transparent 1.3px); background-size: 8px 8px; color: #2b3a5c; font-family: 'Public Sans', 'Helvetica Neue', Arial, sans-serif;">
+  <!-- menu bar -->
+  <div style="position: absolute; left: 0; top: 0; right: 0; height: 36px; background: #fdfcf9; border-bottom: 2px solid #2b3a5c; display: flex; align-items: center; gap: 28px; padding: 0 20px; font-size: 14px; font-weight: 600;">
+    <span style="font-family: 'Pixelify Sans', monospace; font-size: 18px;">Hypeline</span><span>File</span><span>Moments</span><span>Clip</span><span>Help</span>
+    <span style="margin-left: auto; font-weight: 400; color: #5a6a8c;">no account · no server · MIT</span>
+  </div>
+
+  <!-- window 1: the pitch -->
+  <div class="win" style="left: 70px; top: 90px; width: 640px;">
+    <div class="bar"><div class="dot"></div><span class="title">Read me</span></div>
+    <div style="padding: 28px 30px 30px 30px;">
+      <h1 style="margin: 0; font-weight: 800; font-size: 50px; line-height: 1.02; letter-spacing: -0.02em;">Clip a Twitch VOD like it's 1994: locally.</h1>
+      <p style="margin: 18px 0 0 0; font-size: 17px; line-height: 1.5; color: #46557a;">Paste a VOD link. Hypeline pulls the chat replay, draws a hype heatmap, and cuts the clip with ffmpeg running inside the tab. Your video never leaves your machine.</p>
+      <div style="margin-top: 24px; display: flex; gap: 10px;">
+        <input value="https://www.twitch.tv/videos/…" style="flex: 1; border: 2px solid #2b3a5c; background: #fff; padding: 12px 14px; font-family: inherit; font-size: 15px; color: #2b3a5c; outline: none;">
+        <button style="border: 2px solid #2b3a5c; background: #f9c8d3; box-shadow: 3px 3px 0 #2b3a5c; padding: 0 22px; font-family: inherit; font-weight: 800; font-size: 15px; color: #2b3a5c; cursor: pointer;">Open</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- window 2: hype meter -->
+  <div class="win" style="left: 760px; top: 130px; width: 600px;">
+    <div class="bar"><div class="dot"></div><span class="title">Moments — tokyosims, 6h24</span></div>
+    <div style="padding: 16px 20px; display: flex; flex-direction: column; gap: 10px; font-size: 14px;">
+      <div style="display: grid; grid-template-columns: 70px 1fr 60px; gap: 12px; align-items: center;"><span style="font-variant-numeric: tabular-nums;">0:34:15</span><div style="height: 14px; background: #f9c8d3; border: 2px solid #2b3a5c; width: 100%;"></div><span style="text-align: right;">6.2×</span></div>
+      <div style="display: grid; grid-template-columns: 70px 1fr 60px; gap: 12px; align-items: center;"><span style="font-variant-numeric: tabular-nums;">2:48:52</span><div style="height: 14px; background: #cfe9d9; border: 2px solid #2b3a5c; width: 64%;"></div><span style="text-align: right;">4.0×</span></div>
+      <div style="display: grid; grid-template-columns: 70px 1fr 60px; gap: 12px; align-items: center;"><span style="font-variant-numeric: tabular-nums;">1:12:40</span><div style="height: 14px; background: #cfe9d9; border: 2px solid #2b3a5c; width: 55%;"></div><span style="text-align: right;">3.4×</span></div>
+      <div style="display: grid; grid-template-columns: 70px 1fr 60px; gap: 12px; align-items: center;"><span style="font-variant-numeric: tabular-nums;">0:15:15</span><div style="height: 14px; background: #e6dcf5; border: 2px solid #2b3a5c; width: 35%;"></div><span style="text-align: right;">2.2×</span></div>
+      <div style="margin-top: 6px; font-size: 12px; color: #5a6a8c;">5,626 messages read in 4.1 s · 0 uploaded</div>
+    </div>
+  </div>
+
+  <!-- window 3: export dialog -->
+  <div class="win" style="left: 900px; top: 470px; width: 420px; background: #fbf3d6;">
+    <div class="bar"><div class="dot"></div><span class="title">Export clip</span></div>
+    <div style="padding: 16px 20px; display: flex; flex-direction: column; gap: 10px; font-size: 14px;">
+      <div style="display: flex; justify-content: space-between;"><span>Range</span><span style="font-variant-numeric: tabular-nums;">0:34:05 → 0:34:20</span></div>
+      <div style="display: flex; justify-content: space-between;"><span>Aspect</span><span>9:16 cam + game</span></div>
+      <div style="display: flex; justify-content: space-between;"><span>Captions</span><span>on · 7 cues</span></div>
+      <div style="display: flex; justify-content: space-between;"><span>Cost</span><span>$0.002 (your NanoGPT key)</span></div>
+      <div style="display: flex; gap: 8px; justify-content: flex-end; margin-top: 6px;">
+        <button style="border: 2px solid #2b3a5c; background: #fff; padding: 8px 14px; font-family: inherit; font-size: 13px; cursor: pointer;">Cancel</button>
+        <button style="border: 2px solid #2b3a5c; background: #cfe9d9; box-shadow: 3px 3px 0 #2b3a5c; padding: 8px 14px; font-family: inherit; font-size: 13px; font-weight: 800; cursor: pointer;">Export</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- window 4: progress -->
+  <div class="win" style="left: 120px; top: 560px; width: 520px;">
+    <div class="bar"><div class="dot"></div><span class="title">ffmpeg.wasm</span></div>
+    <div style="padding: 16px 20px; font-size: 14px;">
+      <div style="margin-bottom: 8px;">Cutting 0:34:05 → 0:34:20 · 720p · precise</div>
+      <div style="height: 18px; border: 2px solid #2b3a5c; background: #fff; position: relative;"><div style="position: absolute; left: 0; top: 0; bottom: 0; width: 72%; background: repeating-linear-gradient(90deg, #2b3a5c 0 6px, transparent 6px 9px);"></div></div>
+      <div style="margin-top: 8px; font-size: 12px; color: #5a6a8c;">72% · 4.8 s · no upload in progress, because there is no upload.</div>
+    </div>
+  </div>
+
+  <!-- desktop icons -->
+  <div style="position: absolute; left: 70px; top: 780px; display: flex; gap: 36px; font-size: 12px; text-align: center;">
+    <div style="display: flex; flex-direction: column; align-items: center; gap: 6px;"><div style="width: 44px; height: 44px; border: 2px solid #2b3a5c; background: #f9c8d3;"></div>clip_0034.mp4</div>
+    <div style="display: flex; flex-direction: column; align-items: center; gap: 6px;"><div style="width: 44px; height: 44px; border: 2px solid #2b3a5c; background: #cfe9d9;"></div>thumb.png</div>
+    <div style="display: flex; flex-direction: column; align-items: center; gap: 6px;"><div style="width: 44px; height: 44px; border: 2px solid #2b3a5c; background: #e6dcf5;"></div>transcript</div>
+  </div>
+</div>
+</x-dc>
+</body>
+</html>

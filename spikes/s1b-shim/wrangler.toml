@@ -1,0 +1,8 @@
+name = "hypeline-shim"
+main = "worker.js"
+compatibility_date = "2026-09-01"
+
+[vars]
+# Comma-separated origins allowed to use the shim. "*" is fine for the spike;
+# lock it down to the deployed app origin(s) before anyone else finds the URL.
+ALLOWED_ORIGINS = "*"

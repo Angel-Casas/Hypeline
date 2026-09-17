@@ -1,0 +1,53 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Syne:wght@500;700;800&family=Karla:wght@400;600&display=swap">
+  <style>
+    body { margin: 0; background: #f4efe7; }
+    a { color: #6b4a3a; } a:hover { color: #4a3128; }
+    .frame { position: relative; border-radius: 6px; overflow: hidden; display: flex; flex-direction: column; justify-content: flex-end; padding: 22px 14px 24px 14px; color: #2c2622; font-family: "Karla", sans-serif; }
+    .frame::before, .frame::after { content: ""; position: absolute; left: 0; right: 0; height: 12px; background-image: radial-gradient(circle, #2c2622 3px, transparent 3.4px); background-size: 20px 12px; background-position: 6px 0; opacity: 0.55; }
+    .frame::before { top: 4px; } .frame::after { bottom: 4px; }
+    .ts { font-size: 12px; letter-spacing: 0.06em; font-variant-numeric: tabular-nums; opacity: 0.75; }
+    .why { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 18px; line-height: 1.15; margin-top: 4px; }
+  </style>
+</helmet>
+<div style="position: relative; width: 1440px; height: 1000px; overflow: hidden; background: #f4efe7; color: #2c2622; font-family: 'Karla', 'Helvetica Neue', Arial, sans-serif; padding: 44px 56px; box-sizing: border-box; display: grid; grid-template-columns: 470px 1fr; gap: 48px;">
+  <!-- left column -->
+  <div style="display: flex; flex-direction: column; justify-content: space-between;">
+    <div style="font-family: 'Syne', sans-serif; font-weight: 800; font-size: 22px; letter-spacing: -0.01em;">Hypeline</div>
+    <div>
+      <h1 style="margin: 0; font-family: 'Syne', sans-serif; font-weight: 800; font-size: 60px; line-height: 0.98; letter-spacing: -0.03em;">Six hours of stream. Eight moments that matter.</h1>
+      <p style="margin: 22px 0 0 0; font-size: 17px; line-height: 1.55; color: #5f544c;">Hypeline listens to the chat replay and lays out every spike as a frame. Pick one, trim it, export it — 16:9, vertical or cam + game — without the VOD ever leaving your browser.</p>
+      <div style="margin-top: 28px; display: flex; flex-direction: column; gap: 8px;">
+        <div style="display: flex; border: 2px solid #2c2622; border-radius: 8px; overflow: hidden;">
+          <input value="Paste a Twitch VOD link" style="flex: 1; border: 0; background: #fff; padding: 13px 14px; font-family: inherit; font-size: 15px; color: #2c2622; outline: none;">
+          <button style="border: 0; background: #2c2622; color: #f4efe7; padding: 0 20px; font-family: 'Syne', sans-serif; font-weight: 700; font-size: 14px; cursor: pointer;">Lay out the moments</button>
+        </div>
+        <div style="font-size: 13px; color: #8a7e75;">Free · open source · no account · AI with your own NanoGPT key</div>
+      </div>
+    </div>
+    <div style="font-size: 13px; color: #8a7e75; line-height: 1.5;">The frames are real peaks from one VOD: chat rate vs. a rolling baseline, emote clusters, “clip it”, sub trains. Tech trouble gets demoted, not promoted.</div>
+  </div>
+
+  <!-- right: irregular film-frame masonry -->
+  <div style="display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); grid-auto-rows: 172px; gap: 14px;">
+    <div class="frame" style="grid-column: span 4; grid-row: span 3; background: #f6cdd3;"><div class="ts">0:34:15 · 6.2× · “clip it” ×14</div><div class="why" style="font-size: 30px;">He actually did it</div></div>
+    <div class="frame" style="grid-column: span 2; grid-row: span 2; background: #cfe8dc;"><div class="ts">1:12:40 · 3.4×</div><div class="why">Sub train hits 50</div></div>
+    <div class="frame" style="grid-column: span 2; grid-row: span 1; background: #e5def6;"><div class="ts">0:15:15 · 2.2×</div><div class="why">“is that allowed”</div></div>
+    <div class="frame" style="grid-column: span 2; grid-row: span 2; background: #fbe8c3;"><div class="ts">2:48:52 · 4.0× · “NO WAY” ×31</div><div class="why">The comeback</div></div>
+    <div class="frame" style="grid-column: span 2; grid-row: span 1; background: #d4e6f6;"><div class="ts">0:44:00 · 3.4×</div><div class="why">Chat calls the play</div></div>
+    <div class="frame" style="grid-column: span 2; grid-row: span 1; background: #efe3d3;"><div class="ts">3:20:11 · 2.6×</div><div class="why">Raid arrives</div></div>
+    <div class="frame" style="grid-column: span 2; grid-row: span 1; background: #f0d9e6;"><div class="ts">4:02:30 · 2.9×</div><div class="why">Emote wall</div></div>
+    <div class="frame" style="grid-column: span 2; grid-row: span 1; background: #dde9d3;"><div class="ts">5:41:08 · 2.4×</div><div class="why">“one more”</div></div>
+  </div>
+</div>
+</x-dc>
+</body>
+</html>

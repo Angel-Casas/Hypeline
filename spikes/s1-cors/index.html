@@ -1,0 +1,198 @@
+<!doctype html>
+<meta charset="utf-8" />
+<title>Spike S1 — CORS from a browser</title>
+<style>
+  body { font: 14px/1.5 system-ui, sans-serif; margin: 2rem; max-width: 60rem; }
+  input { width: 100%; padding: .4rem; margin: .2rem 0 .8rem; }
+  pre { background: #111; color: #ddd; padding: 1rem; overflow: auto; white-space: pre-wrap; }
+  button { padding: .5rem 1rem; }
+</style>
+
+<h1>Spike S1 — can a browser talk to Twitch + NanoGPT directly?</h1>
+<p>
+  Serve this file (e.g. <code>npx serve spikes/s1-cors</code>) and open it. Then also
+  deploy it to a <code>*.pages.dev</code> / <code>*.github.io</code> origin and repeat —
+  CORS behaviour can differ by origin. Record results in <code>docs/05-research.md</code>.
+</p>
+
+<label>Twitch VOD id (numbers only, e.g. 2345678901)
+  <input id="vod" placeholder="2345678901" /></label>
+<label>NanoGPT API key (optional; only used for e)
+  <input id="key" placeholder="sk-..." type="password" /></label>
+<label>Shim URL (optional, S1b — e.g. https://hypeline-shim.you.workers.dev). When set, (c)/(c2)/(d)/(f) go through it.
+  <input id="shim" placeholder="https://hypeline-shim.you.workers.dev" /></label>
+<button id="run">Run all checks</button>
+
+<pre id="out">Results appear here.</pre>
+
+<script>
+  // Public web client-id used by the Twitch website. Unofficial. May change.
+  const WEB_CLIENT_ID = 'kimne78kx3ncx6brgo4mv6wki5h1ko';
+  const out = document.getElementById('out');
+  const log = (s) => (out.textContent += s + '\n');
+
+  async function attempt(label, fn) {
+    log(`\n▶ ${label}`);
+    try {
+      const r = await fn();
+      log(`  OK ${r}`);
+      return true;
+    } catch (e) {
+      log(`  FAIL ${e && e.message ? e.message : e}`);
+      log('  (A "TypeError: Failed to fetch" with nothing else usually means CORS.');
+      log('   Confirm in DevTools → Network: a CORS block shows "CORS error"; an ad-blocker shows "blocked:other".)');
+      return false;
+    }
+  }
+
+  // Route a Twitch video-host URL through the shim when one is configured.
+  const via = (url) => {
+    const shim = document.getElementById('shim').value.trim().replace(/\/$/, '');
+    return shim ? `${shim}/?u=${encodeURIComponent(url)}` : url;
+  };
+
+  async function gql(body) {
+    const res = await fetch('https://gql.twitch.tv/gql', {
+      method: 'POST',
+      headers: { 'Client-Id': WEB_CLIENT_ID, 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    return res.json();
+  }
+
+  document.getElementById('run').onclick = async () => {
+    out.textContent = '';
+    const vod = document.getElementById('vod').value.trim();
+    const key = document.getElementById('key').value.trim();
+    if (!vod) return log('Enter a VOD id first.');
+
+    // (a) chat replay page 1
+    await attempt('(a) gql.twitch.tv — VideoCommentsByOffsetOrCursor', async () => {
+      const data = await gql([{
+        operationName: 'VideoCommentsByOffsetOrCursor',
+        variables: { videoID: vod, contentOffsetSeconds: 0 },
+        extensions: { persistedQuery: { version: 1,
+          // Hash as used by TwitchDownloader at time of writing; may drift.
+          sha256Hash: 'b70a3591ff0f4e0313d126c6a1502d79a1c02baebb288227c582044aa76adf6a' } },
+      }]);
+      const edges = data?.[0]?.data?.video?.comments?.edges ?? [];
+      return `${edges.length} comments in first page; first offset=${edges[0]?.node?.contentOffsetSeconds}`;
+    });
+
+    // (b) playback access token
+    let token = null;
+    await attempt('(b) gql.twitch.tv — PlaybackAccessToken (VOD)', async () => {
+      const data = await gql([{
+        operationName: 'PlaybackAccessToken',
+        variables: { isLive: false, login: '', isVod: true, vodID: vod, playerType: 'site' },
+        extensions: { persistedQuery: { version: 1,
+          sha256Hash: '0828119ded1c13477966434e15800ff57ddacf13ba1911c129dc2200705b0712' } },
+      }]);
+      token = data?.[0]?.data?.videoPlaybackAccessToken;
+      if (!token) throw new Error('no token in response');
+      return `token length ${token.value.length}`;
+    });
+
+    // (c) usher master playlist
+    let variantUrl = null;
+    await attempt('(c) usher.ttvnw.net — master playlist', async () => {
+      if (!token) throw new Error('skipped: no token');
+      const u = new URL(`https://usher.ttvnw.net/vod/${vod}.m3u8`);
+      u.searchParams.set('sig', token.signature);
+      u.searchParams.set('token', token.value);
+      u.searchParams.set('allow_source', 'true');
+      const res = await fetch(via(u.toString()));
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const text = await res.text();
+      variantUrl = text.split('\n').find((l) => l.startsWith('https://'));
+      return `${text.split('\n').filter((l) => l.startsWith('https://')).length} variants`;
+    });
+
+    // (c2) bypass usher: derive the CDN playlist from the storyboard URL.
+    // Raw (non-persisted) GQL query, as TwitchDownloader does for sub-only VODs.
+    let cdnVariantUrl = null;
+    await attempt('(c2) gql.twitch.tv raw query — seekPreviewsURL → CDN playlist', async () => {
+      const data = await gql({
+        query: `query { video(id: "${vod}") { seekPreviewsURL animatedPreviewURL } }`,
+      });
+      const preview = data?.data?.video?.seekPreviewsURL || data?.data?.video?.animatedPreviewURL;
+      if (!preview) throw new Error('no seekPreviewsURL/animatedPreviewURL in response: ' + JSON.stringify(data).slice(0, 300));
+      // e.g. https://d1m7jfoe9zdc1j.cloudfront.net/<hash>_<login>_<id>_<ts>/storyboards/<id>-info.json
+      const u = new URL(preview);
+      const parts = u.pathname.split('/').filter(Boolean);
+      const idx = parts.findIndex((p) => p === 'storyboards');
+      const dir = idx > 0 ? parts.slice(0, idx).join('/') : parts.slice(0, -2).join('/');
+      cdnVariantUrl = `${u.origin}/${dir}/chunked/index-dvr.m3u8`;
+      log(`  preview=${preview}`);
+      log(`  derived=${cdnVariantUrl}`);
+      const res = await fetch(via(cdnVariantUrl));
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const text = await res.text();
+      const n = text.split('\n').filter((l) => l && !l.startsWith('#')).length;
+      if (!n) throw new Error('playlist fetched but has no segments?');
+      return `${n} segments listed (CORS OK on ${u.host})`;
+    });
+
+    // (d) one media segment from the CDN
+    await attempt('(d) CDN — variant playlist + first segment', async () => {
+      const url = variantUrl || cdnVariantUrl;
+      if (!url) throw new Error('skipped: no variant url from (c) or (c2)');
+      const pl = await (await fetch(via(url))).text();
+      const base = url.slice(0, url.lastIndexOf('/') + 1);
+      const seg = pl.split('\n').find((l) => l && !l.startsWith('#'));
+      const res = await fetch(via(base + seg));
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const buf = await res.arrayBuffer();
+      return `segment ${seg} = ${(buf.byteLength / 1024).toFixed(0)} KB (Content-Type ${res.headers.get('content-type')})`;
+    });
+
+    // (f) S1b bandwidth: fetch all segments covering 60 s starting at 10 min
+    await attempt('(f) shim — fetch a 60 s window (from 10:00) and measure', async () => {
+      const url = variantUrl || cdnVariantUrl;
+      if (!url) throw new Error('skipped: no variant url');
+      const pl = await (await fetch(via(url))).text();
+      const base = url.slice(0, url.lastIndexOf('/') + 1);
+      const lines = pl.split('\n');
+      const segs = []; let t = 0;
+      for (let i = 0; i < lines.length; i++) {
+        const m = /^#EXTINF:([\d.]+)/.exec(lines[i]);
+        if (m) { const dur = parseFloat(m[1]); const name = lines[i + 1]; segs.push({ start: t, dur, name }); t += dur; }
+      }
+      const want = segs.filter((s) => s.start + s.dur > 600 && s.start < 660);
+      if (!want.length) throw new Error('no segments found for that window (VOD shorter than 11 min?)');
+      const t0 = performance.now(); let bytes = 0; let cache = [];
+      for (const s of want) {
+        const res = await fetch(via(base + s.name));
+        if (!res.ok) throw new Error(`HTTP ${res.status} on ${s.name}`);
+        bytes += (await res.arrayBuffer()).byteLength;
+        cache.push(res.headers.get('cf-cache-status') || '-');
+      }
+      const ms = performance.now() - t0;
+      return `${want.length} segments, ${(bytes / 1048576).toFixed(1)} MB, ${(ms / 1000).toFixed(1)} s (${(bytes * 8 / ms / 1000).toFixed(1)} Mbit/s); cf-cache: ${cache.join(',')}`;
+    });
+
+    // (e) NanoGPT
+    await attempt('(e) nano-gpt.com — GET /api/v1/models', async () => {
+      const res = await fetch('https://nano-gpt.com/api/v1/models', {
+        headers: key ? { Authorization: `Bearer ${key}` } : {},
+      });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const j = await res.json();
+      return `${(j.data ?? j).length ?? '?'} models`;
+    });
+    if (key) {
+      await attempt('(e2) nano-gpt.com — POST /api/v1/chat/completions', async () => {
+        const res = await fetch('https://nano-gpt.com/api/v1/chat/completions', {
+          method: 'POST',
+          headers: { Authorization: `Bearer ${key}`, 'Content-Type': 'application/json' },
+          body: JSON.stringify({ model: 'gpt-4o-mini', messages: [{ role: 'user', content: 'Say hi in 3 words.' }] }),
+        });
+        if (!res.ok) throw new Error(`HTTP ${res.status} ${await res.text()}`);
+        const j = await res.json();
+        return `reply="${j.choices?.[0]?.message?.content}" cost=${JSON.stringify(j.nanoGPT ?? j.usage ?? {})}`;
+      });
+    }
+    log('\nDone. Copy this output into docs/05-research.md with the date and origin.');
+  };
+</script>

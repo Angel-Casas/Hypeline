@@ -1,0 +1,18 @@
+node_modules
+dist
+dev-dist
+coverage
+.DS_Store
+*.local
+.env
+.wrangler
+public/ffmpeg
+e2e/fixtures/segments
+e2e/*.png
+design/landing/*.html
+!design/landing/*.dc.html
+_to_delete
+*.tgz
+
+# previews Claude delivered into the project folder (not part of the app)
+Claude outputs/

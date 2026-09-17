@@ -1,0 +1,347 @@
+<title>Hypeline Clip Panel</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gloock&family=Manrope:wght@400;500;600;800&family=JetBrains+Mono:wght@400;500;700&display=swap">
+<style>
+  :root {
+    --ground: #fbf9fa; --ground-2: #f3eef2; --ink: #221c2a; --ink-2: #3b3444; --muted: #6f6779;
+    --petal: #ffd0e4; --apricot: #ffdcc4; --butter: #fff0bd; --sky: #cfdcff; --lilac: #ddd0ff;
+    --lift: #ffffff; --line: rgba(34,28,42,.12); --danger: #b03a4a; --warn: #8a6a10; --accent: #7a4f8e;
+    --glass: rgba(255,255,255,.42); --glass-line: rgba(255,255,255,.85); --glass-inset: #fff;
+    --field: rgba(255,255,255,.7); --mesh: .55;
+    --display: 'Gloock', 'Iowan Old Style', Georgia, serif; --body: 'Manrope', 'Helvetica Neue', Arial, sans-serif; --mono: 'JetBrains Mono', Menlo, Consolas, monospace;
+    color-scheme: light;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --ground: #16121a; --ground-2: #1e1824; --ink: #f3edf6; --ink-2: #d6cddb; --muted: #9b91a6;
+      --petal: #5a2f45; --apricot: #5a3d2a; --butter: #5a4b1e; --sky: #273258; --lilac: #3b2c60;
+      --lift: #3a3146; --line: rgba(255,255,255,.12); --danger: #ff8fa0; --warn: #e6c25a; --accent: #c9a3df;
+      --glass: rgba(40,33,48,.55); --glass-line: rgba(255,255,255,.14); --glass-inset: rgba(255,255,255,.08);
+      --field: rgba(255,255,255,.06); --mesh: .28; color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
+    --ground: #16121a; --ground-2: #1e1824; --ink: #f3edf6; --ink-2: #d6cddb; --muted: #9b91a6;
+    --petal: #5a2f45; --apricot: #5a3d2a; --butter: #5a4b1e; --sky: #273258; --lilac: #3b2c60;
+    --lift: #3a3146; --line: rgba(255,255,255,.12); --danger: #ff8fa0; --warn: #e6c25a; --accent: #c9a3df;
+    --glass: rgba(40,33,48,.55); --glass-line: rgba(255,255,255,.14); --glass-inset: rgba(255,255,255,.08);
+    --field: rgba(255,255,255,.06); --mesh: .28; color-scheme: dark;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--ground); color: var(--ink); font-family: var(--body); font-size: 14px; line-height: 1.45; padding-inline: 20px; padding-block: 0 40px; }
+  ::selection { background: #ffe79a; color: #221c2a; }
+  .mesh { position: fixed; inset: -20vmax; z-index: 0; pointer-events: none; filter: blur(70px) saturate(1.05); opacity: var(--mesh);
+    background: radial-gradient(38vmax 30vmax at 20% 25%, #ffd0e4 0%, transparent 60%), radial-gradient(34vmax 28vmax at 78% 18%, #cfdcff 0%, transparent 60%), radial-gradient(30vmax 26vmax at 70% 80%, #fff0bd 0%, transparent 60%), radial-gradient(28vmax 24vmax at 18% 84%, #ddd0ff 0%, transparent 60%); }
+  main { position: relative; z-index: 2; max-width: 1400px; margin: 0 auto; }
+  header { display: flex; align-items: flex-end; justify-content: space-between; gap: 16px; flex-wrap: wrap; padding: 28px 0 22px; }
+  header h1 { font-family: var(--display); font-weight: 400; font-size: 34px; line-height: 1; margin: 0 0 6px; letter-spacing: -.01em; }
+  header p { margin: 0; color: var(--muted); font-size: 13px; max-width: 66ch; }
+  .eyebrow { font-family: var(--mono); font-size: 10.5px; letter-spacing: .14em; text-transform: uppercase; color: var(--muted); }
+  .toggle { background: var(--glass); border: 1px solid var(--glass-line); color: var(--ink); border-radius: 999px; padding: 7px 14px; font: 600 12px var(--body); cursor: pointer; backdrop-filter: blur(12px); }
+  .toggle:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(420px, 1fr)); gap: 24px; align-items: start; }
+  @media (max-width: 460px) { .grid { grid-template-columns: 1fr; } }
+  .study { display: flex; flex-direction: column; gap: 10px; }
+  .cap { display: grid; grid-template-columns: 30px 1fr; gap: 10px; align-items: baseline; padding: 0 4px; }
+  .cap b { font: 700 12px var(--mono); color: var(--ink); background: var(--lift); border: 1px solid var(--line); border-radius: 999px; width: 26px; height: 26px; display: grid; place-items: center; }
+  .cap h2 { margin: 0; font: 600 14px var(--body); }
+  .cap p { margin: 2px 0 0; font-size: 12px; color: var(--muted); }
+  .glass { background: var(--glass); border: 1px solid var(--glass-line); backdrop-filter: blur(20px) saturate(1.5); -webkit-backdrop-filter: blur(20px) saturate(1.5); box-shadow: 0 14px 40px rgba(34,28,42,.07), inset 0 1px 0 var(--glass-inset); border-radius: 18px; }
+  .panel { padding: 16px; display: flex; flex-direction: column; gap: 12px; font-size: 13px; }
+  .mono { font-family: var(--mono); font-variant-numeric: tabular-nums; }
+  .display { font-family: var(--display); }
+  .muted { color: var(--muted); }
+  .btn { display: inline-flex; align-items: center; justify-content: center; gap: 6px; padding: 8px 14px; border-radius: 999px; border: 0; font: 600 13px var(--body); cursor: pointer; white-space: nowrap; }
+  .btn-ink { background: var(--ink); color: var(--ground); }
+  .btn-ghost { background: color-mix(in srgb, var(--lift) 60%, transparent); border: 1px solid var(--line); color: var(--ink); }
+  .btn-sm { padding: 5px 10px; font-size: 12px; }
+  .link { color: var(--accent); text-decoration: underline; font-size: 12px; cursor: pointer; background: none; border: 0; padding: 0; font-family: var(--body); }
+  .field { background: var(--field); border: 1px solid var(--line); border-radius: 10px; padding: 6px 10px; font: 13px var(--mono); color: var(--ink); }
+  .field.ph { color: var(--muted); }
+  .seg { display: inline-flex; padding: 3px; gap: 2px; border-radius: 999px; background: color-mix(in srgb, var(--ink) 7%, transparent); }
+  .seg span { padding: 4px 10px; border-radius: 999px; font: 600 11.5px var(--body); color: var(--muted); cursor: pointer; white-space: nowrap; }
+  .seg span.on { background: var(--ink); color: var(--ground); }
+  .seg.mono span { font: 600 11px var(--mono); }
+  .row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+  .lbl { font: 500 11px var(--mono); letter-spacing: .1em; text-transform: uppercase; color: var(--muted); }
+  .hr { height: 1px; background: var(--line); }
+  .warn { border: 1px solid color-mix(in srgb, var(--warn) 40%, transparent); background: color-mix(in srgb, var(--butter) 60%, transparent); border-radius: 12px; padding: 7px 10px; font-size: 12px; }
+  .chk { display: inline-flex; align-items: center; gap: 7px; font-size: 12.5px; }
+  .chk i { width: 30px; height: 18px; border-radius: 999px; background: color-mix(in srgb, var(--ink) 18%, transparent); position: relative; }
+  .chk i::after { content: ''; position: absolute; top: 2px; left: 2px; width: 14px; height: 14px; border-radius: 50%; background: var(--ground); }
+  .chk.on i { background: var(--ink); } .chk.on i::after { left: 14px; }
+  .progress { height: 3px; border-radius: 3px; background: color-mix(in srgb, var(--ink) 12%, transparent); position: relative; overflow: hidden; }
+  .progress i { position: absolute; inset: 0 auto 0 0; width: var(--p, 40%); background: var(--ink); border-radius: 3px; }
+  .exported { display: flex; align-items: center; justify-content: space-between; gap: 8px; font-size: 12px; color: var(--muted); }
+  .exported b { color: var(--ink); font-family: var(--mono); font-weight: 500; }
+  select.field { appearance: none; padding-right: 22px; background-image: linear-gradient(45deg, transparent 50%, var(--muted) 50%), linear-gradient(135deg, var(--muted) 50%, transparent 50%); background-position: calc(100% - 13px) 55%, calc(100% - 9px) 55%; background-size: 4px 4px; background-repeat: no-repeat; }
+
+  /* 1 Ticket */
+  .v1 .ticket { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 10px; padding: 12px 14px; border-radius: 14px; background: color-mix(in srgb, var(--lift) 45%, transparent); border: 1px solid var(--glass-line); }
+  .v1 .ticket .t { font-family: var(--display); font-size: 26px; line-height: 1; letter-spacing: -.01em; font-variant-numeric: tabular-nums; }
+  .v1 .ticket .mid { text-align: center; font: 11px var(--mono); color: var(--muted); display: flex; flex-direction: column; gap: 2px; }
+  .v1 .ticket .mid i { display: block; width: 46px; height: 1px; background: var(--ink); margin: 3px auto; position: relative; }
+  .v1 .ticket .mid i::after { content: ''; position: absolute; right: -1px; top: -2px; border: 2.5px solid transparent; border-left: 5px solid var(--ink); }
+  .v1 .ticket .r { text-align: right; }
+  .v1 .ticket small { display: block; font: 10.5px var(--mono); color: var(--muted); margin-top: 3px; }
+
+  /* 2 Stepped */
+  .v2 .step { display: grid; grid-template-columns: 24px 1fr; gap: 10px; align-items: start; }
+  .v2 .step b { width: 22px; height: 22px; border-radius: 50%; display: grid; place-items: center; font: 700 11px var(--mono); background: var(--ink); color: var(--ground); }
+  .v2 .step.done b { background: color-mix(in srgb, var(--ink) 18%, transparent); color: var(--ink); }
+  .v2 .step h3 { margin: 0 0 6px; font: 600 13px var(--body); line-height: 22px; }
+  .v2 .step h3 span { color: var(--muted); font-weight: 500; margin-left: 6px; }
+  .v2 .rail { margin-left: 10px; width: 1px; height: 10px; background: var(--line); }
+
+  /* 4 Preview */
+  .v4 .cols { display: grid; grid-template-columns: 1fr 150px; gap: 12px; }
+  .v4 .frame { aspect-ratio: 16/9; border-radius: 10px; background: #16121a; position: relative; overflow: hidden; }
+  .v4 .frame::before { content: ''; position: absolute; inset: 0; background: linear-gradient(135deg, #5a2f45, #16121a 70%); }
+  .v4 .frame .crop { position: absolute; top: 0; bottom: 0; left: 31%; width: 38%; border-left: 1px dashed rgba(255,255,255,.7); border-right: 1px dashed rgba(255,255,255,.7); }
+  .v4 .frame .tag { position: absolute; left: 6px; bottom: 5px; font: 10px var(--mono); color: #f3edf6; background: rgba(22,18,26,.8); padding: 1px 6px; border-radius: 999px; }
+  .v4 .kv { display: grid; grid-template-columns: auto 1fr; gap: 6px 10px; align-items: center; font-size: 12px; }
+
+  /* 5 Ledger */
+  .v5 .ledger { display: grid; grid-template-columns: 96px 1fr; gap: 0; }
+  .v5 .ledger > div { padding: 8px 0; border-bottom: 1px dotted var(--line); display: flex; align-items: center; gap: 8px; min-height: 38px; flex-wrap: wrap; }
+  .v5 .ledger > div:nth-child(odd) { font: 500 11px var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+  .v5 .ledger > div:nth-last-child(-n+2) { border-bottom: 0; }
+
+  /* 6 Summary bar */
+  .v6 .summary { font-family: var(--display); font-size: 21px; line-height: 1.15; letter-spacing: -.01em; }
+  .v6 .summary .mono { font-size: 19px; }
+  .v6 .chips { display: flex; gap: 6px; flex-wrap: wrap; }
+  .v6 .chips span { font: 11px var(--mono); padding: 3px 9px; border-radius: 999px; background: color-mix(in srgb, var(--lift) 55%, transparent); border: 1px solid var(--line); }
+  .v6 .bar { display: grid; grid-template-columns: 1fr auto auto; gap: 8px; padding: 6px; border-radius: 999px; background: color-mix(in srgb, var(--ink) 6%, transparent); }
+  .v6 details summary { cursor: pointer; list-style: none; font-size: 12px; color: var(--muted); display: flex; align-items: center; gap: 6px; }
+  .v6 details summary::before { content: '▸'; font-size: 10px; }
+  .v6 details[open] summary::before { content: '▾'; }
+
+  /* 7 Filmstrip */
+  .v7 .strip { display: grid; grid-template-columns: 96px 1fr 96px; gap: 8px; align-items: center; }
+  .v7 .fr { aspect-ratio: 16/9; border-radius: 8px; background: #16121a; position: relative; overflow: hidden; }
+  .v7 .fr::before { content: ''; position: absolute; inset: 0; background: linear-gradient(135deg, var(--c), #16121a 75%); }
+  .v7 .fr b { position: absolute; left: 5px; bottom: 4px; font: 700 10px var(--mono); color: #f3edf6; }
+  .v7 .fr::after { content: attr(data-l); position: absolute; right: 5px; top: 4px; font: 9px var(--mono); letter-spacing: .1em; color: rgba(243,237,246,.7); }
+  .v7 .dur { text-align: center; }
+  .v7 .dur .line { height: 4px; border-radius: 4px; background: linear-gradient(90deg, #ff77b5, #ffa968, #ffde68); margin: 6px 0; }
+  .v7 .dur small { font: 10.5px var(--mono); color: var(--muted); }
+  .v7 .dur .n { font-family: var(--display); font-size: 20px; line-height: 1; }
+
+  /* 8 Card deck */
+  .v8 .deck { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .v8 .card { padding: 10px 12px; border-radius: 12px; background: color-mix(in srgb, var(--lift) 45%, transparent); border: 1px solid var(--glass-line); display: flex; flex-direction: column; gap: 6px; }
+  .v8 .card .lbl { font-size: 10px; }
+  .v8 .card.wide { grid-column: 1 / -1; }
+
+  /* 9 Gauge */
+  .v9 .gauge { position: relative; height: 26px; border-radius: 999px; background: color-mix(in srgb, var(--ink) 7%, transparent); overflow: hidden; }
+  .v9 .gauge i { position: absolute; inset: 0 auto 0 0; width: var(--p); background: linear-gradient(90deg, #8eb0ff, #ae81ff, #ff77b5, #ffa968, #ffde68); border-radius: 999px; }
+  .v9 .gauge i.over { background: var(--danger); }
+  .v9 .gauge span { position: absolute; top: 0; bottom: 0; display: grid; place-items: center; font: 700 11px var(--mono); padding: 0 10px; }
+  .v9 .scale { display: flex; justify-content: space-between; font: 10px var(--mono); color: var(--muted); padding: 0 2px; }
+  .v9 .quiet { display: grid; grid-template-columns: auto 1fr; gap: 6px 12px; align-items: center; font-size: 12.5px; }
+
+  /* 10 Sentence */
+  .v10 .sentence { font-family: var(--display); font-size: 21px; line-height: 1.5; letter-spacing: -.005em; }
+  .v10 .tok { display: inline-block; padding: 0 8px; margin: 0 1px; border-radius: 8px; background: color-mix(in srgb, var(--lift) 60%, transparent); border: 1px solid var(--line); font: 500 14px var(--mono); vertical-align: 2px; line-height: 24px; cursor: pointer; }
+  .v10 .tok.off { color: var(--muted); border-style: dashed; }
+  .v10 .tok::after { content: ' ▾'; font-size: 9px; color: var(--muted); }
+  .v10 .tok.time::after { content: ''; }
+</style>
+<div class="mesh" aria-hidden="true"></div>
+<main>
+  <header>
+    <div>
+      <div class="eyebrow">Hypeline · dashboard · 2026-09-15</div>
+      <h1>Ten ways to cut a clip</h1>
+      <p>The Clip panel with the same state in every box: a 31 min 20 s range (over the 10-minute limit, so the warning shows), 720p, fast, 16:9, captions not available yet, one clip already exported. Numbers are only for picking.</p>
+    </div>
+    <button class="toggle" id="theme" type="button">Night</button>
+  </header>
+  <div class="grid">
+
+    <section class="study v1">
+      <div class="cap"><b>1</b><div><h2>Ticket</h2><p>The range is the hero: In and Out as Gloock numerals on a stub with the duration between them; Set In / Set Out sit under each numeral; the format is one quiet line of pills; one ink Export.</p></div></div>
+      <div class="glass panel">
+        <div class="ticket">
+          <div><div class="t">2:42:48</div><small>In · <span class="link">set to playhead</span></small></div>
+          <div class="mid"><span>31 min 20 s</span><i></i><span class="link">play from In</span></div>
+          <div class="r"><div class="t">3:14:08</div><small><span class="link">set to playhead</span> · Out</small></div>
+        </div>
+        <div class="row" style="gap:6px">
+          <span class="seg mono"><span>src</span><span class="on">720</span><span>480</span><span>360</span></span>
+          <span class="seg"><span class="on">fast</span><span>precise</span></span>
+          <span class="seg"><span class="on">16:9</span><span>9:16</span><span>cam+game</span><span>1:1</span></span>
+        </div>
+        <div class="row" style="justify-content:space-between"><span class="chk"><i></i> Captions <span class="muted">· transcribe first</span></span><span class="muted" style="font-size:12px">Thumbnail: <span class="link">grab at playhead</span> · <span class="link">at In</span></span></div>
+        <div class="row"><button class="btn btn-ink" style="opacity:.55">Export clip</button><span style="color:var(--danger);font-size:12px">Over the 10-minute limit — drag Out closer.</span></div>
+        <div class="hr"></div>
+        <div class="exported"><span><b>0:33:50 → 0:34:35</b> · 720p · fast · 16:9 · 9.4 MB</span><span class="link">Download</span></div>
+      </div>
+    </section>
+
+    <section class="study v2">
+      <div class="cap"><b>2</b><div><h2>Stepped</h2><p>The flow is a sequence, so it is numbered: 1 Range, 2 Look, 3 Export. Each step is a compact row; the done steps grey their numeral. Thumbnail is an aside inside Export.</p></div></div>
+      <div class="glass panel">
+        <div class="step done"><b>1</b><div><h3>Range <span class="mono">2:42:48 → 3:14:08 · 31 min 20 s</span></h3><div class="row"><button class="btn btn-ghost btn-sm">Set In</button><button class="btn btn-ghost btn-sm">Set Out</button><span class="link">play from In</span></div></div></div>
+        <div class="rail"></div>
+        <div class="step done"><b>2</b><div><h3>Look</h3><div class="row" style="gap:6px"><span class="seg mono"><span>src</span><span class="on">720</span><span>480</span><span>360</span></span><span class="seg"><span class="on">fast</span><span>precise</span></span></div><div class="row" style="gap:6px;margin-top:6px"><span class="seg"><span class="on">16:9</span><span>9:16</span><span>cam+game</span><span>1:1</span></span><span class="chk"><i></i> Captions</span></div></div></div>
+        <div class="rail"></div>
+        <div class="step"><b>3</b><div><h3>Export</h3><div class="row"><button class="btn btn-ink" style="opacity:.55">Export clip</button><span style="color:var(--danger);font-size:12px">Max 10 minutes per clip.</span></div><div class="row" style="margin-top:8px"><span class="lbl">Thumbnail</span><span class="field ph" style="flex:1;min-width:120px">Title on the image</span><button class="btn btn-ghost btn-sm">Grab frame</button></div></div></div>
+        <div class="hr"></div>
+        <div class="exported"><span><b>0:33:50 → 0:34:35</b> · 9.4 MB</span><span class="link">Download</span></div>
+      </div>
+    </section>
+
+    <section class="study v3">
+      <div class="cap"><b>3</b><div><h2>Chips</h2><p>No dropdowns at all: every setting is a segmented pill group with the current value in ink, labelled by a mono eyebrow. Same information, half the visual noise, and every option is one tap on a phone.</p></div></div>
+      <div class="glass panel">
+        <div class="row" style="justify-content:space-between"><div class="row" style="gap:6px"><span class="field">2:42:48</span><span class="muted">→</span><span class="field">3:14:08</span></div><span class="mono muted" style="font-size:12px">31 min 20 s</span></div>
+        <div class="row" style="gap:6px"><button class="btn btn-ghost btn-sm">In ← playhead</button><button class="btn btn-ghost btn-sm">Out ← playhead</button><span class="link">play from In</span></div>
+        <div class="hr"></div>
+        <div class="row" style="gap:14px 20px">
+          <div><div class="lbl" style="margin-bottom:5px">Quality</div><span class="seg mono"><span>source</span><span class="on">720p</span><span>480p</span><span>360p</span></span></div>
+          <div><div class="lbl" style="margin-bottom:5px">Mode</div><span class="seg"><span class="on">fast</span><span>precise</span></span></div>
+        </div>
+        <div class="row" style="gap:14px 20px">
+          <div><div class="lbl" style="margin-bottom:5px">Aspect</div><span class="seg"><span class="on">16:9</span><span>9:16</span><span>cam + game</span><span>1:1</span></span></div>
+          <div><div class="lbl" style="margin-bottom:5px">Captions</div><span class="chk"><i></i> <span class="muted">transcribe first</span></span></div>
+        </div>
+        <div class="hr"></div>
+        <div class="row" style="justify-content:space-between"><button class="btn btn-ink" style="opacity:.55">Export clip</button><span class="muted" style="font-size:12px">Thumbnail · <span class="link">grab at playhead</span> · <span class="link">at In</span></span></div>
+        <div style="color:var(--danger);font-size:12px">Over the 10-minute limit.</div>
+        <div class="exported"><span><b>0:33:50 → 0:34:35</b> · 720p · fast · 16:9 · 9.4 MB</span><span class="link">Download</span></div>
+      </div>
+    </section>
+
+    <section class="study v4">
+      <div class="cap"><b>4</b><div><h2>Preview</h2><p>A live frame on the right shows what the export will look like — the aspect crop as a dashed window on the storyboard frame at In — and doubles as the thumbnail. Settings are a tidy key/value column beside it.</p></div></div>
+      <div class="glass panel">
+        <div class="cols">
+          <div>
+            <div class="row" style="gap:6px;margin-bottom:8px"><span class="field">2:42:48</span><span class="muted">→</span><span class="field">3:14:08</span><span class="mono muted" style="font-size:11px">31:20</span></div>
+            <div class="kv">
+              <span class="lbl">Quality</span><select class="field"><option>720p</option></select>
+              <span class="lbl">Mode</span><select class="field"><option>fast</option></select>
+              <span class="lbl">Aspect</span><select class="field"><option>9:16 vertical</option></select>
+              <span class="lbl">Crop</span><span class="row" style="gap:6px"><input type="range" style="flex:1"><span class="mono muted" style="font-size:11px">50%</span></span>
+              <span class="lbl">Captions</span><span class="chk"><i></i> <span class="muted">transcribe first</span></span>
+            </div>
+          </div>
+          <div>
+            <div class="frame"><div class="crop"></div><span class="tag">at In</span></div>
+            <div class="row" style="gap:6px;margin-top:6px;justify-content:space-between"><span class="link">grab playhead</span><span class="link">title…</span></div>
+          </div>
+        </div>
+        <div class="row" style="justify-content:space-between"><div class="row" style="gap:6px"><button class="btn btn-ghost btn-sm">Set In</button><button class="btn btn-ghost btn-sm">Set Out</button><span class="link">play from In</span></div><button class="btn btn-ink" style="opacity:.55">Export</button></div>
+        <div style="color:var(--danger);font-size:12px">Max 10 minutes per clip.</div>
+        <div class="hr"></div>
+        <div class="exported"><span><b>0:33:50 → 0:34:35</b> · 9.4 MB</span><span class="link">Download</span></div>
+      </div>
+    </section>
+
+    <section class="study v5">
+      <div class="cap"><b>5</b><div><h2>Ledger</h2><p>A spec sheet: a mono label column and a value column with dotted rules between rows. Every control is where its label is; the export row is the last line of the sheet. Calm, scannable, dense.</p></div></div>
+      <div class="glass panel">
+        <div class="ledger">
+          <div>In</div><div><span class="field">2:42:48</span><button class="btn btn-ghost btn-sm">← playhead</button><span class="link">play</span></div>
+          <div>Out</div><div><span class="field">3:14:08</span><button class="btn btn-ghost btn-sm">← playhead</button><span class="mono muted" style="font-size:11px">31 min 20 s</span></div>
+          <div>Quality</div><div><span class="seg mono"><span>src</span><span class="on">720</span><span>480</span><span>360</span></span></div>
+          <div>Mode</div><div><span class="seg"><span class="on">fast</span><span>precise</span></span><span class="muted" style="font-size:11px">keyframe-aligned, ≤2 s early</span></div>
+          <div>Aspect</div><div><span class="seg"><span class="on">16:9</span><span>9:16</span><span>cam+game</span><span>1:1</span></span></div>
+          <div>Captions</div><div><span class="chk"><i></i></span><span class="muted" style="font-size:11px">transcribe the range first</span></div>
+          <div>Thumbnail</div><div><span class="field ph" style="flex:1;min-width:100px">Title on the image</span><span class="link">grab at In</span></div>
+          <div>Export</div><div><button class="btn btn-ink btn-sm" style="opacity:.55">Export clip</button><span style="color:var(--danger);font-size:11px">Max 10 minutes per clip.</span></div>
+        </div>
+        <div class="exported"><span><b>0:33:50 → 0:34:35</b> · 720p · fast · 16:9 · 9.4 MB</span><span class="link">Download</span></div>
+      </div>
+    </section>
+
+    <section class="study v6">
+      <div class="cap"><b>6</b><div><h2>Summary bar</h2><p>The panel says what it will do in one Gloock sentence, shows the settings as read-only chips, and puts the three actions in one pill bar. Everything else is behind a disclosure. Smallest panel of the ten.</p></div></div>
+      <div class="glass panel">
+        <div class="summary">From <span class="mono">2:42:48</span> to <span class="mono">3:14:08</span>, <span style="color:var(--danger)">31 min 20 s</span></div>
+        <div class="chips"><span>720p</span><span>fast</span><span>16:9</span><span class="muted">no captions</span></div>
+        <div class="bar"><button class="btn btn-ink" style="opacity:.55">Export clip</button><button class="btn btn-ghost">Play from In</button><button class="btn btn-ghost">Thumbnail</button></div>
+        <div style="color:var(--danger);font-size:12px">Longer than 10 minutes — move Out closer to In.</div>
+        <details><summary>Range, quality, mode, aspect, captions, thumbnail title</summary>
+          <div class="row" style="margin-top:8px;gap:6px"><button class="btn btn-ghost btn-sm">Set In</button><button class="btn btn-ghost btn-sm">Set Out</button><span class="seg mono"><span>src</span><span class="on">720</span><span>480</span><span>360</span></span><span class="seg"><span class="on">fast</span><span>precise</span></span></div>
+          <div class="row" style="margin-top:6px;gap:6px"><span class="seg"><span class="on">16:9</span><span>9:16</span><span>cam+game</span><span>1:1</span></span><span class="field ph" style="flex:1;min-width:100px">Title on the image</span></div>
+        </details>
+        <div class="hr"></div>
+        <div class="exported"><span><b>0:33:50 → 0:34:35</b> · 9.4 MB</span><span class="link">Download</span></div>
+      </div>
+    </section>
+
+    <section class="study v7">
+      <div class="cap"><b>7</b><div><h2>Filmstrip</h2><p>Like an editor's trim: the storyboard frames at In and Out are the handles (silk placeholders without the shim), the duration runs between them on a silk bar, and tapping a frame seeks there. Settings compact below.</p></div></div>
+      <div class="glass panel">
+        <div class="strip">
+          <div class="fr" style="--c:#ff77b5" data-l="IN"><b>2:42:48</b></div>
+          <div class="dur"><div class="n">31:20</div><div class="line"></div><small style="color:var(--danger)">over the 10-minute limit</small></div>
+          <div class="fr" style="--c:#ffa968" data-l="OUT"><b>3:14:08</b></div>
+        </div>
+        <div class="row" style="justify-content:space-between"><div class="row" style="gap:6px"><button class="btn btn-ghost btn-sm">In ← playhead</button><button class="btn btn-ghost btn-sm">Out ← playhead</button></div><span class="link">play from In</span></div>
+        <div class="hr"></div>
+        <div class="row" style="gap:6px"><span class="seg mono"><span>src</span><span class="on">720</span><span>480</span><span>360</span></span><span class="seg"><span class="on">fast</span><span>precise</span></span><span class="seg"><span class="on">16:9</span><span>9:16</span><span>cam+game</span><span>1:1</span></span></div>
+        <div class="row" style="justify-content:space-between"><span class="chk"><i></i> Captions <span class="muted">· transcribe first</span></span><span class="muted" style="font-size:12px">Thumbnail · <span class="link">use In frame</span></span></div>
+        <button class="btn btn-ink" style="opacity:.55;align-self:flex-start">Export clip</button>
+        <div class="hr"></div>
+        <div class="exported"><span><b>0:33:50 → 0:34:35</b> · 9.4 MB</span><span class="link">Download</span></div>
+      </div>
+    </section>
+
+    <section class="study v8">
+      <div class="cap"><b>8</b><div><h2>Card deck</h2><p>Four small cards — Range, Format, Captions, Thumbnail — each with one job and its own eyebrow, in a 2×2 deck, and Export as a full-width ink bar under the deck. Easy to rearrange on a phone (one column).</p></div></div>
+      <div class="glass panel">
+        <div class="deck">
+          <div class="card wide"><div class="lbl">Range</div><div class="row" style="justify-content:space-between"><div class="row" style="gap:6px"><span class="field">2:42:48</span><span class="muted">→</span><span class="field">3:14:08</span></div><span class="mono" style="font-size:12px;color:var(--danger)">31:20 · max 10:00</span></div><div class="row" style="gap:6px"><button class="btn btn-ghost btn-sm">Set In</button><button class="btn btn-ghost btn-sm">Set Out</button><span class="link">play from In</span></div></div>
+          <div class="card"><div class="lbl">Format</div><span class="seg mono"><span>src</span><span class="on">720</span><span>480</span></span><span class="seg"><span class="on">fast</span><span>precise</span></span><span class="seg"><span class="on">16:9</span><span>9:16</span><span>1:1</span></span></div>
+          <div class="card"><div class="lbl">Captions</div><span class="chk"><i></i> off</span><span class="muted" style="font-size:11px">Transcribe the range in the AI panel first.</span></div>
+          <div class="card wide"><div class="lbl">Thumbnail</div><div class="row"><span class="field ph" style="flex:1;min-width:100px">Title on the image</span><button class="btn btn-ghost btn-sm">Grab at playhead</button><button class="btn btn-ghost btn-sm">At In</button></div></div>
+        </div>
+        <button class="btn btn-ink" style="opacity:.55;width:100%">Export clip · over the limit</button>
+        <div class="exported"><span><b>0:33:50 → 0:34:35</b> · 9.4 MB</span><span class="link">Download</span></div>
+      </div>
+    </section>
+
+    <section class="study v9">
+      <div class="cap"><b>9</b><div><h2>Gauge</h2><p>The 10-minute limit becomes visible: the range is a silk gauge on a 0–10 min scale, filling as the clip grows and turning red past the limit. Controls are quiet label/value rows beneath.</p></div></div>
+      <div class="glass panel">
+        <div class="row" style="justify-content:space-between"><span class="mono" style="font-size:15px">2:42:48 <span class="muted">→</span> 3:14:08</span><span class="mono" style="color:var(--danger);font-size:12px">31 min 20 s</span></div>
+        <div class="gauge"><i class="over" style="--p:100%"></i><span style="left:0;color:#fff">over the 10-minute limit</span></div>
+        <div class="scale"><span>0</span><span>2:30</span><span>5:00</span><span>7:30</span><span>10:00</span></div>
+        <div class="row" style="gap:6px"><button class="btn btn-ghost btn-sm">Set In</button><button class="btn btn-ghost btn-sm">Set Out</button><span class="link">play from In</span></div>
+        <div class="hr"></div>
+        <div class="quiet">
+          <span class="lbl">Quality</span><span class="seg mono"><span>src</span><span class="on">720</span><span>480</span><span>360</span></span>
+          <span class="lbl">Mode</span><span class="seg"><span class="on">fast</span><span>precise</span></span>
+          <span class="lbl">Aspect</span><span class="seg"><span class="on">16:9</span><span>9:16</span><span>cam+game</span><span>1:1</span></span>
+          <span class="lbl">Captions</span><span class="chk"><i></i> <span class="muted">transcribe first</span></span>
+          <span class="lbl">Thumb</span><span class="row" style="gap:6px"><span class="field ph" style="flex:1;min-width:80px">Title</span><span class="link">grab at In</span></span>
+        </div>
+        <div class="row" style="justify-content:space-between"><button class="btn btn-ink" style="opacity:.55">Export clip</button><span class="exported"><b>0:33:50 → 0:34:35</b> · 9.4 MB · <span class="link">Download</span></span></div>
+      </div>
+    </section>
+
+    <section class="study v10">
+      <div class="cap"><b>10</b><div><h2>Sentence</h2><p>The settings read as a sentence in Gloock and every value is a token you tap to change: "Export 2:42:48 → 3:14:08 as 720p, fast, 16:9, without captions." The panel says exactly what the button will do.</p></div></div>
+      <div class="glass panel">
+        <div class="sentence">Export <span class="tok time">2:42:48</span> → <span class="tok time">3:14:08</span> as <span class="tok">720p</span>, <span class="tok">fast</span>, <span class="tok">16:9</span>, <span class="tok off">without captions</span>.</div>
+        <div class="sentence" style="font-size:17px">Thumbnail from <span class="tok">the In frame</span>, titled <span class="tok off">(nothing)</span>.</div>
+        <div class="row" style="gap:6px"><button class="btn btn-ghost btn-sm">In ← playhead</button><button class="btn btn-ghost btn-sm">Out ← playhead</button><span class="link">play from In</span></div>
+        <div class="row"><button class="btn btn-ink" style="opacity:.55">Export clip</button><span style="color:var(--danger);font-size:12px">31 min 20 s — longer than the 10-minute limit.</span></div>
+        <div class="hr"></div>
+        <div class="exported"><span><b>0:33:50 → 0:34:35</b> · 720p · fast · 16:9 · 9.4 MB</span><span class="link">Download</span></div>
+      </div>
+    </section>
+
+  </div>
+</main>
+<script>
+  const root = document.documentElement, btn = document.getElementById('theme');
+  const dark = () => root.dataset.theme === 'dark' || (!root.dataset.theme && matchMedia('(prefers-color-scheme: dark)').matches);
+  const label = () => (btn.textContent = dark() ? 'Day' : 'Night');
+  btn.addEventListener('click', () => { root.dataset.theme = dark() ? 'light' : 'dark'; label(); });
+  label();
+</script>

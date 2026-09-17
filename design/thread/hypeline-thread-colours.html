@@ -1,0 +1,207 @@
+<title>Hypeline Thread Colours</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gloock&family=Manrope:wght@400;500;600;800&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+  :root { --ground: #fbf9fa; --ink: #221c2a; --muted: #6f6779; --glass: rgba(255,255,255,0.4); --glass-line: rgba(255,255,255,0.85);
+    --display: 'Gloock', 'Iowan Old Style', Georgia, serif; --body: 'Manrope', 'Helvetica Neue', Arial, sans-serif; --mono: 'JetBrains Mono', Menlo, Consolas, monospace; }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--ground); color: var(--ink); font-family: var(--body); font-size: 16px; line-height: 1.5; overflow-x: hidden; }
+  a { color: inherit; } ::selection { background: #ffe79a; }
+  #silk { position: fixed; inset: 0; width: 100%; height: 100%; z-index: 0; display: block; }
+  #grain { position: fixed; inset: 0; z-index: 1; pointer-events: none; opacity: .32; mix-blend-mode: multiply; }
+  main { position: relative; z-index: 2; }
+  .glass { background: var(--glass); border: 1px solid var(--glass-line); backdrop-filter: blur(20px) saturate(1.5); -webkit-backdrop-filter: blur(20px) saturate(1.5); box-shadow: 0 24px 60px rgba(34,28,42,.10), inset 0 1px 0 #fff; border-radius: 18px; }
+  #rail { position: fixed; left: 16px; top: 50%; transform: translateY(-50%); z-index: 30; display: flex; flex-direction: column; gap: 4px; padding: 8px; border-radius: 16px; }
+  #rail button { display: grid; grid-template-columns: 22px 1fr; gap: 8px; align-items: center; text-align: left; border: 0; background: transparent; padding: 7px 10px 7px 6px; border-radius: 10px; font-family: var(--mono); font-size: 11.5px; color: var(--muted); cursor: pointer; white-space: nowrap; }
+  #rail button b { font-weight: 500; display: grid; place-items: center; width: 22px; height: 22px; border-radius: 50%; border: 1px solid rgba(34,28,42,.25); }
+  #rail button[aria-current="true"] { background: var(--ink); color: #fff; } #rail button[aria-current="true"] b { border-color: transparent; background: rgba(255,255,255,.2); }
+  #rail .hint { font-family: var(--mono); font-size: 10.5px; color: var(--muted); padding: 6px 8px 2px; }
+  @media (max-width: 900px) { #rail { left: 8px; bottom: 8px; top: auto; transform: none; flex-direction: row; flex-wrap: wrap; max-width: calc(100vw - 16px); } #rail button span, #rail .hint { display: none; } }
+  .hud { position: fixed; right: 28px; bottom: 24px; z-index: 30; font-family: var(--mono); font-size: 11.5px; color: var(--muted); display: flex; gap: 14px; padding: 8px 12px; border-radius: 999px; }
+  .hud b { font-weight: 500; color: var(--ink); font-variant-numeric: tabular-nums; }
+  #stage .track { height: 280vh; } #stage .pin { position: sticky; top: 0; height: 100vh; overflow: hidden; }
+  .layout { position: absolute; inset: 0; display: none; } .layout.on { display: block; }
+  .eyebrow { font-family: var(--mono); font-size: 11.5px; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); }
+  h1 { font-family: var(--display); font-weight: 400; line-height: .98; letter-spacing: -.02em; margin: 0; text-wrap: balance; }
+  h1 em { font-style: italic; color: #7a4f8e; }
+  .lead { color: #3b3444; margin: 0; }
+  .field { display: flex; padding: 5px; } .field input { flex: 1; min-width: 0; border: 0; background: transparent; padding: 10px 12px; font-family: var(--mono); font-size: 13px; color: var(--ink); outline: none; }
+  .field button { border: 0; border-radius: 12px; background: var(--ink); color: #fff; padding: 10px 16px; font-family: var(--body); font-weight: 600; font-size: 14px; cursor: pointer; white-space: nowrap; }
+  .field input:focus-visible { outline: 2px solid var(--ink); border-radius: 8px; }
+  .brand { font-family: var(--display); font-size: 22px; }
+  .chip { font-family: var(--mono); font-size: 11.5px; padding: 6px 10px; border-radius: 999px; }
+  .moment { position: absolute; width: 212px; padding: 13px 15px; opacity: 0; transform: translate(-50%, -100%) translateY(10px); transition: opacity .5s, transform .5s cubic-bezier(.2,.7,.2,1); }
+  .moment.on { opacity: 1; transform: translate(-50%, -100%); }
+  .moment .t { font-family: var(--mono); font-size: 10.5px; color: var(--muted); } .moment .q { font-family: var(--display); font-size: 22px; line-height: 1.05; margin-top: 4px; } .moment .s { font-size: 12px; margin-top: 5px; color: #3b3444; }
+  .moment.dot { width: auto; padding: 5px 9px; border-radius: 999px; transform: translate(-50%, -100%) translateY(6px); font-family: var(--mono); font-size: 11px; } .moment.dot .q, .moment.dot .s { display: none; } .moment.dot .t { color: var(--ink); }
+  .moment.dot.on { transform: translate(-50%, -100%); }
+  .moment.side { transform: translate(-100%, -50%) translateX(-10px); } .moment.side.on { transform: translate(-100%, -50%); }
+  .moment.below { transform: translate(-50%, 0) translateY(-8px); } .moment.below.on { transform: translate(-50%, 0); } .moment.dot.below { transform: translate(-50%, 0) translateY(-6px); } .moment.dot.below.on { transform: translate(-50%, 0); }
+  .axis { position: absolute; left: 4%; right: 4%; display: flex; justify-content: space-between; padding: 0; font-family: var(--mono); font-size: 11px; color: var(--muted); pointer-events: none; }
+  .thesis { position: fixed; right: 28px; bottom: 66px; max-width: 340px; padding: 12px 14px; font-size: 13px; color: #3b3444; z-index: 5; }
+  .thesis b { display: block; font-family: var(--mono); font-weight: 500; font-size: 10.5px; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); margin-bottom: 3px; }
+
+  /* 01 classic */
+  .l1 .copy { position: absolute; left: 240px; bottom: 64px; max-width: 520px; } .l1 h1 { font-size: clamp(38px, 4.6vw, 62px); margin-top: 10px; } .l1 .lead { font-size: 16px; max-width: 46ch; margin-top: 12px; } .l1 .field { margin-top: 18px; max-width: 460px; }
+  .l1 .brand { position: absolute; left: 28px; top: 20px; }
+  /* 02 centre stage */
+  .l2 .top { position: absolute; left: 0; right: 0; top: 9vh; text-align: center; padding: 0 24px; } .l2 h1 { font-size: clamp(48px, 7.4vw, 108px); max-width: 12ch; margin: 12px auto 0; } .l2 .eyebrow { text-align: center; }
+  .l2 .bottom { position: absolute; left: 0; right: 0; bottom: 8vh; display: flex; flex-direction: column; align-items: center; gap: 12px; } .l2 .field { width: min(560px, 90vw); } .l2 .chips { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; }
+  /* 03 split */
+  .l3 .panel { position: absolute; left: 200px; top: 50%; transform: translateY(-50%); width: min(520px, 40vw); padding: 36px; } .l3 h1 { font-size: clamp(34px, 3.6vw, 52px); margin-top: 10px; } .l3 .lead { font-size: 15px; margin-top: 12px; } .l3 .field { margin-top: 18px; } .l3 .chips { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 12px; }
+  /* 04 masthead */
+  .l4 .head { position: absolute; left: 0; right: 0; top: 3vh; text-align: center; display: flex; flex-direction: column; align-items: center; gap: 18px; pointer-events: none; }
+  .l4 .mast { font-family: var(--display); font-size: clamp(60px, 11vw, 168px); line-height: 1.04; padding-bottom: .08em; letter-spacing: -.03em; color: var(--ink); }
+  .l4 .deck { position: absolute; left: 50%; transform: translateX(-50%); bottom: 12vh; text-align: center; max-width: 640px; padding: 0 24px; } .l4 .deck h1 { font-size: clamp(19px, 2.1vw, 28px); font-family: var(--body); font-weight: 500; letter-spacing: 0; line-height: 1.3; }
+  .l4 .bar { position: absolute; left: 50%; transform: translateX(-50%); bottom: 4vh; width: min(720px, 92vw); display: flex; align-items: center; gap: 14px; padding: 8px 8px 8px 18px; border-radius: 999px; } .l4 .bar .field { flex: 1; padding: 0; background: transparent; border: 0; box-shadow: none; backdrop-filter: none; } .l4 .bar .field button { border-radius: 999px; }
+  /* 05 underline */
+  .l5 .copy { position: absolute; left: 220px; top: 12vh; max-width: 1100px; } .l5 h1 { font-size: clamp(54px, 8.4vw, 124px); line-height: 1.02; } .l5 .row { display: flex; gap: 40px; align-items: flex-start; margin-top: 30vh; flex-wrap: wrap; } .l5 .lead { font-size: 16px; max-width: 42ch; } .l5 .field { width: min(460px, 90vw); }
+  /* 06 poster */
+  .l6 .corner { position: absolute; left: 220px; top: 22px; display: flex; gap: 18px; align-items: baseline; } .l6 .num { position: absolute; left: 220px; bottom: 8vh; font-family: var(--mono); font-weight: 500; font-size: clamp(72px, 11vw, 180px); line-height: .9; letter-spacing: -.06em; color: var(--ink); }
+  .l6 .num small { display: block; font-size: 13px; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); margin-bottom: 10px; }
+  .l6 .cta { position: absolute; right: 28px; top: 9vh; width: min(420px, 80vw); padding: 22px; } .l6 .cta h1 { font-size: 26px; } .l6 .cta .lead { font-size: 14px; margin-top: 8px; } .l6 .cta .field { margin-top: 14px; }
+  /* 07 cards first */
+  .l7 .head { position: absolute; left: 220px; top: 12vh; right: 28px; display: flex; justify-content: space-between; align-items: flex-end; gap: 24px; flex-wrap: wrap; } .l7 h1 { font-size: clamp(34px, 4vw, 56px); } .l7 .field { width: min(440px, 90vw); }
+  .l7 .cards { position: absolute; left: 220px; right: 28px; top: 56%; display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap: 14px; } .l7 .card { padding: 18px; opacity: 0; transform: translateY(14px); transition: opacity .5s, transform .5s; } .l7 .card.on { opacity: 1; transform: none; }
+  .l7 .card .t { font-family: var(--mono); font-size: 10.5px; color: var(--muted); } .l7 .card .q { font-family: var(--display); font-size: 24px; line-height: 1.05; margin-top: 6px; } .l7 .card .s { font-size: 12px; color: #3b3444; margin-top: 8px; } .l7 .card img { width: 100%; border-radius: 10px; margin-top: 10px; aspect-ratio: 9/16; object-fit: cover; max-height: 160px; }
+  /* 08 vertical */
+  .l8 .copy { position: absolute; left: 220px; top: 50%; transform: translateY(-50%); max-width: 500px; } .l8 h1 { font-size: clamp(40px, 5vw, 70px); margin-top: 10px; } .l8 .lead { font-size: 16px; margin-top: 12px; max-width: 42ch; } .l8 .field { margin-top: 18px; max-width: 440px; }
+  /* 09 chat first */
+  .l9 .copy { position: absolute; left: 220px; top: 12vh; max-width: 520px; } .l9 h1 { font-size: clamp(38px, 4.4vw, 60px); margin-top: 10px; } .l9 .lead { font-size: 15px; margin-top: 12px; } .l9 .field { margin-top: 16px; max-width: 440px; }
+  .l9 .chat { position: absolute; right: 28px; top: 8vh; width: min(380px, 40vw); padding: 14px; display: flex; flex-direction: column; gap: 8px; } .l9 .chat .m { font-size: 13px; opacity: .18; transition: opacity .4s; } .l9 .chat .m.on { opacity: 1; } .l9 .chat .m b { font-family: var(--mono); font-weight: 500; font-size: 10.5px; color: var(--muted); margin-right: 6px; }
+  .l9 .chat .m.hot { background: rgba(255,255,255,.55); border-radius: 10px; padding: 6px 8px; margin: 2px -4px; }
+  /* 10 minimal */
+  .l10 .line { position: absolute; left: 50%; transform: translateX(-50%); top: 16vh; text-align: center; padding: 0 24px; width: min(900px, 92vw); } .l10 h1 { font-size: clamp(28px, 3vw, 42px); font-weight: 400; line-height: 1.25; }
+  .l10 .under { position: absolute; left: 50%; transform: translateX(-50%); bottom: 16vh; width: min(540px, 88vw); } .l10 .under .field { background: transparent; border: 0; border-bottom: 1.5px solid var(--ink); border-radius: 0; box-shadow: none; backdrop-filter: none; padding: 0 0 6px; } .l10 .under .field button { background: transparent; color: var(--ink); text-decoration: underline; text-underline-offset: 5px; padding: 10px 0; }
+  .l10 .foot { position: absolute; left: 50%; transform: translateX(-50%); bottom: 8vh; font-family: var(--mono); font-size: 11px; color: var(--muted); white-space: nowrap; }
+  @media (max-width: 900px) { .l1 .copy, .l3 .panel, .l5 .copy, .l6 .corner, .l6 .num, .l7 .head, .l7 .cards, .l8 .copy, .l9 .copy { left: 20px; right: 20px; } .l7 .cards { grid-template-columns: repeat(2, minmax(0,1fr)); } .l9 .chat, .thesis { display: none; } }
+</style>
+<canvas id="silk" aria-hidden="true"></canvas>
+<svg id="grain" aria-hidden="true" width="100%" height="100%"><filter id="n"><feTurbulence type="fractalNoise" baseFrequency=".85" numOctaves="2" stitchTiles="stitch"></feTurbulence><feColorMatrix values="0 0 0 0 .13 0 0 0 0 .11 0 0 0 0 .16 0 0 0 .3 0"></feColorMatrix></filter><rect width="100%" height="100%" filter="url(#n)"></rect></svg>
+<main>
+
+<div id="rail" class="glass" role="tablist"><div class="hint">← → to switch</div></div>
+<div class="thesis glass" id="thesis"></div>
+<div class="hud glass"><span>drawn <b id="hud-p">0%</b></span><span>peaks <b id="hud-n">0</b></span></div>
+<section id="stage"><div class="track" data-track><div class="pin">
+
+<div class="layout l4" data-l="4">
+  <div class="head"><div class="mast">Hypeline</div><div class="eyebrow">Twitch VOD → clips · in your browser · nothing uploaded</div></div>
+  <div class="deck"><h1>Twitch clipping that listens to chat. Paste a VOD, follow the thread to the moment, cut it in your browser.</h1></div>
+  <div class="bar glass"><span class="eyebrow" style="white-space:nowrap">VOD link</span><div class="field"><input value="https://www.twitch.tv/videos/2871164819" aria-label="VOD link"><button type="button">Find the moments</button></div></div>
+  <div class="cards"></div><div class="axis"></div>
+</div>
+
+
+</div></div></section>
+</main>
+<script id="frag" type="x-shader/x-fragment">
+precision highp float;
+uniform vec2 u_res; uniform float u_time; uniform float u_prog; uniform vec2 u_mouse; uniform float u_motion; uniform int u_mode; uniform float u_cy; uniform float u_scale; uniform float u_x0; uniform float u_x1; uniform float u_rot; uniform float u_cx;
+const float PI = 3.14159265;
+float hash(vec2 p){ return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
+float noise(vec2 p){ vec2 i = floor(p), f = fract(p); f = f*f*(3.0-2.0*f); return mix(mix(hash(i), hash(i+vec2(1,0)), f.x), mix(hash(i+vec2(0,1)), hash(i+vec2(1,1)), f.x), f.y); }
+float fbm(vec2 p){ float v = 0.0, a = 0.5; for (int i = 0; i < 4; i++) { v += a*noise(p); p = p*2.03 + 7.1; a *= 0.5; } return v; }
+float hype(float t){ float h = 0.0;
+  h += 0.22*exp(-pow((t-0.12)*30.0, 2.0)); h += 0.95*exp(-pow((t-0.29)*19.0, 2.0)); h += 0.32*exp(-pow((t-0.50)*26.0, 2.0));
+  h += 0.72*exp(-pow((t-0.68)*18.0, 2.0)); h += 0.40*exp(-pow((t-0.85)*26.0, 2.0)); h += 0.08*noise(vec2(t*14.0, 1.7)); return h; }
+uniform vec3 u_c0; uniform vec3 u_c1; uniform vec3 u_c2; uniform vec3 u_c3; uniform vec3 u_c4; uniform float u_sat;
+vec3 sat(vec3 c){ float l = dot(c, vec3(0.299, 0.587, 0.114)); return mix(vec3(l), c, u_sat); }
+vec3 pal(float t){ t = fract(t); float s = t*5.0; int i = int(floor(s)); float f = fract(s); vec3 c;
+  if (i == 0) c = mix(u_c0, u_c1, f); else if (i == 1) c = mix(u_c1, u_c2, f); else if (i == 2) c = mix(u_c2, u_c3, f); else if (i == 3) c = mix(u_c3, u_c4, f); else c = mix(u_c4, u_c0, f); return sat(c); }
+/* silk shading for a point at signed distance dRaw from a thread of half-width wid, at along-position x */
+vec4 silk(float x, float dRaw, float wid, float phase, float streak, float hue){
+  float d = dRaw / wid; float edge = 1.0 - smoothstep(0.78, 1.06, abs(d)); if (edge <= 0.0) return vec4(0.0);
+  float warp = fbm(vec2(x*1.4 + u_time*0.05*u_motion, d*1.6 + phase)) - 0.5; float dd = d + warp*0.55;
+  float s = fbm(vec2(x*2.2 - u_time*0.07*u_motion + phase, dd*streak));
+  float fold = smoothstep(-0.2, 0.9, sin(x*2.6 + phase*3.0 + u_time*0.08*u_motion + dd*1.2));
+  vec3 col = pal(0.77 + dd*0.11 + x*0.085 + phase*0.12 + hue + u_time*0.003*u_motion); col *= 0.78 + 0.5*s; col = mix(col, col*0.72, fold*0.35);
+  col = mix(col, vec3(1.0), pow(max(0.0, 1.0-abs(dd)), 3.0)*0.42); return vec4(col, edge*(0.86 + 0.14*s)); }
+float rev(float t){ return 1.0 - smoothstep(u_prog - 0.06, u_prog + 0.005, t); }
+float tipglow(float t){ return exp(-pow((t - u_prog)*40.0, 2.0)) * step(t, u_prog + 0.03); }
+vec3 over(vec3 base, vec4 c){ return mix(base, c.rgb, c.a); }
+const vec3 INK = vec3(0.13, 0.11, 0.16);
+float ink(float dRaw, float w){ return 1.0 - smoothstep(w, w + 0.0022, abs(dRaw)); }
+float hueAt(float T){ return 0.36*exp(-pow((T-0.68)*6.0, 2.0)) + 0.55*exp(-pow((T-0.85)*9.0, 2.0)) + 0.08*exp(-pow((T-0.12)*9.0, 2.0)); }
+float tipdot(vec2 p, float asp, float y){ return (1.0 - smoothstep(0.005, 0.008, length(p - vec2(u_prog*asp, y)))) * step(u_prog, 0.999); }
+void main(){
+  vec2 uv = gl_FragCoord.xy / u_res; float asp = u_res.x / u_res.y; vec2 p = vec2(uv.x*asp, uv.y);
+  p += (u_mouse - 0.5) * vec2(0.02, 0.015);
+  vec3 col = vec3(0.984, 0.976, 0.98);
+  col = mix(col, vec3(0.97,0.91,0.94), 0.3*fbm(vec2(uv.x*1.3 + u_time*0.02*u_motion, uv.y*1.3)));
+  col = mix(col, vec3(0.91,0.94,0.99), 0.25*fbm(vec2(uv.x*1.1 - 3.0, uv.y*1.4 + u_time*0.015*u_motion)));
+  vec2 cen = vec2(asp*u_cx, 0.5); float th = u_rot; mat2 Rm = mat2(cos(th), -sin(th), sin(th), cos(th)); vec2 q = Rm*(p - cen) + cen;
+  float T = (q.x/asp - u_x0) / (u_x1 - u_x0);
+  if (T >= 0.0 && T <= 1.0) {
+    float h = hype(T); float r = rev(T); float hue = hueAt(T);
+    float cy = u_cy + 0.015*sin(T*7.0 + u_time*0.1*u_motion)*u_scale; float wid = (0.015 + 0.21*h)*u_scale; float dy = q.y - cy;
+    vec4 c = silk(T*4.6, abs(dy) - wid*0.5, wid*0.5, 1.0, 20.0, hue); c.a *= r; col = over(col, c);
+    col = mix(col, INK, ink(dy, 0.0012)*r*0.9);
+    col = mix(col, INK, (1.0 - smoothstep(0.005, 0.008, length(q - vec2((u_x0 + u_prog*(u_x1-u_x0))*asp, u_cy + 0.015*sin(u_prog*7.0 + u_time*0.1*u_motion)*u_scale)))) * step(u_prog, 0.999));
+  }
+  gl_FragColor = vec4(col, 1.0);
+}
+</script>
+
+<script>
+(() => {
+  const L = [
+    { n: 'Masthead', t: '', cy: 0.52, scale: 0.85, x0: 0.04, x1: 0.96, rot: 0, cards: 'card', axis: 0.71 },
+  ];
+
+  const PEAKS = [[0.29,0.95,'0:34:15 · 6.2× · 41 chatters','He actually did it','“clip it” ×14'],[0.50,0.32,'2:03:08 · 2.1× · demoted','Mic cuts out','tech trouble ×0.3'],[0.68,0.72,'2:48:52 · 4.0× · 33 chatters','The comeback','“NO WAY” ×31'],[0.85,0.40,'3:20:11 · 2.6×','Raid arrives','emote wall']];
+  const hex = (h) => [1,3,5].map((i) => parseInt(h.slice(i, i+2), 16)/255);
+  const PALETTES = [
+    { n: 'Pastel (current)', t: 'Petal · apricot · butter · sky · lilac. Soft, paper-like; the least saturated.', c: ['#fa8fb8','#ffb880','#ffe085','#85b8fc','#b394f7'].map(hex), sat: 1.0 },
+    { n: 'Stripe silk', t: 'Blue · violet · hot pink · orange · yellow, at Stripe’s saturation. Loudest; the closest to the reference.', c: ['#7aa2ff','#a06bff','#ff5fa8','#ff9a4d','#ffd84d'].map(hex), sat: 1.15 },
+    { n: 'Sunset', t: 'Coral · peach · cream · mauve · dusk blue. Warm and cinematic, one cool note.', c: ['#ff8a80','#ffc09f','#fff1c1','#c9a7eb','#8fa8e8'].map(hex), sat: 1.05 },
+    { n: 'Aurora', t: 'Mint · aqua · periwinkle · lilac · rose. Cool and airy; feels like night-time streaming.', c: ['#a8e6cf','#8fd3f4','#a3b5ff','#d3a4ff','#ffb3d9'].map(hex), sat: 1.05 },
+    { n: 'Candy', t: 'Bubblegum · lemon · sky · lavender · mint. Playful, high-contrast pastels — Twitch-native.', c: ['#ff9ecf','#fff59a','#9ad0ff','#c3b1ff','#b6f2d0'].map(hex), sat: 1.15 },
+  ];
+  let pal = 1;
+  let mode = 1, prog = 0, mouse = [0.5, 0.5], aspect = 1; const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const canvas = document.getElementById('silk'); const gl = canvas.getContext('webgl', { antialias: false, alpha: false }); let U = {};
+  if (gl) {
+    const sh = (t, s) => { const o = gl.createShader(t); gl.shaderSource(o, s); gl.compileShader(o); if (!gl.getShaderParameter(o, gl.COMPILE_STATUS)) console.error(gl.getShaderInfoLog(o)); return o; };
+    const prg = gl.createProgram(); gl.attachShader(prg, sh(gl.VERTEX_SHADER, 'attribute vec2 a; void main(){ gl_Position = vec4(a,0.,1.); }')); gl.attachShader(prg, sh(gl.FRAGMENT_SHADER, document.getElementById('frag').textContent)); gl.linkProgram(prg); gl.useProgram(prg);
+    const buf = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, buf); gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1,-1,1,-1,-1,1,1,1]), gl.STATIC_DRAW);
+    const a = gl.getAttribLocation(prg, 'a'); gl.enableVertexAttribArray(a); gl.vertexAttribPointer(a, 2, gl.FLOAT, false, 0, 0);
+    ['u_res','u_time','u_prog','u_mouse','u_motion','u_mode','u_cy','u_scale','u_x0','u_x1','u_rot','u_cx','u_c0','u_c1','u_c2','u_c3','u_c4','u_sat'].forEach((n) => U[n] = gl.getUniformLocation(prg, n));
+    function resize() { const dpr = Math.min(devicePixelRatio || 1, 1.5); canvas.width = Math.floor(innerWidth*dpr); canvas.height = Math.floor(innerHeight*dpr); gl.viewport(0, 0, canvas.width, canvas.height); aspect = innerWidth/innerHeight; }
+    addEventListener('resize', resize); resize(); const t0 = performance.now();
+    (function frame() { const l = L[mode-1]; gl.uniform2f(U.u_res, canvas.width, canvas.height); gl.uniform1f(U.u_time, (performance.now()-t0)/1000); gl.uniform1f(U.u_prog, prog); gl.uniform2f(U.u_mouse, mouse[0], mouse[1]); gl.uniform1f(U.u_motion, reduce ? 0 : 1); gl.uniform1i(U.u_mode, 4);
+      const x0 = typeof l.x0 === 'function' ? l.x0(aspect) : l.x0, x1 = typeof l.x1 === 'function' ? l.x1(aspect) : l.x1; gl.uniform1f(U.u_cy, l.cx != null ? l.cy : l.cy); gl.uniform1f(U.u_scale, l.scale); gl.uniform1f(U.u_x0, x0); gl.uniform1f(U.u_x1, x1); gl.uniform1f(U.u_rot, l.rot); gl.uniform1f(U.u_cx, l.cx ?? 0.5); const P = PALETTES[pal-1]; P.c.forEach((c, i) => gl.uniform3f(U['u_c'+i], c[0], c[1], c[2])); gl.uniform1f(U.u_sat, P.sat); gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4); requestAnimationFrame(frame); })();
+  }
+  addEventListener('pointermove', (e) => { mouse = [e.clientX/innerWidth, 1 - e.clientY/innerHeight]; }, { passive: true });
+  // build cards per layout
+  document.querySelectorAll('.layout').forEach((lay) => { const host = lay.querySelector('.cards'); if (!host) return; PEAKS.forEach(([t,h,a,b,c]) => { const d = document.createElement('div'); d.className = 'moment glass'; d.dataset.t = t; d.dataset.h = h; d.innerHTML = `<div class="t">${a}</div><div class="q">${b}</div><div class="s">${c}</div>`; host.appendChild(d); }); });
+  
+  
+  function setMode(m) { mode = 1; document.querySelector('.layout').classList.add('on'); tick(); }
+  const rail = document.getElementById('rail'); const thesis = document.getElementById('thesis');
+  PALETTES.forEach((p, i) => { const b = document.createElement('button'); b.setAttribute('role', 'tab'); b.innerHTML = `<b>${i+1}</b><span>${p.n}</span><i style="display:flex;gap:2px;margin-left:8px">${p.c.map((c) => `<u style="display:block;width:9px;height:9px;border-radius:50%;background:rgb(${c.map((v)=>Math.round(v*255)).join(',')})"></u>`).join('')}</i>`; b.style.gridTemplateColumns = '22px auto auto'; b.addEventListener('click', () => setPal(i+1)); rail.appendChild(b); });
+  function setPal(i) { pal = i; [...rail.querySelectorAll('button')].forEach((b, j) => b.setAttribute('aria-current', String(j+1 === i))); thesis.innerHTML = `<b>0${i} · ${PALETTES[i-1].n}</b>${PALETTES[i-1].t}`; try { history.replaceState(null, '', '#c' + i); } catch (e) {} }
+  addEventListener('keydown', (e) => { if (e.target.tagName === 'INPUT') return; if (e.key === 'ArrowRight' || e.key === 'ArrowDown') setPal(pal % 5 + 1); if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') setPal((pal + 3) % 5 + 1); });
+  setPal(Number((location.hash.match(/#c(\d)/) || [])[1]) || 1);
+  
+  const track = document.querySelector('[data-track]'); const hudP = document.getElementById('hud-p'), hudN = document.getElementById('hud-n');
+  const sq = (v) => v*v; const hype = (t) => 0.22*Math.exp(-sq((t-0.12)*30)) + 0.95*Math.exp(-sq((t-0.29)*19)) + 0.32*Math.exp(-sq((t-0.50)*26)) + 0.72*Math.exp(-sq((t-0.68)*18)) + 0.40*Math.exp(-sq((t-0.85)*26));
+  function place(l, T, h) { // point above (or below) the thread at T, in screen fractions
+    const x0 = typeof l.x0 === 'function' ? l.x0(aspect) : l.x0, x1 = typeof l.x1 === 'function' ? l.x1(aspect) : l.x1;
+    const wid = (0.015 + 0.21*h) * l.scale; const qx = (x0 + T*(x1 - x0)) * aspect, qy = l.cy + (l.below ? -(wid*0.5 + 0.02) : wid*0.5 + 0.02);
+    const cx = aspect*(l.cx ?? 0.5), cyc = 0.5; const th = l.rot; const x = cx + Math.cos(th)*(qx-cx) - Math.sin(th)*(qy-cyc), y = cyc + Math.sin(th)*(qx-cx) + Math.cos(th)*(qy-cyc);
+    return [x/aspect, 1 - y];
+  }
+  function tick() {
+    const vh = innerHeight, r = track.getBoundingClientRect(); prog = Math.max(0, Math.min(1, (0 - r.top) / (r.height - vh)));
+    const l = L[mode-1]; const lay = document.querySelector('.layout.on'); let n = 0;
+    lay.querySelectorAll('.moment').forEach((c) => { const T = Number(c.dataset.t), h = Number(c.dataset.h); const on = prog > T + 0.01 && l.cards !== 'none'; c.classList.toggle('on', on); c.classList.toggle('dot', l.cards === 'dot'); c.classList.toggle('side', l.cards === 'side'); c.classList.toggle('below', !!l.below); c.style.display = l.cards === 'none' ? 'none' : '';
+      let [x, y] = place(l, T, h); if (l.cards === 'side') { x -= 0.02; } x = Math.max(0.12, Math.min(0.88, x)); c.style.left = (x*100) + '%'; c.style.top = (y*100) + '%'; });
+    lay.querySelectorAll('.card, .m').forEach((el) => el.classList.toggle('on', prog > Number(el.dataset.t) + 0.01));
+    PEAKS.forEach(([t]) => { if (prog > t + 0.01) n++; });
+    const ax = lay.querySelector('.axis'); if (ax) { ax.style.top = ((l.axis ?? 0.42)*100) + '%'; if (!ax.children.length) ax.innerHTML = ['0:00:00','1:00:00','2:00:00','3:00:00','4:00:00','5:00:00','6:24:02'].map((s) => `<span>${s}</span>`).join(''); if (l.x0 > 0) { ax.style.left = (l.x0*100) + '%'; } }
+    hudP.textContent = Math.round(prog*100) + '%'; hudN.textContent = String(n);
+  }
+  addEventListener('scroll', tick, { passive: true }); addEventListener('resize', tick);
+  setMode(1);
+})();
+</script>

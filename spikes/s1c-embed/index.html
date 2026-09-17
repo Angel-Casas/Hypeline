@@ -1,0 +1,64 @@
+<!doctype html>
+<meta charset="utf-8" />
+<title>Spike S1c — Twitch embed player: seek from JS</title>
+<style>
+  body { font: 14px/1.5 system-ui, sans-serif; margin: 2rem; max-width: 60rem; }
+  input { padding: .4rem; margin: .2rem .4rem .8rem 0; }
+  #player { width: 800px; height: 450px; max-width: 100%; background: #000; }
+  pre { background: #111; color: #ddd; padding: 1rem; white-space: pre-wrap; }
+  button { padding: .4rem .8rem; margin-right: .4rem; }
+</style>
+
+<h1>Spike S1c — can we drive the official Twitch embed from JS?</h1>
+<p>
+  Uses <code>https://player.twitch.tv/js/embed/v1.js</code> (official, ToS-clean, no CORS).
+  The embed requires a <code>parent</code> param equal to the page's hostname —
+  <code>localhost</code> works; deployed origins must be listed too.
+  Question: does <code>seek()</code> land where we ask, and can we read <code>getCurrentTime()</code>
+  to keep our timeline in sync?
+</p>
+
+<label>VOD id <input id="vod" value="2871164819" /></label>
+<button id="load">Load</button>
+<button id="seek1">Seek 0:34:15</button>
+<button id="seek2">Seek 1:34:15</button>
+<button id="seek3">Seek 4:14:30</button>
+<button id="pause">Pause</button>
+<button id="play">Play</button>
+
+<div id="player"></div>
+<pre id="out">Not loaded.</pre>
+
+<script src="https://player.twitch.tv/js/embed/v1.js"></script>
+<script>
+  const out = document.getElementById('out');
+  const log = (s) => (out.textContent += s + '\n');
+  let player = null;
+
+  document.getElementById('load').onclick = () => {
+    out.textContent = '';
+    document.getElementById('player').innerHTML = '';
+    const vod = document.getElementById('vod').value.trim();
+    const t0 = performance.now();
+    player = new Twitch.Player('player', {
+      video: vod, width: 800, height: 450, autoplay: false, muted: true,
+      parent: [location.hostname],
+    });
+    player.addEventListener(Twitch.Player.READY, () => log(`READY after ${(performance.now() - t0).toFixed(0)} ms`));
+    player.addEventListener(Twitch.Player.PLAYING, () => log(`PLAYING at ${player.getCurrentTime().toFixed(1)}s`));
+    player.addEventListener(Twitch.Player.PAUSE, () => log(`PAUSE at ${player.getCurrentTime().toFixed(1)}s`));
+    player.addEventListener(Twitch.Player.SEEK, (e) => log(`SEEK event: ${JSON.stringify(e)} → now ${player.getCurrentTime().toFixed(1)}s`));
+    setInterval(() => { if (player) document.title = `t=${player.getCurrentTime().toFixed(1)}s`; }, 500);
+  };
+  const seek = (sec) => () => {
+    if (!player) return log('load first');
+    const t0 = performance.now();
+    player.seek(sec);
+    setTimeout(() => log(`asked ${sec}s → getCurrentTime()=${player.getCurrentTime().toFixed(1)}s after ${(performance.now() - t0).toFixed(0)} ms`), 1500);
+  };
+  document.getElementById('seek1').onclick = seek(34 * 60 + 15);
+  document.getElementById('seek2').onclick = seek(94 * 60 + 15);
+  document.getElementById('seek3').onclick = seek(254 * 60 + 30);
+  document.getElementById('pause').onclick = () => player && player.pause();
+  document.getElementById('play').onclick = () => player && player.play();
+</script>

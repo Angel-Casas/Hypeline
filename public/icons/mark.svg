@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none">
+  <style>
+    .ink { stroke: #221c2a; }
+    @media (prefers-color-scheme: dark) { .ink { stroke: #f3edf6; } }
+  </style>
+  <defs>
+    <linearGradient id="silk" gradientUnits="userSpaceOnUse" x1="15" y1="0" x2="49" y2="0">
+      <stop offset="0" stop-color="#ffa968"/><stop offset=".3" stop-color="#ff77b5"/><stop offset=".62" stop-color="#b39cff"/><stop offset=".85" stop-color="#8eb0ff"/><stop offset="1" stop-color="#ffde68"/>
+    </linearGradient>
+  </defs>
+  <path class="ink" d="M9 11 H21 M9 53 H21 M43 11 H55 M43 53 H55" stroke-width="3.2" stroke-linecap="round"/>
+  <path class="ink" d="M15 11 V53 M49 11 V53" stroke-width="5.6"/>
+  <path d="M15 38 C 22 38, 25 20, 32 20 S 42 38, 49 38" stroke="url(#silk)" stroke-width="5" stroke-linecap="round"/>
+</svg>

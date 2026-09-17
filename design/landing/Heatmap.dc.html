@@ -1,0 +1,89 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Sans:wght@400;500&family=DM+Mono&display=swap">
+  <style>
+    body { margin: 0; background: #f7f3ee; }
+    a { color: #7a4f8e; } a:hover { color: #5b3a6b; }
+    .mono { font-family: "DM Mono", "SFMono-Regular", Menlo, monospace; }
+  </style>
+</helmet>
+<div style="position: relative; width: 1440px; height: 1000px; overflow: hidden; background: #f7f3ee; color: #2b2530; font-family: 'DM Sans', 'Helvetica Neue', Arial, sans-serif;">
+  <!-- top bar -->
+  <div style="display: flex; align-items: center; justify-content: space-between; padding: 28px 56px 0 56px;">
+    <div style="font-family: 'Instrument Serif', Georgia, serif; font-size: 28px; letter-spacing: -0.01em;">Hypeline</div>
+    <div style="display: flex; gap: 32px; font-size: 14px; color: #6b6470;">
+      <a href="#" style="text-decoration: none; color: #6b6470;">How it works</a>
+      <a href="#" style="text-decoration: none; color: #6b6470;">Open source</a>
+      <a href="#" style="text-decoration: none; color: #6b6470;">Bring your key</a>
+    </div>
+  </div>
+
+  <!-- headline -->
+  <div style="position: absolute; left: 56px; top: 120px; width: 760px;">
+    <h1 style="margin: 0; font-family: 'Instrument Serif', Georgia, serif; font-weight: 400; font-size: 84px; line-height: 0.98; letter-spacing: -0.02em;">
+      Chat already knows<br>where the <em style="font-style: italic; color: #7a4f8e;">moment</em> is.
+    </h1>
+    <p style="margin: 28px 0 0 0; max-width: 520px; font-size: 19px; line-height: 1.5; color: #5a525f;">
+      Paste a Twitch VOD. Hypeline reads the chat replay in your browser, finds the spikes, and cuts the clip. Nothing is uploaded, ever.
+    </p>
+  </div>
+
+  <!-- the heatmap: hero object -->
+  <svg viewBox="0 0 1440 420" width="1440" height="420" style="position: absolute; left: 0; top: 470px; display: block;">
+    <defs>
+      <linearGradient id="hm-fill" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="#f4b8c4" stop-opacity="0.9"></stop>
+        <stop offset="0.55" stop-color="#cfe6d9" stop-opacity="0.8"></stop>
+        <stop offset="1" stop-color="#f7f3ee" stop-opacity="0"></stop>
+      </linearGradient>
+    </defs>
+    <!-- baseline ticks -->
+    <g stroke="#d9d2cb" stroke-width="1">
+      <line x1="0" y1="360" x2="1440" y2="360"></line>
+      <line x1="120" y1="360" x2="120" y2="372"></line><line x1="360" y1="360" x2="360" y2="372"></line><line x1="600" y1="360" x2="600" y2="372"></line>
+      <line x1="840" y1="360" x2="840" y2="372"></line><line x1="1080" y1="360" x2="1080" y2="372"></line><line x1="1320" y1="360" x2="1320" y2="372"></line>
+    </g>
+    <g font-family="DM Mono, Menlo, monospace" font-size="12" fill="#9a929f">
+      <text x="120" y="392" text-anchor="middle">0:30:00</text><text x="360" y="392" text-anchor="middle">1:00:00</text><text x="600" y="392" text-anchor="middle">1:30:00</text>
+      <text x="840" y="392" text-anchor="middle">2:00:00</text><text x="1080" y="392" text-anchor="middle">2:30:00</text><text x="1320" y="392" text-anchor="middle">3:00:00</text>
+    </g>
+    <!-- hype curve -->
+    <path d="M0,340 C60,335 90,320 130,318 S200,330 240,326 S290,300 320,296 S360,322 400,318 S450,60 480,58 S520,300 560,296 S620,310 660,304 S700,250 740,246 S790,330 830,326 S880,140 910,132 S960,320 1000,316 S1060,330 1100,326 S1150,290 1180,284 S1240,335 1300,332 S1400,338 1440,336 L1440,360 L0,360 Z" fill="url(#hm-fill)"></path>
+    <path d="M0,340 C60,335 90,320 130,318 S200,330 240,326 S290,300 320,296 S360,322 400,318 S450,60 480,58 S520,300 560,296 S620,310 660,304 S700,250 740,246 S790,330 830,326 S880,140 910,132 S960,320 1000,316 S1060,330 1100,326 S1150,290 1180,284 S1240,335 1300,332 S1400,338 1440,336" fill="none" stroke="#2b2530" stroke-width="1.5"></path>
+    <!-- peak markers -->
+    <g>
+      <circle cx="480" cy="58" r="7" fill="#f7f3ee" stroke="#2b2530" stroke-width="1.5"></circle>
+      <circle cx="910" cy="132" r="7" fill="#f7f3ee" stroke="#2b2530" stroke-width="1.5"></circle>
+      <circle cx="740" cy="246" r="7" fill="#f7f3ee" stroke="#2b2530" stroke-width="1.5"></circle>
+    </g>
+    <!-- annotations -->
+    <g font-family="DM Mono, Menlo, monospace" font-size="13" fill="#2b2530">
+      <text x="498" y="52">6.2× baseline · 41 chatters · “CLIP IT” ×14</text>
+      <text x="928" y="126">3.4× · sub train</text>
+      <text x="758" y="240">2.1× · “LMAOOO” cluster</text>
+    </g>
+  </svg>
+
+  <!-- input sits on the timeline -->
+  <div style="position: absolute; left: 56px; top: 400px; display: flex; align-items: stretch; gap: 0; width: 720px; border-bottom: 1.5px solid #2b2530;">
+    <input value="https://www.twitch.tv/videos/2871164819" class="mono" style="flex: 1; border: 0; background: transparent; padding: 14px 0; font-size: 16px; color: #2b2530; outline: none;">
+    <button style="border: 0; background: #2b2530; color: #f7f3ee; padding: 0 22px; font-family: 'DM Sans', sans-serif; font-size: 15px; font-weight: 500; border-radius: 999px; margin-bottom: 8px; cursor: pointer;">Find the moments</button>
+  </div>
+  <div style="position: absolute; left: 56px; top: 462px; font-size: 13px; color: #9a929f;">Free · open source (MIT) · works on the VOD that is live right now</div>
+
+  <!-- side fact -->
+  <div style="position: absolute; right: 56px; top: 150px; width: 300px; font-size: 14px; line-height: 1.55; color: #5a525f; border-left: 1.5px solid #2b2530; padding-left: 18px;">
+    <div style="font-family: 'Instrument Serif', Georgia, serif; font-size: 22px; color: #2b2530; margin-bottom: 8px;">No server. No account.</div>
+    Your browser talks to Twitch and, if you want captions or titles, to NanoGPT with your own key. We never see your VOD or your key.
+  </div>
+</div>
+</x-dc>
+</body>
+</html>

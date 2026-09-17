@@ -1,0 +1,225 @@
+<title>Hypeline Moments Box</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gloock&family=Manrope:wght@400;500;600;800&family=JetBrains+Mono:wght@400;500;700&display=swap">
+<style>
+  :root {
+    --ground: #fbf9fa; --ground-2: #f3eef2; --ink: #221c2a; --ink-2: #3b3444; --muted: #6f6779;
+    --petal: #ffd0e4; --apricot: #ffdcc4; --butter: #fff0bd; --sky: #cfdcff; --lilac: #ddd0ff;
+    --lift: #ffffff; --line: rgba(34,28,42,.12); --playhead: #e0323c;
+    --glass: rgba(255,255,255,.42); --glass-line: rgba(255,255,255,.85); --glass-inset: #fff;
+    --field: rgba(255,255,255,.7); --mesh: .55; --grain-blend: multiply;
+    --display: 'Gloock', 'Iowan Old Style', Georgia, serif; --body: 'Manrope', 'Helvetica Neue', Arial, sans-serif; --mono: 'JetBrains Mono', Menlo, Consolas, monospace;
+    color-scheme: light;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --ground: #16121a; --ground-2: #1e1824; --ink: #f3edf6; --ink-2: #d6cddb; --muted: #9b91a6;
+      --petal: #5a2f45; --apricot: #5a3d2a; --butter: #5a4b1e; --sky: #273258; --lilac: #3b2c60;
+      --lift: #3a3146; --line: rgba(255,255,255,.12); --playhead: #ff5a63;
+      --glass: rgba(40,33,48,.55); --glass-line: rgba(255,255,255,.14); --glass-inset: rgba(255,255,255,.08);
+      --field: rgba(255,255,255,.06); --mesh: .28; --grain-blend: soft-light;
+      color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
+    --ground: #16121a; --ground-2: #1e1824; --ink: #f3edf6; --ink-2: #d6cddb; --muted: #9b91a6;
+    --petal: #5a2f45; --apricot: #5a3d2a; --butter: #5a4b1e; --sky: #273258; --lilac: #3b2c60;
+    --lift: #3a3146; --line: rgba(255,255,255,.12); --playhead: #ff5a63;
+    --glass: rgba(40,33,48,.55); --glass-line: rgba(255,255,255,.14); --glass-inset: rgba(255,255,255,.08);
+    --field: rgba(255,255,255,.06); --mesh: .28; --grain-blend: soft-light;
+    color-scheme: dark;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--ground); color: var(--ink); font-family: var(--body); font-size: 14px; line-height: 1.45; padding-inline: 20px; padding-block: 0 40px; }
+  ::selection { background: #ffe79a; color: #221c2a; }
+  .mesh { position: fixed; inset: -20vmax; z-index: 0; pointer-events: none; filter: blur(70px) saturate(1.05); opacity: var(--mesh);
+    background: radial-gradient(38vmax 30vmax at 20% 25%, #ffd0e4 0%, transparent 60%), radial-gradient(34vmax 28vmax at 78% 18%, #cfdcff 0%, transparent 60%), radial-gradient(30vmax 26vmax at 70% 80%, #fff0bd 0%, transparent 60%), radial-gradient(28vmax 24vmax at 18% 84%, #ddd0ff 0%, transparent 60%); }
+  main { position: relative; z-index: 2; max-width: 1240px; margin: 0 auto; }
+  header { display: flex; align-items: flex-end; justify-content: space-between; gap: 16px; flex-wrap: wrap; padding: 28px 0 22px; }
+  header h1 { font-family: var(--display); font-weight: 400; font-size: 34px; line-height: 1; margin: 0 0 6px; letter-spacing: -.01em; }
+  header p { margin: 0; color: var(--muted); font-size: 13px; max-width: 62ch; }
+  .eyebrow { font-family: var(--mono); font-size: 10.5px; letter-spacing: .14em; text-transform: uppercase; color: var(--muted); }
+  .toggle { background: var(--glass); border: 1px solid var(--glass-line); color: var(--ink); border-radius: 999px; padding: 7px 14px; font: 600 12px var(--body); cursor: pointer; backdrop-filter: blur(12px); }
+  .toggle:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 22px; align-items: start; }
+  .study { display: flex; flex-direction: column; gap: 10px; }
+  .study .cap { display: grid; grid-template-columns: 30px 1fr; gap: 10px; align-items: baseline; padding: 0 4px; }
+  .study .cap b { font: 700 12px var(--mono); color: var(--ink); background: var(--lift); border: 1px solid var(--line); border-radius: 999px; width: 26px; height: 26px; display: grid; place-items: center; }
+  .study .cap h2 { margin: 0; font: 600 14px var(--body); }
+  .study .cap p { margin: 2px 0 0; font-size: 12px; color: var(--muted); }
+  .glass { background: var(--glass); border: 1px solid var(--glass-line); backdrop-filter: blur(20px) saturate(1.5); -webkit-backdrop-filter: blur(20px) saturate(1.5); box-shadow: 0 14px 40px rgba(34,28,42,.07), inset 0 1px 0 var(--glass-inset); border-radius: 18px; }
+  .box { padding: 16px; display: flex; flex-direction: column; gap: 10px; }
+  .box .eyebrow.head { display: flex; justify-content: space-between; align-items: center; }
+  .box .eyebrow.head span:last-child { letter-spacing: 0; text-transform: none; }
+  .mono { font-family: var(--mono); font-variant-numeric: tabular-nums; }
+  .t { font: 11px var(--mono); font-variant-numeric: tabular-nums; padding: 2px 8px; border-radius: 999px; background: var(--c, var(--petal)); color: var(--ink); white-space: nowrap; }
+  :root[data-theme="dark"] .t, :root:not([data-theme="light"]) .t { color: var(--ink); }
+  .row { position: relative; display: grid; align-items: center; gap: 12px; padding: 8px 10px; border-radius: 12px; cursor: pointer; transition: background-color .2s, transform .2s cubic-bezier(.2,.7,.2,1); }
+  .row:hover { background: color-mix(in srgb, var(--lift) 40%, transparent); }
+  .row.on { background: color-mix(in srgb, var(--lift) 70%, transparent); box-shadow: inset 0 0 0 1px var(--glass-line); }
+  .row.hot { transform: translateX(3px); background: color-mix(in srgb, var(--lift) 55%, transparent); }
+  .row.hot::before { content: ''; position: absolute; left: 0; top: 8px; bottom: 8px; width: 3px; border-radius: 3px; background: linear-gradient(180deg, #8eb0ff, #ae81ff, #ff77b5, #ffa968); }
+  .why { display: block; font-size: 13px; line-height: 1.25; color: var(--ink-2); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .sub { display: block; font: 10.5px var(--mono); color: var(--muted); }
+  .clipped { font: 10px var(--mono); color: var(--muted); border: 1px solid var(--line); border-radius: 999px; padding: 1px 6px; }
+  .list { display: flex; flex-direction: column; gap: 4px; }
+
+  /* 1 Ledger */
+  .v1 .row { grid-template-columns: auto minmax(0,1fr) 54px; }
+  .v1 .meter { height: 3px; border-radius: 3px; background: var(--line); position: relative; }
+  .v1 .meter i { position: absolute; inset: 0 auto 0 0; border-radius: 3px; background: linear-gradient(90deg, #8eb0ff, #ae81ff, #ff77b5, #ffa968, #ffde68); background-size: 54px 100%; }
+
+  /* 2 Ranked */
+  .v2 .row { grid-template-columns: 34px auto minmax(0,1fr); }
+  .v2 .rank { font-family: var(--display); font-size: 26px; line-height: 1; color: var(--ink); text-align: right; }
+  .v2 .row.top .rank { background: linear-gradient(135deg, #ae81ff, #ff77b5, #ffa968); -webkit-background-clip: text; background-clip: text; color: transparent; }
+
+  /* 3 Cards */
+  .v3 .list { gap: 12px; padding-top: 8px; }
+  .v3 .card { position: relative; padding: 14px 14px 10px; border-radius: 14px; background: color-mix(in srgb, var(--lift) 45%, transparent); border: 1px solid var(--glass-line); cursor: pointer; }
+  .v3 .card .tab { position: absolute; top: -10px; left: 12px; background: var(--ink); color: var(--ground); font: 10px var(--mono); padding: 2px 9px; border-radius: 999px; }
+  .v3 .card .q { font-family: var(--display); font-size: 19px; line-height: 1.05; }
+  .v3 .card .sub { margin-top: 3px; }
+  .v3 .card.on { box-shadow: 0 0 0 1.5px var(--ink); }
+
+  /* 4 Thread strip */
+  .v4 .row { grid-template-columns: 64px auto minmax(0,1fr); }
+  .v4 svg { width: 64px; height: 28px; display: block; }
+
+  /* 5 Chat quote */
+  .v5 .row { grid-template-columns: minmax(0,1fr) auto; align-items: start; }
+  .v5 .q { font-family: var(--display); font-size: 18px; line-height: 1.05; }
+  .v5 .q::before { content: '“'; color: var(--muted); } .v5 .q::after { content: '”'; color: var(--muted); }
+  .v5 .sub { margin-top: 2px; }
+  .v5 .t { margin-top: 3px; }
+
+  /* 6 Filmstrip */
+  .v6 .row { grid-template-columns: 84px minmax(0,1fr); }
+  .v6 .frame { aspect-ratio: 16/9; border-radius: 8px; position: relative; overflow: hidden; background: #16121a; }
+  .v6 .frame::before { content: ''; position: absolute; inset: 0; background: linear-gradient(135deg, var(--c, #5a2f45), #16121a 70%); opacity: .9; }
+  .v6 .frame .t { position: absolute; left: 4px; bottom: 4px; background: rgba(22,18,26,.85); color: #f3edf6; font-size: 10px; padding: 1px 6px; }
+
+  /* 7 Spine */
+  .v7 .spine { position: relative; padding-left: 22px; }
+  .v7 .spine::before { content: ''; position: absolute; left: 6px; top: 6px; bottom: 6px; width: 2px; border-radius: 2px; background: linear-gradient(180deg, #8eb0ff, #ae81ff, #ff77b5, #ffa968, #ffde68); opacity: .9; }
+  .v7 .row { grid-template-columns: auto minmax(0,1fr); padding-left: 10px; }
+  .v7 .row::after { content: ''; position: absolute; left: -19px; top: 50%; width: 8px; height: 8px; margin-top: -4px; border-radius: 50%; background: var(--ink); box-shadow: 0 0 0 3px var(--ground); }
+  .v7 .row.hot::before { display: none; }
+  .v7 .gap { height: var(--g, 4px); }
+
+  /* 8 Heat grid */
+  .v8 .chips { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 6px; }
+  .v8 .chip { border-radius: 10px; padding: 8px 9px; cursor: pointer; background: color-mix(in srgb, var(--c) calc(var(--h) * 100%), var(--ground-2)); display: flex; flex-direction: column; gap: 2px; border: 1px solid transparent; transition: transform .2s cubic-bezier(.2,.7,.2,1); }
+  .v8 .chip:hover { transform: translateY(-2px); }
+  .v8 .chip.on { border-color: var(--ink); }
+  .v8 .chip b { font: 700 12px var(--mono); font-variant-numeric: tabular-nums; }
+  .v8 .chip span { font: 10.5px var(--mono); color: var(--ink-2); }
+  .v8 .legend { display: flex; justify-content: space-between; font: 10px var(--mono); color: var(--muted); }
+
+  /* 9 Dial */
+  .v9 .row { grid-template-columns: 38px minmax(0,1fr); }
+  .v9 .dial { width: 38px; height: 38px; border-radius: 50%; display: grid; place-items: center; font: 700 11px var(--mono); position: relative; background: conic-gradient(var(--c) calc(var(--h) * 360deg), var(--line) 0); }
+  .v9 .dial::before { content: ''; position: absolute; inset: 4px; border-radius: 50%; background: var(--ground); }
+  .v9 .dial span { position: relative; }
+
+  /* 10 Editorial index */
+  .v10 .hour { display: flex; align-items: baseline; gap: 10px; margin-top: 8px; }
+  .v10 .hour:first-child { margin-top: 0; }
+  .v10 .hour b { font-family: var(--display); font-weight: 400; font-size: 20px; }
+  .v10 .hour i { flex: 1; height: 1px; background: var(--line); }
+  .v10 .entry { display: flex; align-items: baseline; gap: 8px; padding: 5px 4px; border-radius: 8px; cursor: pointer; }
+  .v10 .entry:hover { background: color-mix(in srgb, var(--lift) 40%, transparent); }
+  .v10 .entry .t { background: none; padding: 0; font-size: 11.5px; color: var(--muted); }
+  .v10 .entry .w { font-size: 13px; color: var(--ink); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .v10 .entry .l { flex: 1; border-bottom: 1px dotted var(--line); min-width: 12px; transform: translateY(-4px); }
+  .v10 .entry .x { font: 700 11.5px var(--mono); color: var(--c); }
+  .v10 .entry.on .w { font-weight: 700; }
+
+
+  /* 11 Heat grid + dial + frame */
+  .v11 .chips { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 6px; }
+  .v11 .chip { position: relative; border-radius: 10px; padding: 8px 9px; min-height: 84px; cursor: pointer; overflow: hidden; display: flex; flex-direction: column; justify-content: flex-end; gap: 1px; border: 1px solid transparent; transition: transform .2s cubic-bezier(.2,.7,.2,1);
+    background: color-mix(in srgb, var(--c) calc(var(--h) * 100%), var(--ground-2)); }
+  .v11 .chip:hover { transform: translateY(-2px); }
+  .v11 .chip.on { border-color: var(--ink); }
+  .v11 .chip.frame { background: linear-gradient(135deg, var(--c), #16121a 75%); color: #f3edf6; }
+  .v11 .chip.frame::before { content: ''; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(22,18,26,0) 30%, rgba(22,18,26,.75)); }
+  .v11 .chip.frame::after { content: ''; position: absolute; left: 0; right: 0; bottom: 0; height: 3px; background: var(--c); }
+  .v11 .chip b, .v11 .chip span { position: relative; }
+  .v11 .chip b { font: 700 12px var(--mono); font-variant-numeric: tabular-nums; }
+  .v11 .chip span { font: 10.5px var(--mono); color: var(--ink-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .v11 .chip.frame span { color: #d6cddb; }
+  .v11 .dial { position: absolute; top: 6px; right: 6px; width: 26px; height: 26px; border-radius: 50%; display: grid; place-items: center; font: 700 9.5px var(--mono); background: conic-gradient(var(--ink) calc(var(--h) * 360deg), color-mix(in srgb, var(--ink) 18%, transparent) 0); }
+  .v11 .dial::before { content: ''; position: absolute; inset: 3px; border-radius: 50%; background: var(--ground-2); }
+  .v11 .chip.frame .dial { background: conic-gradient(#f3edf6 calc(var(--h) * 360deg), rgba(243,237,246,.25) 0); color: #f3edf6; }
+  .v11 .chip.frame .dial::before { background: rgba(22,18,26,.85); }
+  .v11 .dial i { position: relative; font-style: normal; }
+  .v11 .split { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .v11 .split .eyebrow { margin-bottom: 6px; }
+  .v11 .split .chips { grid-template-columns: repeat(2, minmax(0,1fr)); }
+  @media (prefers-reduced-motion: reduce) { .row, .v8 .chip, .v11 .chip { transition: none; } }
+</style>
+<div class="mesh" aria-hidden="true"></div>
+<main>
+  <header>
+    <div>
+      <div class="eyebrow">Hypeline · dashboard · 2026-09-15</div>
+      <h1>Ten ways to list the moments</h1>
+      <p>Same eight moments from the tokyosims fixture in every box. In each, one row is in clip mode (active) and one is hovered from its pin. Numbers are only for picking; 11 is the combination of 6 + 8 + 9.</p>
+    </div>
+    <button class="toggle" id="theme" type="button">Night</button>
+  </header>
+  <div class="grid" id="grid"></div>
+</main>
+<script>
+  const M = [
+    { t: 915,   why: '2.2× baseline rate, 1× "clip it"', score: 3.07, n: 41, u: 22, q: 'CLIP IT', clip: false },
+    { t: 2055,  why: '6.2× baseline rate, 14× "clip it"', score: 3.62, n: 118, u: 41, q: 'HE ACTUALLY DID IT', clip: true },
+    { t: 3760,  why: '58% reactions', score: 2.41, n: 52, u: 28, q: 'KEKW', clip: false },
+    { t: 6423,  why: '3.1× baseline rate, 62% reactions', score: 2.88, n: 77, u: 30, q: 'LMAOOO', clip: false },
+    { t: 7388,  why: '2.1× baseline rate, tech trouble (demoted)', score: 1.12, n: 39, u: 19, q: 'mic??', clip: false },
+    { t: 10132, why: '4.0× baseline rate, 31× "clip it"', score: 3.41, n: 96, u: 33, q: 'NO WAY', clip: true },
+    { t: 12011, why: '2.6× baseline rate, 71% reactions', score: 2.64, n: 61, u: 26, q: 'PogChamp', clip: false },
+    { t: 15090, why: '1.9× baseline rate', score: 1.48, n: 33, u: 17, q: 'gg', clip: false },
+  ];
+  const LEN = 23042, MAX = 3.62;
+  const ACTIVE = 1, HOT = 5;
+  const SILK = ['#8eb0ff', '#ae81ff', '#ff77b5', '#ffa968', '#ffde68'];
+  function silk(t) {
+    const s = Math.min(.9999, Math.max(0, t)) * (SILK.length - 1), i = Math.floor(s), f = s - i;
+    const a = SILK[i], b = SILK[i + 1];
+    const ch = (k) => Math.round(parseInt(a.slice(k, k + 2), 16) * (1 - f) + parseInt(b.slice(k, k + 2), 16) * f);
+    return `rgb(${ch(1)} ${ch(3)} ${ch(5)})`;
+  }
+  const hms = (s) => `${Math.floor(s / 3600)}:${String(Math.floor(s / 60) % 60).padStart(2, '0')}:${String(s % 60).padStart(2, '0')}`;
+  const mult = (m) => (m.why.match(/([\d.]+)× baseline/) || [, '—'])[1];
+  const state = (i) => i === ACTIVE ? 'on' : i === HOT ? 'hot' : '';
+  const col = (m) => silk(m.t / LEN);
+  const head = (right) => `<div class="eyebrow head"><span>Moments</span><span>${right}</span></div>`;
+  function spark(m) {
+    // a little hype curve around the moment: quiet, the peak, settle
+    const h = m.score / MAX;
+    const pts = [];
+    for (let i = 0; i <= 16; i++) { const x = i / 16; const g = Math.exp(-((x - .5) ** 2) / .03) * h + .06 + .03 * Math.sin(i * 1.7); pts.push([x * 64, 26 - g * 22]); }
+    const d = pts.map((p, i) => (i ? 'L' : 'M') + p[0].toFixed(1) + ' ' + p[1].toFixed(1)).join(' ');
+    return `<svg viewBox="0 0 64 28" aria-hidden="true"><path d="${d} L64 28 L0 28 Z" fill="${col(m)}" opacity=".45"/><path d="${d}" fill="none" stroke="${col(m)}" stroke-width="1.5"/></svg>`;
+  }
+  const V = [
+    { n: 'Ledger', p: 'What we have, tightened: the time pill takes the silk colour of its place in the VOD and a hairline meter on the right shows the score against the best one.', html: () => head(`${M.length} · best 3.62`) + `<div class="list">` + M.map((m, i) => `<div class="row ${state(i)}"><span class="t" style="--c:${col(m)}">${hms(m.t)}</span><span><span class="why">${m.why}</span><span class="sub">${m.n} msgs · ${m.u} chatters${m.clip ? ' · clipped' : ''}</span></span><span class="meter"><i style="width:${(m.score / MAX * 100).toFixed(0)}%"></i></span></div>`).join('') + `</div>` },
+    { n: 'Ranked', p: 'Sorted by score, not by time: a Gloock numeral leads each row and the top three numerals are silk. For people who want "the best three" first.', html: () => head('by score') + `<div class="list">` + [...M].sort((a, b) => b.score - a.score).map((m, i) => `<div class="row ${state(M.indexOf(m))} ${i < 3 ? 'top' : ''}"><span class="rank">${i + 1}</span><span class="t" style="--c:${col(m)}">${hms(m.t)}</span><span><span class="why">${m.why}</span><span class="sub">score ${m.score.toFixed(2)} · ${m.u} chatters</span></span></div>`).join('') + `</div>` },
+    { n: 'Cards', p: 'The landing page\'s tab cards, stacked: the ink pill on the edge, the loudest chat line as a Gloock title, the reason under it. The list looks like the thread\'s pins.', html: () => head('as pins') + `<div class="list">` + M.slice(0, 5).map((m, i) => `<div class="card ${state(i)}"><span class="tab">${hms(m.t)} · ${mult(m)}× · ${m.u} chatters</span><div class="q">${m.q}</div><div class="sub">${m.why}</div></div>`).join('') + `</div>` },
+    { n: 'Thread strip', p: 'Each row carries its own 90-second slice of the hype curve in the silk colour, so the shape of the moment (a spike, a swell, a plateau) reads before the words do.', html: () => head('±45 s') + `<div class="list">` + M.map((m, i) => `<div class="row ${state(i)}">${spark(m)}<span class="t" style="--c:${col(m)}">${hms(m.t)}</span><span><span class="why">${m.why}</span><span class="sub">score ${m.score.toFixed(2)}</span></span></div>`).join('') + `</div>` },
+    { n: 'Chat quote', p: 'Chat speaks first: the burst\'s loudest line is the title, in quotes; the numbers become a caption. It reads like a list of scenes rather than a list of statistics.', html: () => head('what chat said') + `<div class="list">` + M.map((m, i) => `<div class="row ${state(i)}"><span><div class="q">${m.q}</div><div class="sub">${m.why} · ${m.u} chatters</div></span><span class="t" style="--c:${col(m)}">${hms(m.t)}</span></div>`).join('') + `</div>` },
+    { n: 'Filmstrip', p: 'A storyboard frame from the VOD leads each row (the storyboard needs the shim; a silk placeholder otherwise), the time stamped on the frame like a contact sheet.', html: () => head('frames') + `<div class="list">` + M.slice(0, 6).map((m, i) => `<div class="row ${state(i)}"><span class="frame" style="--c:${col(m)}"><span class="t">${hms(m.t)}</span></span><span><span class="why">${m.why}</span><span class="sub">${mult(m)}× · ${m.u} chatters · score ${m.score.toFixed(2)}</span></span></div>`).join('') + `</div>` },
+    { n: 'Spine', p: 'A silk spine runs down the list with a dot per moment; the gaps between rows are proportional to the time between them, so the list is also a tiny vertical timeline.', html: () => head('in time') + `<div class="spine list">` + M.map((m, i) => `${i ? `<div class="gap" style="--g:${Math.min(28, Math.max(2, (m.t - M[i - 1].t) / 160)).toFixed(0)}px"></div>` : ''}<div class="row ${state(i)}"><span class="t" style="--c:${col(m)}">${hms(m.t)}</span><span><span class="why">${m.why}</span><span class="sub">score ${m.score.toFixed(2)}</span></span></div>`).join('') + `</div>` },
+    { n: 'Heat grid', p: 'Dense: a chip per moment, three across, coloured by how strong it is (silk at full score, paper at none). Whole VOD at a glance; details on hover or in the readout.', html: () => head('by strength') + `<div class="chips">` + M.map((m, i) => `<div class="chip ${state(i) === 'on' ? 'on' : ''}" style="--c:${col(m)};--h:${(m.score / MAX).toFixed(2)}"><b>${hms(m.t)}</b><span>${mult(m)}× · ${m.u} ch</span></div>`).join('') + `</div><div class="legend"><span>quiet</span><span>loud</span></div>` },
+    { n: 'Dial', p: 'A small ring meter per row: score as the arc, in the silk colour, the rank inside. Scores become comparable at a glance without a column of decimals.', html: () => head('score') + `<div class="list">` + M.map((m, i) => `<div class="row ${state(i)}"><span class="dial" style="--c:${col(m)};--h:${(m.score / MAX).toFixed(2)}"><span>${[...M].sort((a, b) => b.score - a.score).indexOf(m) + 1}</span></span><span><span class="why"><span class="mono" style="color:var(--muted)">${hms(m.t)}</span> &nbsp;${m.why}</span><span class="sub">${m.n} msgs · ${m.u} chatters</span></span></div>`).join('') + `</div>` },
+    { n: 'Index', p: 'A magazine index grouped by hour of the stream: time, reason, dotted leaders, the multiplier in silk at the right edge. Quiet, typographic, fits many moments.', html: () => { const hours = {}; M.forEach((m) => (hours[Math.floor(m.t / 3600)] ||= []).push(m)); return head('by hour') + Object.entries(hours).map(([h, ms]) => `<div class="hour"><b>Hour ${+h + 1}</b><i></i></div>` + ms.map((m) => `<div class="entry ${state(M.indexOf(m)) === 'on' ? 'on' : ''}" style="--c:${col(m)}"><span class="t">${hms(m.t)}</span><span class="w">${m.q.toLowerCase() === m.q ? m.why : m.q}</span><span class="l"></span><span class="x">${mult(m)}×</span></div>`).join('')).join(''); } },
+    { n: 'Heat grid + dial + frame', p: 'Angel\'s combination: the heat chips carry the ring meter (score as the arc, rank inside) in a corner; with the shim set, the chip\'s background becomes the storyboard frame of that moment, the time colour staying as a silk edge along the bottom.', html: () => { const rank = (m) => [...M].sort((a, b) => b.score - a.score).indexOf(m) + 1; const chip = (m, i, f) => `<div class="chip ${f ? 'frame' : ''} ${state(i) === 'on' ? 'on' : ''}" style="--c:${col(m)};--h:${(m.score / MAX).toFixed(2)}"><span class="dial"><i>${rank(m)}</i></span><b>${hms(m.t)}</b><span>${mult(m)}× · ${m.u} ch</span></div>`; return head('by strength') + `<div class="split"><div><div class="eyebrow">no shim · heat</div><div class="chips">` + M.slice(0, 6).map((m, i) => chip(m, i, false)).join('') + `</div></div><div><div class="eyebrow">shim set · frames</div><div class="chips">` + M.slice(0, 6).map((m, i) => chip(m, i, true)).join('') + `</div></div></div>`; } },
+  ];
+  document.getElementById('grid').innerHTML = V.map((v, i) => `<section class="study v${i + 1}"><div class="cap"><b>${i + 1}</b><div><h2>${v.n}</h2><p>${v.p}</p></div></div><div class="glass box">${v.html()}</div></section>`).join('');
+  const root = document.documentElement, btn = document.getElementById('theme');
+  const dark = () => root.dataset.theme === 'dark' || (!root.dataset.theme && matchMedia('(prefers-color-scheme: dark)').matches);
+  const label = () => (btn.textContent = dark() ? 'Day' : 'Night');
+  btn.addEventListener('click', () => { root.dataset.theme = dark() ? 'light' : 'dark'; label(); });
+  label();
+</script>

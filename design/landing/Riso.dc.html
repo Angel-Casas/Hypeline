@@ -1,0 +1,60 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Space+Mono:wght@400;700&display=swap">
+  <style>
+    body { margin: 0; background: #fbf6ea; }
+    a { color: #1f4d3f; } a:hover { color: #0f2e25; }
+    .grain { background-image: radial-gradient(rgba(0,0,0,0.13) 0.6px, transparent 0.7px); background-size: 3px 3px; }
+    .ink-mint { color: #1f8f7a; mix-blend-mode: multiply; }
+    .ink-pink { color: #ff8fb1; mix-blend-mode: multiply; }
+  </style>
+</helmet>
+<div class="grain" style="position: relative; width: 1440px; height: 1000px; overflow: hidden; background: #fbf6ea; color: #1b1b1b; font-family: 'Space Mono', Menlo, monospace;">
+  <!-- misregistered headline: pink pass offset from mint pass -->
+  <div style="position: absolute; left: 60px; top: 90px; font-family: 'Archivo Black', Impact, sans-serif; font-size: 190px; line-height: 0.86; letter-spacing: -0.03em; text-transform: uppercase;">
+    <div class="ink-pink" style="position: absolute; left: 7px; top: 6px; opacity: 0.85;">CLIP<br>IT.</div>
+    <div class="ink-mint" style="position: relative; opacity: 0.92;">CLIP<br>IT.</div>
+  </div>
+
+  <!-- ribbon of chat, printed like a ticker -->
+  <div style="position: absolute; left: -40px; top: 500px; width: 1600px; transform: rotate(-3deg); background: #ffd1de; padding: 14px 0; border-top: 3px solid #1b1b1b; border-bottom: 3px solid #1b1b1b; white-space: nowrap; font-size: 22px; font-weight: 700; color: #1b1b1b; overflow: hidden;">
+    <span style="padding: 0 24px;">CLIP IT</span><span style="padding: 0 24px;">LMAOOOO</span><span style="padding: 0 24px;">NO WAY</span><span style="padding: 0 24px;">CLIP IT CLIP IT</span><span style="padding: 0 24px;">someone clip that</span><span style="padding: 0 24px;">W</span><span style="padding: 0 24px;">CLIP IT</span><span style="padding: 0 24px;">HE DID IT</span><span style="padding: 0 24px;">CLIP IT</span><span style="padding: 0 24px;">LMAOOOO</span><span style="padding: 0 24px;">NO WAY</span>
+  </div>
+
+  <!-- right column copy -->
+  <div style="position: absolute; left: 820px; top: 110px; width: 540px; display: flex; flex-direction: column; gap: 22px;">
+    <div style="display: inline-flex; align-self: flex-start; border: 2px solid #1b1b1b; padding: 6px 12px; font-size: 13px; letter-spacing: 0.12em; text-transform: uppercase; background: #d5efe4;">Twitch VOD → clip, in the browser</div>
+    <p style="margin: 0; font-size: 20px; line-height: 1.5;">Chat spams it. Hypeline hears it. Paste a VOD and the chat replay becomes a map of every moment worth cutting — free, offline-capable, nothing uploaded.</p>
+    <ul style="margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 8px; font-size: 15px;">
+      <li style="display: flex; gap: 12px; align-items: baseline;"><span style="color: #ff5c8e; font-weight: 700;">01</span> Heatmap from the chat replay — no AI needed</li>
+      <li style="display: flex; gap: 12px; align-items: baseline;"><span style="color: #ff5c8e; font-weight: 700;">02</span> Cut 16:9, 9:16 or cam + game, captions burned in</li>
+      <li style="display: flex; gap: 12px; align-items: baseline;"><span style="color: #ff5c8e; font-weight: 700;">03</span> Titles and search with your own NanoGPT key</li>
+    </ul>
+  </div>
+
+  <!-- CTA block, stamped -->
+  <div style="position: absolute; left: 60px; top: 660px; width: 680px; display: flex; flex-direction: column; gap: 12px;">
+    <label style="font-size: 13px; letter-spacing: 0.12em; text-transform: uppercase;">Paste a VOD link</label>
+    <div style="display: flex; gap: 0; border: 3px solid #1b1b1b; background: #ffffff; box-shadow: 8px 8px 0 #1f8f7a;">
+      <input value="twitch.tv/videos/…" style="flex: 1; border: 0; background: transparent; padding: 18px 16px; font-family: 'Space Mono', monospace; font-size: 17px; color: #1b1b1b; outline: none;">
+      <button style="border: 0; border-left: 3px solid #1b1b1b; background: #ff8fb1; color: #1b1b1b; padding: 0 26px; font-family: 'Archivo Black', Impact, sans-serif; font-size: 18px; text-transform: uppercase; cursor: pointer;">Go</button>
+    </div>
+    <div style="font-size: 13px; color: #555;">No account. Open source under MIT. Your key never leaves the tab.</div>
+  </div>
+
+  <!-- bottom right: printed stamp -->
+  <div style="position: absolute; right: 70px; bottom: 60px; width: 210px; height: 210px; border: 3px solid #1f8f7a; border-radius: 50%; display: flex; align-items: center; justify-content: center; text-align: center; transform: rotate(9deg); color: #1f8f7a; font-size: 14px; line-height: 1.35; letter-spacing: 0.06em; text-transform: uppercase; mix-blend-mode: multiply;">
+    printed in<br>your browser<br>· no server ·<br>2026
+  </div>
+  <div style="position: absolute; left: 60px; top: 30px; font-size: 13px; letter-spacing: 0.2em; text-transform: uppercase;">Hypeline</div>
+</div>
+</x-dc>
+</body>
+</html>

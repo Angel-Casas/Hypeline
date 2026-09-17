@@ -1,0 +1,61 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Azeret+Mono:wght@400;600&family=Newsreader:ital,opsz,wght@0,6..72,400;1,6..72,400&display=swap">
+  <style>
+    body { margin: 0; background: #dbe8f4; }
+    a { color: #244a6e; } a:hover { color: #142e47; }
+    .mono { font-family: 'Azeret Mono', Menlo, monospace; }
+    .box { position: absolute; border: 1.5px solid #ffffff; padding: 14px 16px; color: #ffffff; font-family: 'Azeret Mono', monospace; font-size: 13px; line-height: 1.45; }
+    .box b { display: block; font-size: 11px; letter-spacing: 0.14em; margin-bottom: 6px; opacity: 0.8; }
+  </style>
+</helmet>
+<div style="position: relative; width: 1440px; height: 1000px; overflow: hidden; background: #8db0d2; background-image: linear-gradient(rgba(255,255,255,0.18) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.18) 1px, transparent 1px), linear-gradient(rgba(255,255,255,0.08) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.08) 1px, transparent 1px); background-size: 120px 120px, 120px 120px, 24px 24px, 24px 24px; color: #ffffff; font-family: 'Newsreader', Georgia, serif;">
+  <!-- title block, bottom right like a drawing sheet -->
+  <div style="position: absolute; right: 40px; bottom: 40px; width: 420px; border: 1.5px solid #fff; display: grid; grid-template-columns: 1fr 1fr; font-family: 'Azeret Mono', monospace; font-size: 11px;">
+    <div style="padding: 8px 10px; border-right: 1.5px solid #fff; border-bottom: 1.5px solid #fff;">PROJECT<br><span style="font-size: 14px; font-weight: 600;">HYPELINE</span></div>
+    <div style="padding: 8px 10px; border-bottom: 1.5px solid #fff;">SHEET<br><span style="font-size: 14px; font-weight: 600;">01 / 01</span></div>
+    <div style="padding: 8px 10px; border-right: 1.5px solid #fff;">SERVER<br><span style="font-size: 14px; font-weight: 600; text-decoration: line-through;">NONE</span></div>
+    <div style="padding: 8px 10px;">LICENSE<br><span style="font-size: 14px; font-weight: 600;">MIT</span></div>
+  </div>
+
+  <!-- headline -->
+  <div style="position: absolute; left: 64px; top: 64px; width: 720px;">
+    <h1 style="margin: 0; font-weight: 400; font-size: 66px; line-height: 1.02; letter-spacing: -0.01em;">A clipping tool drawn without a server.</h1>
+    <p style="margin: 20px 0 0 0; font-size: 20px; line-height: 1.5; max-width: 600px; color: rgba(255,255,255,0.88);">Everything on this sheet runs inside your browser tab: Twitch chat in, hype heatmap out, ffmpeg cuts the clip. The only optional part is AI, with a key you own.</p>
+    <div style="margin-top: 26px; display: flex; flex-direction: column; gap: 8px; max-width: 560px;">
+      <div class="mono" style="font-size: 11px; letter-spacing: 0.14em;">INPUT · VOD URL</div>
+      <div style="display: flex; border: 1.5px solid #fff;">
+        <input value="https://www.twitch.tv/videos/2871164819" class="mono" style="flex: 1; border: 0; background: transparent; padding: 12px 14px; font-size: 14px; color: #fff; outline: none;">
+        <button class="mono" style="border: 0; border-left: 1.5px solid #fff; background: #fff; color: #244a6e; padding: 0 20px; font-size: 13px; font-weight: 600; letter-spacing: 0.08em; cursor: pointer;">RUN →</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- schematic -->
+  <div class="box" style="left: 64px; top: 500px; width: 180px;"><b>01 · SOURCE</b>Twitch VOD<br>chat replay via GQL<br>~100 requests · 4 s</div>
+  <div class="box" style="left: 350px; top: 500px; width: 210px;"><b>02 · SCORE</b>15 s buckets vs rolling median · emotes · “clip it” · sub trains</div>
+  <div class="box" style="left: 660px; top: 500px; width: 200px; background: rgba(255,255,255,0.12);"><b>03 · HEATMAP</b>peaks → moments<br>click to seek</div>
+  <div class="box" style="left: 960px; top: 500px; width: 200px;"><b>04 · CUT</b>ffmpeg.wasm in-tab<br>16:9 · 9:16 · cam+game<br>captions burned in</div>
+  <div class="box" style="left: 660px; top: 700px; width: 200px; border-style: dashed;"><b>05 · AI (OPTIONAL)</b>NanoGPT, your key<br>titles · captions · search</div>
+  <div class="box" style="left: 1230px; top: 500px; width: 150px; border-radius: 999px; text-align: center;"><b>OUT</b>clip.mp4<br>thumb.png</div>
+  <svg width="1440" height="1000" style="position: absolute; left: 0; top: 0; pointer-events: none;" fill="none" stroke="#ffffff" stroke-width="1.5">
+    <path d="M244,540 H350"></path><path d="M560,540 H660"></path><path d="M860,540 H960"></path><path d="M1160,540 H1230"></path>
+    <path d="M760,700 V580" stroke-dasharray="5 5"></path>
+    <path d="M860,740 C920,740 1000,700 1060,600" stroke-dasharray="5 5"></path>
+    <g fill="#fff"><path d="M344,536 l8,4 -8,4z"></path><path d="M654,536 l8,4 -8,4z"></path><path d="M954,536 l8,4 -8,4z"></path><path d="M1224,536 l8,4 -8,4z"></path></g>
+    <!-- dimension line -->
+    <path d="M64,880 H900" stroke-dasharray="2 4"></path><path d="M64,872 V888"></path><path d="M900,872 V888"></path>
+  </svg>
+  <div class="mono" style="position: absolute; left: 64px; top: 895px; font-size: 11px; letter-spacing: 0.14em;">TOTAL DISTANCE VIDEO TRAVELS: 0 m · ONLY THE SEGMENTS AROUND A MOMENT ARE FETCHED</div>
+  <div class="mono" style="position: absolute; left: 64px; top: 460px; font-size: 11px; letter-spacing: 0.14em; opacity: 0.8;">FIG. 1 — DATA FLOW, ALL CLIENT-SIDE</div>
+</div>
+</x-dc>
+</body>
+</html>

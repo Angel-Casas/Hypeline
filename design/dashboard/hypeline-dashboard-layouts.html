@@ -1,0 +1,158 @@
+<title>Hypeline Dashboard Layouts</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gloock&family=Manrope:wght@400;500;600;800&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+  :root { --petal: #ffd0e4; --apricot: #ffdcc4; --butter: #fff0bd; --sky: #cfdcff; --lilac: #ddd0ff; --ink-2: #3b3444; --ground: #fbf9fa; --ink: #221c2a; --muted: #6f6779; --accent: #7a4f8e; --line: rgba(34,28,42,.12);
+    --glass: rgba(255,255,255,0.42); --glass-line: rgba(255,255,255,0.85);
+    --display: 'Gloock', 'Iowan Old Style', Georgia, serif; --body: 'Manrope', 'Helvetica Neue', Arial, sans-serif; --mono: 'JetBrains Mono', Menlo, Consolas, monospace; }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--ground); color: var(--ink); font-family: var(--body); font-size: 14px; line-height: 1.45; overflow-x: hidden; }
+  ::selection { background: #ffe79a; }
+  .mesh { position: fixed; inset: -20vmax; z-index: 0; pointer-events: none; filter: blur(70px) saturate(1.05); opacity: .55;
+    background: radial-gradient(38vmax 30vmax at 20% 25%, var(--petal) 0%, transparent 60%), radial-gradient(34vmax 28vmax at 78% 18%, var(--sky) 0%, transparent 60%), radial-gradient(30vmax 26vmax at 70% 80%, var(--butter) 0%, transparent 60%), radial-gradient(28vmax 24vmax at 18% 84%, var(--lilac) 0%, transparent 60%); }
+  #grain { position: fixed; inset: 0; z-index: 1; pointer-events: none; opacity: .3; mix-blend-mode: multiply; }
+  main { position: relative; z-index: 2; }
+  .glass { background: var(--glass); border: 1px solid var(--glass-line); backdrop-filter: blur(20px) saturate(1.5); -webkit-backdrop-filter: blur(20px) saturate(1.5); box-shadow: 0 14px 40px rgba(34,28,42,.07), inset 0 1px 0 #fff; border-radius: 18px; }
+  .glass-sm { background: rgba(255,255,255,.55); border: 1px solid var(--glass-line); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border-radius: 12px; }
+  .eyebrow { font-family: var(--mono); font-size: 10.5px; letter-spacing: .14em; text-transform: uppercase; color: var(--muted); }
+  .mono { font-family: var(--mono); }
+  .display { font-family: var(--display); letter-spacing: -.01em; }
+  .btn { display: inline-flex; align-items: center; gap: 6px; padding: 8px 14px; border-radius: 999px; border: 0; font: 600 13px var(--body); cursor: pointer; }
+  .btn-ink { background: var(--ink); color: #fff; } .btn-ghost { background: rgba(255,255,255,.6); border: 1px solid var(--line); color: var(--ink); }
+  .field { background: rgba(255,255,255,.7); border: 1px solid var(--line); border-radius: 10px; padding: 7px 10px; font: 13px var(--mono); color: var(--muted); }
+  .pill { display: inline-flex; align-items: center; gap: 6px; padding: 3px 9px; border-radius: 999px; background: var(--ink); color: #fff; font: 10px var(--mono); }
+  .tag { display: inline-flex; padding: 2px 8px; border-radius: 999px; font: 10.5px var(--mono); color: var(--ink); background: var(--c, var(--petal)); }
+  .muted { color: var(--muted); }
+  .player { background: #16121a; border-radius: 14px; aspect-ratio: 16/9; position: relative; overflow: hidden; }
+  .player::after { content: "▶"; position: absolute; inset: 0; display: grid; place-items: center; color: #fff; font-size: 22px; opacity: .7; }
+  .player .bar { position: absolute; left: 12px; right: 12px; bottom: 10px; height: 3px; background: rgba(255,255,255,.25); border-radius: 3px; } .player .bar i { position: absolute; left: 0; top: 0; bottom: 0; width: 38%; background: #fff; border-radius: 3px; }
+  .thread { width: 100%; display: block; }
+  .spine { stroke: var(--ink); stroke-width: 1.6; fill: none; opacity: .9; }
+  /* rail */
+  #rail { position: fixed; left: 16px; top: 50%; transform: translateY(-50%); z-index: 30; display: grid; gap: 2px; padding: 8px; border-radius: 16px; }
+  #rail button { display: grid; grid-template-columns: 22px 1fr; gap: 6px; align-items: center; text-align: left; border: 0; background: transparent; padding: 5px 8px 5px 4px; border-radius: 10px; font-family: var(--mono); font-size: 11.5px; color: var(--muted); cursor: pointer; white-space: nowrap; }
+  #rail button b { font-weight: 500; display: grid; place-items: center; width: 22px; height: 22px; border-radius: 50%; border: 1px solid rgba(34,28,42,.25); }
+  #rail button[aria-current="true"] { background: var(--ink); color: #fff; } #rail button[aria-current="true"] b { border-color: transparent; background: rgba(255,255,255,.2); }
+  #rail .hint { font-family: var(--mono); font-size: 10.5px; color: var(--muted); padding: 6px 8px 2px; }
+  .thesis { position: fixed; right: 20px; bottom: 20px; max-width: 360px; padding: 12px 14px; font-size: 13px; color: var(--ink-2); z-index: 30; }
+  .thesis b { display: block; font-family: var(--mono); font-size: 11px; color: var(--muted); margin-bottom: 4px; font-weight: 500; }
+  @media (max-width: 900px) { #rail { left: 8px; bottom: 8px; top: auto; transform: none; grid-auto-flow: column; max-width: calc(100vw - 16px); overflow: auto; } #rail button span, #rail .hint { display: none; } .thesis { display: none; } }
+  /* layouts */
+  .layout { display: none; min-height: 100vh; padding: 20px 24px 24px 200px; }
+  .layout.on { display: block; }
+  .top { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 16px; }
+  .brand { font-family: var(--display); font-size: 26px; line-height: 1; }
+  .vodbar { display: flex; align-items: center; gap: 10px; padding: 6px 6px 6px 16px; border-radius: 999px; flex: 1; max-width: 640px; }
+  .vodbar .field { flex: 1; background: transparent; border: 0; }
+  .nav { display: flex; gap: 6px; }
+  .h2 { font-family: var(--display); font-size: 20px; line-height: 1.1; margin: 0 0 2px; }
+  .meta { font: 11px var(--mono); color: var(--muted); }
+  .moment { display: grid; grid-template-columns: auto 1fr auto; gap: 12px; align-items: center; padding: 10px 12px; border-radius: 14px; }
+  .moment.on { background: rgba(255,255,255,.7); box-shadow: inset 0 0 0 1px rgba(255,255,255,.9); }
+  .moment .t { font: 11px var(--mono); color: var(--ink); background: var(--c, var(--petal)); padding: 3px 8px; border-radius: 999px; }
+  .moment .q { font-family: var(--display); font-size: 17px; line-height: 1.1; }
+  .moment .s { font-size: 12px; color: var(--muted); }
+  .list { display: flex; flex-direction: column; gap: 4px; }
+  .card { padding: 16px; }
+  .kv { display: grid; grid-template-columns: auto 1fr; gap: 6px 14px; font-size: 12.5px; } .kv b { font-weight: 600; }
+  .chat { display: flex; flex-direction: column; gap: 6px; font: 12px var(--mono); } .chat div { display: grid; grid-template-columns: 52px 1fr; gap: 8px; } .chat .u { color: var(--accent); }
+  .chat .hot { background: var(--petal); border-radius: 6px; padding: 2px 4px; }
+  .lib { display: flex; flex-direction: column; gap: 8px; }
+  .vod { display: grid; grid-template-columns: 56px 1fr; gap: 10px; align-items: center; padding: 8px; border-radius: 12px; }
+  .vod .thumb { width: 56px; height: 34px; border-radius: 8px; background: linear-gradient(135deg, var(--c, var(--sky)), #fff); }
+  .vod.on { background: rgba(255,255,255,.7); }
+  .thin-thread { height: 120px; }
+</style>
+<div class="mesh" aria-hidden="true"></div>
+<svg id="grain" width="100%" height="100%" aria-hidden="true"><filter id="n"><feTurbulence type="fractalNoise" baseFrequency=".85" numOctaves="2" stitchTiles="stitch"/><feColorMatrix values="0 0 0 0 .13 0 0 0 0 .11 0 0 0 0 .16 0 0 0 .3 0"/></filter><rect width="100%" height="100%" filter="url(#n)"/></svg>
+<div id="rail" class="glass" role="tablist"><div class="hint">← → to switch · 10 layouts</div></div>
+<div class="thesis glass" id="thesis"></div>
+<main id="main"></main>
+<script>
+(() => {
+  // --- shared fake content ---
+  const VOD = { title: 'ranked grind until I hit diamond (feat. grandma)', who: 'tokyosims', len: '6:24:02', msgs: '5,626 messages', game: 'VALORANT' };
+  const MOMENTS = [
+    ['0:34:15', '6.2×', 'He actually did it', '“clip it” ×14 · 41 chatters', 'var(--petal)'],
+    ['2:03:08', '2.1×', 'Mic cuts out', 'tech trouble ×0.3 · demoted', 'var(--lilac)'],
+    ['2:48:52', '4.0×', 'The comeback', '“NO WAY” ×31 · 33 chatters', 'var(--apricot)'],
+    ['3:20:11', '2.6×', 'Raid arrives', 'emote wall · 19 chatters', 'var(--butter)'],
+    ['4:41:30', '1.9×', 'Grandma pulls up', '“GRANDMA” ×22', 'var(--sky)'],
+  ];
+  const LIB = [['tokyosims', 'ranked grind until I hit diamond', '6:24 · 3 clips', 'var(--petal)'], ['nadeshot', 'warzone with the boys', '4:02 · 0 clips', 'var(--sky)'], ['pokimane', 'just chatting + valorant later', '5:40 · 1 clip', 'var(--butter)']];
+  const CHAT = [['12:14', 'kev_', 'no way'], ['12:14', 'lumi', 'CLIP IT'], ['12:14', 'ryo', 'KEKW KEKW'], ['12:15', 'anna', 'he actually did it'], ['12:15', 'xd_', 'CLIP IT CLIP IT'], ['12:15', 'kev_', 'grandma is cracked'], ['12:16', 'mod', 'chill lol']];
+  // --- a stand-in for the WebGL thread: a smooth silk ribbon as SVG (gradient + blur), same peaks ---
+  const PEAKS = [[0.12, 0.22], [0.29, 0.95], [0.5, 0.32], [0.68, 0.72], [0.85, 0.4]];
+  const hype = (t) => PEAKS.reduce((a, [p, w]) => a + w*Math.exp(-(((t-p)*22)**2)), 0) + 0.06;
+  function thread(w, h, opts = {}) {
+    const n = 160, cy = h*0.5, amp = (opts.amp ?? 0.42)*h, top = [], bot = [];
+    for (let i = 0; i <= n; i++) { const t = i/n; const x = t*w; const y = amp*Math.min(1, hype(t)); const e = Math.min(1, t/0.05, (1-t)/0.045); top.push([x, cy - y*e]); bot.push([x, cy + y*e]); }
+    const P = (pts) => pts.map((p, i) => (i ? 'L' : 'M') + p[0].toFixed(1) + ' ' + p[1].toFixed(1)).join(' ');
+    const id = 'g' + Math.random().toString(36).slice(2, 7);
+    const spine = opts.spine !== false ? `<path class="spine" d="${P(top.map(([x], i) => [x, cy + Math.sin(i/n*7)*h*0.012]))}"/>` : '';
+    const dots = (opts.dots ? PEAKS.slice(1).map(([p, wgt]) => `<circle cx="${(p*w).toFixed(1)}" cy="${(cy - amp*Math.min(1, hype(p))).toFixed(1)}" r="4" fill="#fbf9fa" stroke="#221c2a" stroke-width="1.5"/>`).join('') : '');
+    const play = opts.play != null ? `<line x1="${(opts.play*w).toFixed(1)}" x2="${(opts.play*w).toFixed(1)}" y1="0" y2="${h}" stroke="#7a4f8e" stroke-width="2"/>` : '';
+    return `<svg class="thread" viewBox="0 0 ${w} ${h}" preserveAspectRatio="none" style="height:${h}px">
+      <defs><linearGradient id="${id}" x1="0" x2="1" y1="0" y2="0"><stop offset="0" stop-color="#ffa968"/><stop offset=".2" stop-color="#ff77b5"/><stop offset=".35" stop-color="#ae81ff"/><stop offset=".5" stop-color="#8eb0ff"/><stop offset=".62" stop-color="#ff77b5"/><stop offset=".78" stop-color="#ffa968"/><stop offset=".92" stop-color="#ffde68"/><stop offset="1" stop-color="#ae81ff"/></linearGradient>
+      <filter id="${id}b" x="-5%" y="-30%" width="110%" height="160%"><feGaussianBlur stdDeviation="${opts.blur ?? 6}"/></filter>
+      <pattern id="${id}s" width="4" height="3" patternUnits="userSpaceOnUse"><rect width="4" height="1" fill="rgba(255,255,255,.18)"/></pattern></defs>
+      <path d="${P(top)} ${P([...bot].reverse()).replace('M', 'L')} Z" fill="url(#${id})" opacity=".55" filter="url(#${id}b)"/>
+      <path d="${P(top)} ${P([...bot].reverse()).replace('M', 'L')} Z" fill="url(#${id})" opacity=".92"/>
+      <path d="${P(top)} ${P([...bot].reverse()).replace('M', 'L')} Z" fill="url(#${id}s)" opacity=".7"/>
+      ${spine}${dots}${play}</svg>`;
+  }
+  const momentRow = (m, i, on) => `<div class="moment ${on ? 'on' : ''}" style="--c:${m[4]}"><span class="t">${m[0]}</span><div><div class="q">${m[2]}</div><div class="s">${m[1]} · ${m[3]}</div></div><button class="btn btn-ghost" style="padding:5px 10px;font-size:12px">clip</button></div>`;
+  const moments = (on = 0) => `<div class="list">${MOMENTS.map((m, i) => momentRow(m, i, i === on)).join('')}</div>`;
+  const chat = () => `<div class="chat">${CHAT.map(([t, u, m]) => `<div><span class="muted">${t}</span><span><span class="u">${u}</span> <span class="${/CLIP/.test(m) ? 'hot' : ''}">${m}</span></span></div>`).join('')}</div>`;
+  const lib = (on = 0) => `<div class="lib">${LIB.map((v, i) => `<div class="vod ${i === on ? 'on' : ''}" style="--c:${v[3]}"><div class="thumb"></div><div><div style="font-weight:600;font-size:12.5px;line-height:1.2">${v[1]}</div><div class="meta">${v[0]} · ${v[2]}</div></div></div>`).join('')}</div>`;
+  const player = () => `<div class="player"><div class="bar"><i></i></div></div>`;
+  const clipPanel = () => `<div class="card glass"><div class="eyebrow">Clip</div><div style="display:flex;gap:8px;align-items:center;margin:8px 0;flex-wrap:wrap"><span class="field">0:34:05</span><span class="muted">→</span><span class="field">0:34:20</span><span class="meta">15.0 s</span></div><div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px"><span class="tag" style="--c:var(--sky)">16:9</span><span class="tag" style="--c:var(--petal)">9:16</span><span class="tag" style="--c:var(--butter)">cam + game</span><span class="tag" style="--c:var(--lilac)">captions</span></div><button class="btn btn-ink">Export clip</button> <button class="btn btn-ghost">Thumbnail</button></div>`;
+  const aiPanel = () => `<div class="card glass"><div class="eyebrow">AI · your NanoGPT key</div><div style="display:flex;gap:6px;margin:8px 0;flex-wrap:wrap"><button class="btn btn-ghost">Explain moment</button><button class="btn btn-ghost">Transcribe range</button><button class="btn btn-ghost">Title ideas</button></div><div class="meta">~$0.003 per call · 12 calls this VOD</div></div>`;
+  const settings = () => `<div class="card glass"><div class="eyebrow">Settings</div><div class="kv" style="margin-top:8px"><b>CORS shim</b><span class="mono muted">https://hypeline-shim.you.workers.dev</span><b>NanoGPT key</b><span class="mono muted">nk-••••••••••</span><b>Storage</b><span class="muted">457 MB of 2.0 GB · 2 VODs · 3 clips</span></div></div>`;
+  const vodTitle = () => `<div><div class="eyebrow">${VOD.who} · ${VOD.game}</div><h1 class="display" style="font-size:24px;line-height:1.1;margin:2px 0 0">${VOD.title}</h1><div class="meta">${VOD.len} · ${VOD.msgs} · 5 moments</div></div>`;
+  const top = (extra = '') => `<div class="top"><div class="brand">Hypeline</div><div class="vodbar glass"><span class="eyebrow">VOD link</span><span class="field">https://www.twitch.tv/videos/2871164819</span><button class="btn btn-ink">Find the moments</button></div><div class="nav">${extra}<button class="btn btn-ghost">Library</button><button class="btn btn-ghost">Settings</button></div></div>`;
+
+  const L = [
+    { n: 'Desk', t: 'The thread full-width under a slim header; below it three columns — moments, player + clip, AI. The classic workbench.',
+      html: () => `${top()}<div class="card glass" style="padding:10px 14px 4px">${vodTitle()}${thread(1200, 170, { dots: true, play: 0.36 })}</div>
+        <div style="display:grid;grid-template-columns:1fr 1.3fr .9fr;gap:14px;margin-top:14px"><div class="card glass"><div class="eyebrow" style="margin-bottom:8px">Moments</div>${moments()}</div><div style="display:flex;flex-direction:column;gap:14px">${player()}${clipPanel()}</div><div style="display:flex;flex-direction:column;gap:14px">${aiPanel()}<div class="card glass"><div class="eyebrow" style="margin-bottom:8px">Chat at 0:34:15</div>${chat()}</div></div></div>` },
+    { n: 'Studio', t: 'The player leads (large, left) with the thread directly beneath it as its scrubber; moments on the right; the clip panel is a drawer along the bottom.',
+      html: () => `${top()}<div style="display:grid;grid-template-columns:1.6fr 1fr;gap:14px"><div>${player()}<div class="card glass" style="padding:8px 12px 0;margin-top:12px">${thread(1000, 130, { dots: true, play: 0.36, amp: 0.4 })}</div></div><div class="card glass">${vodTitle()}<div style="height:10px"></div>${moments()}</div></div>
+        <div class="card glass" style="margin-top:14px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;align-items:center"><div><div class="eyebrow">Clip</div><div style="display:flex;gap:8px;align-items:center;margin-top:6px"><span class="field">0:34:05</span><span class="muted">→</span><span class="field">0:34:20</span></div></div><div style="display:flex;gap:6px;flex-wrap:wrap"><span class="tag" style="--c:var(--sky)">16:9</span><span class="tag" style="--c:var(--petal)">9:16</span><span class="tag" style="--c:var(--butter)">cam + game</span><span class="tag" style="--c:var(--lilac)">captions</span></div><div style="text-align:right"><button class="btn btn-ghost">Thumbnail</button> <button class="btn btn-ink">Export clip</button></div></div>` },
+    { n: 'Filmstrip', t: 'The thread stands vertical on the left like a filmstrip, moments stacked beside it in time order; player and clip on the right.',
+      html: () => `${top()}<div style="display:grid;grid-template-columns:160px 300px 1fr;gap:14px;min-height:70vh"><div class="card glass" style="padding:8px"><div style="transform:rotate(90deg) translateY(-100%);transform-origin:top left;width:70vh;height:140px">${thread(900, 140, { dots: true, play: 0.36, spine: true })}</div></div><div class="card glass"><div class="eyebrow" style="margin-bottom:8px">Moments</div>${moments()}</div><div style="display:flex;flex-direction:column;gap:14px">${vodTitle()}${player()}${clipPanel()}</div></div>` },
+    { n: 'Cards', t: 'Everything is a glass card on the paper: the VOD, the thread, then one card per moment with a frame, the chat quote and its own clip button. Feels like a gallery.',
+      html: () => `${top()}<div class="card glass" style="padding:10px 14px 4px">${vodTitle()}${thread(1200, 150, { dots: true, play: 0.36 })}</div>
+        <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-top:14px">${MOMENTS.map((m) => `<div class="card glass" style="padding:10px"><div class="player" style="border-radius:10px"></div><div style="display:flex;justify-content:space-between;align-items:center;margin-top:8px"><span class="tag" style="--c:${m[4]}">${m[0]}</span><span class="meta">${m[1]}</span></div><div class="h2" style="font-size:17px;margin-top:6px">${m[2]}</div><div class="muted" style="font-size:12px">${m[3]}</div><button class="btn btn-ink" style="margin-top:10px;width:100%;justify-content:center">Clip this</button></div>`).join('')}</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:14px">${aiPanel()}${settings()}</div>` },
+    { n: 'Focus', t: 'One moment at a time. The player fills the centre; the thread is a thin strip with the current moment lit; previous / next as pills. Nothing else until you ask.',
+      html: () => `${top()}<div style="max-width:960px;margin:0 auto"><div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px"><button class="btn btn-ghost">← 0:34:15 · He actually did it</button><div style="text-align:center"><div class="eyebrow">moment 3 of 5</div><div class="h2" style="font-size:26px">The comeback</div><div class="meta">2:48:52 · 4.0× · “NO WAY” ×31</div></div><button class="btn btn-ghost">Raid arrives · 3:20:11 →</button></div>${player()}<div class="card glass" style="padding:6px 12px 0;margin-top:12px">${thread(1000, 90, { dots: true, play: 0.68, amp: 0.42, blur: 4 })}</div><div style="display:flex;justify-content:center;gap:8px;margin-top:12px"><span class="field">2:48:40</span><span class="muted" style="align-self:center">→</span><span class="field">2:49:02</span><button class="btn btn-ink">Export clip</button><button class="btn btn-ghost">Explain</button><button class="btn btn-ghost">Captions</button></div></div>` },
+    { n: 'Library', t: 'Your VODs live in a left rail (posters, clip counts, settings at the bottom); the main area is the selected VOD — thread, moments, player. The dashboard as a home.',
+      html: () => `<div style="display:grid;grid-template-columns:260px 1fr;gap:16px;min-height:calc(100vh - 44px)"><div class="card glass" style="display:flex;flex-direction:column"><div class="brand" style="margin-bottom:12px">Hypeline</div><div class="vodbar glass-sm" style="padding:4px 4px 4px 10px;margin-bottom:12px;border-radius:12px;max-width:none;flex:none"><span class="field" style="font-size:11px">paste a VOD link…</span><button class="btn btn-ink" style="padding:6px 10px;font-size:12px">Go</button></div><div class="eyebrow" style="margin-bottom:6px">In this browser</div>${lib()}<div style="flex:1"></div><div class="kv" style="font-size:11.5px;margin-top:12px"><b>Storage</b><span class="muted">457 MB / 2 GB</span><b>Shim</b><span class="muted">connected</span><b>NanoGPT</b><span class="muted">key set</span></div><button class="btn btn-ghost" style="margin-top:10px">Settings</button></div>
+        <div><div class="card glass" style="padding:10px 14px 4px">${vodTitle()}${thread(1000, 150, { dots: true, play: 0.36 })}</div><div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:14px"><div class="card glass"><div class="eyebrow" style="margin-bottom:8px">Moments</div>${moments()}</div><div style="display:flex;flex-direction:column;gap:14px">${player()}${clipPanel()}</div></div></div></div>` },
+    { n: 'Canvas', t: 'The landing, continued: the thread is the page. Moment cards pin to the peaks exactly like the landing (now with clip buttons); the player and clip panel float as glass over the silk.',
+      html: () => `${top()}<div style="position:relative;height:calc(100vh - 110px)"><div style="position:absolute;left:0;right:0;top:36%">${thread(1200, 300, { dots: false, play: 0.36, amp: 0.46 })}</div>
+        ${MOMENTS.slice(0, 4).map((m, i) => { const [p] = PEAKS[i + 1]; const yPx = 150 - 0.46*300*Math.min(1, hype(p)); return `<div style="position:absolute;left:${p*100}%;top:calc(36% + ${yPx.toFixed(0)}px);transform:translate(-50%,-100%);display:flex;flex-direction:column;align-items:center;pointer-events:none"><div class="glass" style="width:212px;padding:16px 15px 10px;position:relative;pointer-events:auto"><span class="pill" style="position:absolute;top:-11px;left:12px">${m[0]} · ${m[1]}</span><div class="h2" style="font-size:20px">${m[2]}</div><div class="muted" style="font-size:12px">${m[3]}</div><div style="display:flex;gap:6px;margin-top:8px"><button class="btn btn-ink" style="padding:5px 10px;font-size:11.5px">clip</button><button class="btn btn-ghost" style="padding:5px 10px;font-size:11.5px">explain</button></div></div><div style="width:1px;height:20px;background:var(--ink)"></div><div style="width:7px;height:7px;border-radius:50%;background:var(--ink);margin-top:-1px"></div></div>`; }).join('')}
+        <div class="glass" style="position:absolute;right:0;bottom:0;width:420px;padding:10px">${player()}<div style="display:flex;gap:8px;align-items:center;margin-top:10px"><span class="field">0:34:05</span><span class="muted">→</span><span class="field">0:34:20</span><button class="btn btn-ink" style="margin-left:auto">Export clip</button></div></div>
+        <div class="glass" style="position:absolute;left:0;bottom:0;width:300px;padding:12px 14px">${vodTitle()}</div></div>` },
+    { n: 'Editorial', t: 'A magazine page: the VOD title big in Gloock, the thread as its hero, the moments as a numbered editorial list with the chat quotes pulled out; the player in a narrow right column.',
+      html: () => `${top()}<div style="max-width:1120px;margin:0 auto"><div class="eyebrow">${VOD.who} · ${VOD.game} · ${VOD.len}</div><h1 class="display" style="font-size:clamp(34px,4.2vw,56px);line-height:1.02;letter-spacing:-.02em;margin:6px 0 10px;max-width:900px">${VOD.title}</h1>${thread(1120, 190, { dots: true, play: 0.36 })}
+        <div style="display:grid;grid-template-columns:1.5fr 1fr;gap:28px;margin-top:20px"><div>${MOMENTS.map((m, i) => `<div style="display:grid;grid-template-columns:54px 1fr auto;gap:14px;padding:14px 0;border-top:1px solid var(--line);align-items:baseline"><div class="display" style="font-size:30px;color:${m[4].replace('var(', '').replace(')', '') === '--petal' ? '#ff77b5' : 'var(--ink)'}">0${i + 1}</div><div><div class="h2" style="font-size:22px">${m[2]}</div><div class="meta" style="margin:2px 0 6px">${m[0]} · ${m[1]} · ${m[3].split(' · ')[1] ?? ''}</div><div style="font-family:var(--mono);font-size:12.5px;color:var(--ink-2)">${m[3].split(' · ')[0]}</div></div><div style="display:flex;gap:6px"><button class="btn btn-ink" style="padding:6px 12px;font-size:12px">clip</button><button class="btn btn-ghost" style="padding:6px 12px;font-size:12px">play</button></div></div>`).join('')}</div><div style="display:flex;flex-direction:column;gap:14px">${player()}${clipPanel()}${aiPanel()}</div></div></div>` },
+    { n: 'Console', t: 'For power users: a compact header, the thread, then a mono table of every moment (time, score, chatters, quote, actions) with clip settings inline. Dense, fast, no cards.',
+      html: () => `${top()}<div style="display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:6px">${vodTitle()}<div class="meta">shim ok · key set · 457 MB</div></div>${thread(1200, 140, { dots: true, play: 0.36 })}
+        <table style="width:100%;border-collapse:collapse;margin-top:10px;font:12.5px var(--mono)"><thead><tr style="text-align:left;color:var(--muted);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase"><th style="padding:8px 6px">#</th><th>time</th><th>score</th><th>chatters</th><th>signal</th><th>title</th><th></th></tr></thead><tbody>${MOMENTS.map((m, i) => `<tr style="border-top:1px solid var(--line);${i === 0 ? 'background:rgba(255,255,255,.55)' : ''}"><td style="padding:9px 6px;color:var(--muted)">0${i + 1}</td><td>${m[0]}</td><td><span class="tag" style="--c:${m[4]}">${m[1]}</span></td><td>${m[3].match(/\d+ chatters/)?.[0]?.split(' ')[0] ?? '—'}</td><td style="color:var(--ink-2)">${m[3].split(' · ')[0]}</td><td style="font-family:var(--body);font-weight:600">${m[2]}</td><td style="text-align:right"><button class="btn btn-ghost" style="padding:4px 9px;font-size:11.5px">play</button> <button class="btn btn-ink" style="padding:4px 9px;font-size:11.5px">clip</button></td></tr>`).join('')}</tbody></table>
+        <div class="card glass" style="margin-top:14px;display:grid;grid-template-columns:1fr auto;gap:14px;align-items:center"><div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap"><span class="eyebrow">clip</span><span class="field">0:34:05</span><span class="muted">→</span><span class="field">0:34:20</span><span class="tag" style="--c:var(--sky)">16:9</span><span class="tag" style="--c:var(--petal)">9:16</span><span class="tag" style="--c:var(--butter)">cam + game</span><span class="tag" style="--c:var(--lilac)">captions</span><span class="tag" style="--c:#fff">fast</span></div><div><button class="btn btn-ghost">Thumbnail</button> <button class="btn btn-ink">Export</button></div></div>` },
+    { n: 'Split', t: 'Chat is the detector, so chat gets half the page: the replay scrolls on the right locked to the playhead, with the spikes highlighted; player + thread + moment chips on the left.',
+      html: () => `${top()}<div style="display:grid;grid-template-columns:1.4fr 1fr;gap:14px"><div>${player()}<div class="card glass" style="padding:8px 12px 0;margin-top:12px">${thread(1000, 120, { dots: true, play: 0.36, amp: 0.4 })}</div><div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:12px">${MOMENTS.map((m, i) => `<button class="btn ${i === 0 ? 'btn-ink' : 'btn-ghost'}" style="padding:6px 12px;font-size:12px"><span class="mono" style="opacity:.7">${m[0]}</span> ${m[2]}</button>`).join('')}</div><div style="margin-top:12px">${clipPanel()}</div></div>
+        <div class="card glass" style="display:flex;flex-direction:column"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px"><div class="eyebrow">Chat replay · 0:34:15</div><span class="tag" style="--c:var(--petal)">6.2× · 41 chatters</span></div><div style="height:10px"></div>${chat()}<div style="height:10px"></div>${chat()}<div style="flex:1"></div><div class="meta" style="margin-top:10px">locked to playhead · click a line to seek</div></div></div>` },
+  ];
+
+  const main = document.getElementById('main'), rail = document.getElementById('rail'), thesis = document.getElementById('thesis');
+  L.forEach((l, i) => { const d = document.createElement('section'); d.className = 'layout'; d.dataset.i = i; d.innerHTML = l.html(); main.appendChild(d);
+    const b = document.createElement('button'); b.setAttribute('role', 'tab'); b.innerHTML = `<b>${i + 1}</b><span>${l.n}</span>`; b.addEventListener('click', () => set(i + 1)); rail.appendChild(b); });
+  let cur = 1;
+  function set(i) { cur = i; document.querySelectorAll('.layout').forEach((s, j) => s.classList.toggle('on', j + 1 === i)); [...rail.querySelectorAll('button')].forEach((b, j) => b.setAttribute('aria-current', String(j + 1 === i))); thesis.innerHTML = `<b>${String(i).padStart(2, '0')} · ${L[i - 1].n}</b>${L[i - 1].t}`; scrollTo(0, 0); try { history.replaceState(null, '', '#l' + i); } catch (e) {} }
+  addEventListener('keydown', (e) => { if (e.key === 'ArrowRight' || e.key === 'ArrowDown') set(cur % 10 + 1); if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') set((cur + 8) % 10 + 1); });
+  const fromHash = () => set(Number((location.hash.match(/#l(\d+)/) || [])[1]) || 1);
+  addEventListener('hashchange', fromHash); fromHash();
+})();
+</script>

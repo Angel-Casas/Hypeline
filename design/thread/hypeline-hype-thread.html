@@ -1,0 +1,282 @@
+<title>Hypeline Hype Thread</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gloock&family=Manrope:wght@400;500;600;800&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+  :root {
+    --ground: #fbf9fa; --ink: #221c2a; --muted: #6f6779; --line: rgba(34,28,42,0.12);
+    --glass: rgba(255,255,255,0.38); --glass-line: rgba(255,255,255,0.8);
+    --display: 'Gloock', 'Iowan Old Style', Georgia, serif; --body: 'Manrope', 'Helvetica Neue', Arial, sans-serif; --mono: 'JetBrains Mono', Menlo, Consolas, monospace;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--ground); color: var(--ink); font-family: var(--body); font-size: 17px; line-height: 1.55; overflow-x: hidden; }
+  a { color: inherit; }
+  ::selection { background: #ffe79a; }
+  #silk { position: fixed; inset: 0; width: 100%; height: 100%; z-index: 0; display: block; }
+  #grain { position: fixed; inset: 0; z-index: 1; pointer-events: none; opacity: 0.35; mix-blend-mode: multiply; }
+  main { position: relative; z-index: 2; }
+
+  nav { position: fixed; top: 0; left: 0; right: 0; z-index: 20; display: flex; align-items: center; gap: 18px; padding: 16px 28px; }
+  nav .brand { font-family: var(--display); font-size: 22px; letter-spacing: -0.01em; }
+  nav .links { margin-left: auto; display: flex; gap: 6px; }
+  nav .links a { font-family: var(--mono); font-size: 12px; letter-spacing: .04em; text-decoration: none; padding: 8px 12px; border-radius: 999px; background: var(--glass); border: 1px solid var(--glass-line); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); color: var(--ink); }
+
+  /* hero */
+  #hero { min-height: 100vh; display: grid; align-content: center; padding: 120px 28px 80px; }
+  #hero .wrap { max-width: 1240px; margin: 0 auto; width: 100%; display: grid; grid-template-columns: minmax(0, 620px); }
+  .eyebrow { font-family: var(--mono); font-size: 12px; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); }
+  h1 { font-family: var(--display); font-weight: 400; font-size: clamp(46px, 7vw, 96px); line-height: 0.98; letter-spacing: -0.02em; margin: 14px 0 0; text-wrap: balance; }
+  h1 em { font-style: italic; color: #7a4f8e; }
+  .lead { font-size: 19px; max-width: 50ch; margin: 22px 0 0; color: #3b3444; }
+  .glass { background: var(--glass); border: 1px solid var(--glass-line); backdrop-filter: blur(22px) saturate(1.5); -webkit-backdrop-filter: blur(22px) saturate(1.5); box-shadow: 0 30px 80px rgba(34,28,42,0.10), inset 0 1px 0 #fff; border-radius: 20px; }
+  .field { display: flex; padding: 6px; margin-top: 30px; max-width: 560px; }
+  .field input { flex: 1; min-width: 0; border: 0; background: transparent; padding: 12px 14px; font-family: var(--mono); font-size: 14px; color: var(--ink); outline: none; }
+  .field input:focus-visible { outline: 2px solid var(--ink); border-radius: 8px; }
+  .field button { border: 0; border-radius: 14px; background: var(--ink); color: #fff; padding: 12px 18px; font-family: var(--body); font-weight: 600; font-size: 15px; cursor: pointer; }
+  .facts { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px; }
+  .chip { font-family: var(--mono); font-size: 12px; padding: 7px 11px; border-radius: 999px; background: var(--glass); border: 1px solid var(--glass-line); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); }
+  .scrollcue { margin-top: 56px; display: inline-flex; align-items: center; gap: 12px; font-family: var(--mono); font-size: 12px; color: var(--muted); }
+  .scrollcue i { display: block; width: 1px; height: 40px; background: var(--ink); animation: cue 1.6s ease-in-out infinite; transform-origin: top; }
+  @keyframes cue { 0% { transform: scaleY(0); } 60% { transform: scaleY(1); } 100% { transform: scaleY(1); opacity: 0; } }
+
+  /* the thread: pinned strip */
+  #thread .track { height: 520vh; }
+  #thread .pin { position: sticky; top: 0; height: 100vh; overflow: hidden; }
+  .world { position: absolute; inset: 0; }
+  .moment { position: absolute; width: 300px; padding: 18px 20px; opacity: 0; transform: translateY(12px) scale(.98); transition: opacity .6s, transform .6s cubic-bezier(.2,.7,.2,1); will-change: transform; }
+  .moment.on { opacity: 1; }
+  .moment .t { font-family: var(--mono); font-size: 11.5px; color: var(--muted); }
+  .moment .q { font-family: var(--display); font-size: 28px; line-height: 1.05; margin-top: 6px; }
+  .moment .s { font-size: 13.5px; margin-top: 8px; color: #3b3444; }
+  .moment .a { margin-top: 12px; display: inline-flex; gap: 8px; align-items: center; font-size: 13px; font-weight: 600; }
+  .moment .a svg { width: 16px; height: 16px; }
+  .chat { position: absolute; padding: 8px 12px; border-radius: 999px; font-size: 13px; opacity: 0; transition: opacity .5s; white-space: nowrap; }
+  .chat.on { opacity: 1; }
+  .chat b { font-family: var(--mono); font-weight: 500; font-size: 11px; color: var(--muted); margin-right: 6px; }
+  .hud { position: absolute; right: 28px; bottom: 34px; font-family: var(--mono); font-size: 12px; color: var(--muted); display: flex; gap: 18px; }
+  .hud b { font-weight: 500; color: var(--ink); font-variant-numeric: tabular-nums; }
+  .caption { position: absolute; left: 28px; bottom: 34px; max-width: 440px; }
+  .caption h2 { font-family: var(--display); font-weight: 400; font-size: clamp(30px, 3.4vw, 44px); line-height: 1.02; margin: 8px 0 0; letter-spacing: -0.015em; }
+  .caption p { margin: 10px 0 0; font-size: 15.5px; color: #3b3444; }
+  .caption .step { display: none; }
+  .caption .step.on { display: block; }
+
+  /* closing */
+  #after { padding: 18vh 28px 12vh; }
+  #after .wrap { max-width: 1240px; margin: 0 auto; display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; }
+  .card { padding: 26px; }
+  .card h3 { font-family: var(--display); font-weight: 400; font-size: 28px; margin: 0 0 8px; }
+  .card p { margin: 0; font-size: 15px; color: #3b3444; }
+  #cta { padding: 6vh 28px 14vh; }
+  #cta .wrap { max-width: 900px; margin: 0 auto; padding: 44px; text-align: left; }
+  #cta h2 { font-family: var(--display); font-weight: 400; font-size: clamp(34px, 4.6vw, 60px); line-height: 1; margin: 0; letter-spacing: -0.02em; }
+  footer { padding: 30px 28px 50px; font-family: var(--mono); font-size: 12px; color: var(--muted); text-align: center; }
+  @media (max-width: 720px) { .moment { width: 240px; } .caption { max-width: 300px; } nav .links { display: none; } }
+  @media (prefers-reduced-motion: reduce) { .scrollcue i { animation: none; } }
+</style>
+
+<canvas id="silk" aria-hidden="true"></canvas>
+<svg id="grain" aria-hidden="true" width="100%" height="100%"><filter id="n"><feTurbulence type="fractalNoise" baseFrequency="0.85" numOctaves="2" stitchTiles="stitch"></feTurbulence><feColorMatrix values="0 0 0 0 .13 0 0 0 0 .11 0 0 0 0 .16 0 0 0 .3 0"></feColorMatrix></filter><rect width="100%" height="100%" filter="url(#n)"></rect></svg>
+
+<main>
+<nav><span class="brand">Hypeline</span><span class="links"><a href="#thread">The thread</a><a href="#after">How it works</a><a href="#cta">Paste a VOD</a></span></nav>
+
+<section id="hero">
+  <div class="wrap">
+    <div>
+      <div class="eyebrow">Twitch VOD → clips · in your browser · nothing uploaded</div>
+      <h1>Chat already knows where the <em>moment</em> is.</h1>
+      <p class="lead">Every “CLIP IT”, every emote wall, every sub train in the replay is a timestamp. Hypeline reads the chat, draws the hype as a thread through your VOD, and cuts the clip — free, open source, no server.</p>
+      <div class="glass field"><input id="vod" value="https://www.twitch.tv/videos/2871164819" aria-label="Twitch VOD link"><button type="button">Find the moments</button></div>
+      <div class="facts"><span class="chip">6 h of chat in ~4 s</span><span class="chip">0 bytes of video leave your machine</span><span class="chip">AI with your own NanoGPT key</span></div>
+      <div class="scrollcue"><i></i> scroll to follow the thread</div>
+    </div>
+  </div>
+</section>
+
+<section id="thread">
+  <div class="track" data-track>
+    <div class="pin">
+      <div class="caption">
+        <div class="eyebrow">The hype thread · tokyosims · 6h24 · 5,626 messages</div>
+        <div class="step on" data-step="0"><h2>Quiet stream, thin thread.</h2><p>Chat rate sits near its rolling baseline. Nothing to clip yet — the thread stays calm.</p></div>
+        <div class="step" data-step="1"><h2>Then chat loses it.</h2><p>6.2× the baseline, 41 people typing at once, “clip it” fourteen times. The thread swells. This is the moment.</p></div>
+        <div class="step" data-step="2"><h2>Not every spike is hype.</h2><p>A mic cutting out makes chat busy too. Tech-trouble words demote the spike, so it stays a bump, not a peak.</p></div>
+        <div class="step" data-step="3"><h2>Pick, frame, cut.</h2><p>Click a moment, drag the in/out handles, choose 9:16 or cam + game, burn captions in. Your browser does the rest.</p></div>
+      </div>
+      <div class="world" id="world">
+        <div class="moment glass" data-x="1.35" data-y="0.14" data-d="1">
+          <div class="t">0:34:15 · 6.2× baseline · 41 chatters</div>
+          <div class="q">He actually did it</div>
+          <div class="s">“clip it” ×14 · reaction share 0.62</div>
+          <div class="a">clip this <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M13 6l6 6-6 6"></path></svg></div>
+        </div>
+        <div class="moment glass" data-x="2.32" data-y="0.22" data-d="1">
+          <div class="t">2:03:08 · 2.1× · demoted</div>
+          <div class="q">Mic cuts out mid-story</div>
+          <div class="s">“no audio” ×9 · tech trouble ×0.3</div>
+        </div>
+        <div class="moment glass" data-x="3.12" data-y="0.12" data-d="1">
+          <div class="t">2:48:52 · 4.0× · 33 chatters</div>
+          <div class="q">The comeback</div>
+          <div class="s">“NO WAY” ×31 · sub train</div>
+          <div class="a">clip this <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M13 6l6 6-6 6"></path></svg></div>
+        </div>
+        <div class="moment glass" data-x="3.92" data-y="0.22" data-d="1">
+          <div class="t">3:20:11 · 2.6×</div>
+          <div class="q">Raid arrives</div>
+          <div class="s">emote wall · 19 chatters</div>
+        </div>
+        <div class="chat glass" data-x="1.05" data-y="0.60" data-d="1.35"><b>0:33:58 · dvnte</b>no way</div>
+        <div class="chat glass" data-x="1.22" data-y="0.54" data-d="1.5"><b>0:34:11 · pennyfromtheblock</b>CLIP IT</div>
+        <div class="chat glass" data-x="1.48" data-y="0.64" data-d="1.4"><b>0:34:14 · kairo_tv</b>someone clip that</div>
+        <div class="chat glass" data-x="2.95" data-y="0.58" data-d="1.45"><b>2:48:49 · yoshi__</b>NO WAY NO WAY</div>
+        <div class="chat glass" data-x="3.25" data-y="0.66" data-d="1.3"><b>2:48:55 · frostbyte</b>W W W W</div>
+        <div class="chat glass" data-x="0.55" data-y="0.70" data-d="0.7"><b>0:15:15</b>“is that allowed”</div>
+      </div>
+      <div class="hud"><span>VOD time <b id="hud-t">0:00:00</b></span><span>thread <b id="hud-p">0%</b></span><span>peaks found <b id="hud-n">0</b></span></div>
+    </div>
+  </div>
+</section>
+
+<section id="after">
+  <div class="wrap">
+    <div class="card glass"><h3>Chat is the detector.</h3><p>Message rate against a rolling baseline, emote clusters, “clip it” spam, sub trains. Bots and announcements dropped. No AI needed for this part, so it costs nothing.</p></div>
+    <div class="card glass"><h3>Your browser is the editor.</h3><p>Only the segments around a moment are fetched. ffmpeg runs inside the tab: 16:9, 9:16, cam + game, captions burned in, a titled thumbnail.</p></div>
+    <div class="card glass"><h3>AI is yours to bring.</h3><p>Titles, captions, whole-VOD search — with your own NanoGPT key, cost shown before every call. The key never leaves your browser.</p></div>
+  </div>
+</section>
+
+<section id="cta">
+  <div class="wrap glass">
+    <h2>Paste a VOD. Follow the thread.</h2>
+    <div class="glass field" style="max-width:100%"><input id="vod2" value="https://www.twitch.tv/videos/…" aria-label="Twitch VOD link"><button type="button">Find the moments</button></div>
+    <div class="facts"><span class="chip">free · MIT</span><span class="chip">no account</span><span class="chip">works on the VOD that is live right now</span></div>
+  </div>
+</section>
+<footer>Hypeline · prototype landing page · the thread is a live WebGL shader shaped by the chat hype curve</footer>
+</main>
+
+<script id="frag" type="x-shader/x-fragment">
+precision highp float;
+uniform vec2 u_res; uniform float u_time; uniform float u_cam; uniform float u_prog; uniform vec2 u_mouse; uniform float u_motion;
+float hash(vec2 p){ return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
+float noise(vec2 p){ vec2 i = floor(p), f = fract(p); f = f*f*(3.0-2.0*f);
+  return mix(mix(hash(i), hash(i+vec2(1,0)), f.x), mix(hash(i+vec2(0,1)), hash(i+vec2(1,1)), f.x), f.y); }
+float fbm(vec2 p){ float v = 0.0, a = 0.5; for (int i = 0; i < 4; i++) { v += a*noise(p); p = p*2.03 + 7.1; a *= 0.5; } return v; }
+float hype(float x){
+  float h = 0.0;
+  h += 0.95*exp(-pow((x-1.35)*4.2, 2.0));
+  h += 0.32*exp(-pow((x-2.32)*5.5, 2.0));
+  h += 0.72*exp(-pow((x-3.12)*4.0, 2.0));
+  h += 0.40*exp(-pow((x-3.92)*6.0, 2.0));
+  h += 0.22*exp(-pow((x-0.55)*7.0, 2.0));
+  h += 0.10*noise(vec2(x*3.0, 1.7));
+  return h;
+}
+vec3 pal(float t){
+  vec3 petal = vec3(0.98,0.56,0.72), apricot = vec3(1.0,0.72,0.50), butter = vec3(1.0,0.88,0.52), sky = vec3(0.52,0.72,0.99), lilac = vec3(0.70,0.58,0.97);
+  t = fract(t); float s = t*5.0; int i = int(floor(s)); float f = fract(s);
+  if (i == 0) return mix(petal, apricot, f); if (i == 1) return mix(apricot, butter, f); if (i == 2) return mix(butter, sky, f); if (i == 3) return mix(sky, lilac, f); return mix(lilac, petal, f);
+}
+vec4 ribbon(vec2 p, float x, float cy, float wid, float phase, float streak){
+  float d = (p.y - cy) / wid;
+  float edge = 1.0 - smoothstep(0.78, 1.06, abs(d));
+  if (edge <= 0.0) return vec4(0.0);
+  float warp = fbm(vec2(x*1.4 + u_time*0.05*u_motion, d*1.6 + phase)) - 0.5;
+  float dd = d + warp*0.55;
+  float s = fbm(vec2(x*2.2 - u_time*0.07*u_motion + phase, dd*streak));
+  float fold = smoothstep(-0.2, 0.9, sin(x*2.6 + phase*3.0 + u_time*0.08*u_motion + dd*1.2));
+  vec3 col = pal(dd*0.11 + x*0.085 + phase*0.12 + u_time*0.01*u_motion);
+  col *= 0.78 + 0.5*s;
+  col = mix(col, col*0.72, fold*0.35);
+  col = mix(col, vec3(1.0), pow(max(0.0, 1.0-abs(dd)), 3.0)*0.42);
+  float a = edge * (0.86 + 0.14*s);
+  return vec4(col, a);
+}
+void main(){
+  vec2 uv = gl_FragCoord.xy / u_res;
+  float asp = u_res.x / u_res.y;
+  vec2 p = vec2(uv.x*asp + u_cam, uv.y);
+  p.x += (u_mouse.x-0.5)*0.03; p.y += (u_mouse.y-0.5)*0.02;
+  float x = p.x;
+  float h = hype(x);
+  float cy = 0.36 + h*0.36 + 0.035*sin(x*1.7 + u_time*0.12*u_motion);
+  float wid = 0.075 + 0.21*h;
+  // reveal along x
+  float tip = u_prog;
+  float rev = 1.0 - smoothstep(tip - 0.28, tip + 0.02, x);
+  float glow = exp(-pow((x - tip)*7.0, 2.0)) * step(x, tip + 0.15);
+  vec3 ground = vec3(0.984, 0.976, 0.98);
+  // faint ambient mesh
+  vec3 amb = ground;
+  amb = mix(amb, vec3(0.97,0.90,0.93), 0.35*fbm(vec2(uv.x*1.3 + u_time*0.02*u_motion, uv.y*1.3)));
+  amb = mix(amb, vec3(0.90,0.94,0.99), 0.3*fbm(vec2(uv.x*1.1 - 3.0, uv.y*1.4 + u_time*0.015*u_motion)));
+  vec3 col = amb;
+  // back thread (cooler, thinner, slower)
+  vec4 b = ribbon(p, x, cy + 0.07*sin(x*2.3 + 1.0) - 0.02, wid*0.72, 2.1, 22.0);
+  b.a *= rev * 0.55;
+  col = mix(col, b.rgb, b.a);
+  // main thread
+  vec4 m = ribbon(p, x, cy, wid, 0.0, 18.0);
+  m.a *= rev;
+  col = mix(col, m.rgb, m.a);
+  // bright tip
+  col = mix(col, vec3(1.0), glow * m.a * 0.6);
+  gl_FragColor = vec4(col, 1.0);
+}
+</script>
+<script>
+(() => {
+  const canvas = document.getElementById('silk');
+  const gl = canvas.getContext('webgl', { antialias: false, alpha: false, powerPreference: 'high-performance' });
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const W = 4.6; // world length of the VOD in viewport-heights
+  let prog = 1.12, cam = 0, mouse = [0.5, 0.5], aspect = 1;
+  if (gl) {
+    const vs = 'attribute vec2 a; void main(){ gl_Position = vec4(a, 0.0, 1.0); }';
+    const fs = document.getElementById('frag').textContent;
+    const sh = (t, s) => { const o = gl.createShader(t); gl.shaderSource(o, s); gl.compileShader(o); if (!gl.getShaderParameter(o, gl.COMPILE_STATUS)) console.error(gl.getShaderInfoLog(o)); return o; };
+    const prg = gl.createProgram(); gl.attachShader(prg, sh(gl.VERTEX_SHADER, vs)); gl.attachShader(prg, sh(gl.FRAGMENT_SHADER, fs)); gl.linkProgram(prg); gl.useProgram(prg);
+    const buf = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, buf); gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1,-1, 1,-1, -1,1, 1,1]), gl.STATIC_DRAW);
+    const a = gl.getAttribLocation(prg, 'a'); gl.enableVertexAttribArray(a); gl.vertexAttribPointer(a, 2, gl.FLOAT, false, 0, 0);
+    const U = (n) => gl.getUniformLocation(prg, n);
+    const uRes = U('u_res'), uTime = U('u_time'), uCam = U('u_cam'), uProg = U('u_prog'), uMouse = U('u_mouse'), uMotion = U('u_motion');
+    function resize() { const dpr = Math.min(devicePixelRatio || 1, 1.5); canvas.width = Math.floor(innerWidth * dpr); canvas.height = Math.floor(innerHeight * dpr); gl.viewport(0, 0, canvas.width, canvas.height); aspect = innerWidth / innerHeight; }
+    addEventListener('resize', resize); resize();
+    const t0 = performance.now();
+    function frame() {
+      gl.uniform2f(uRes, canvas.width, canvas.height); gl.uniform1f(uTime, (performance.now() - t0) / 1000); gl.uniform1f(uCam, cam); gl.uniform1f(uProg, prog); gl.uniform2f(uMouse, mouse[0], mouse[1]); gl.uniform1f(uMotion, reduce ? 0 : 1);
+      gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+      requestAnimationFrame(frame);
+    }
+    requestAnimationFrame(frame);
+  } else { canvas.style.background = 'linear-gradient(120deg, #f7e0e8, #fdf1e2 40%, #e3ecfb)'; }
+
+  addEventListener('pointermove', (e) => { mouse = [e.clientX / innerWidth, 1 - e.clientY / innerHeight]; }, { passive: true });
+
+  // scroll → camera, reveal, cards
+  const track = document.querySelector('[data-track]');
+  const items = [...document.querySelectorAll('#world .moment, #world .chat')];
+  const steps = [...document.querySelectorAll('.caption .step')];
+  const hudT = document.getElementById('hud-t'), hudP = document.getElementById('hud-p'), hudN = document.getElementById('hud-n');
+  const peaks = [1.35, 2.32, 3.12, 3.92];
+  const fmt = (s) => { s = Math.max(0, Math.floor(s)); return `${Math.floor(s/3600)}:${String(Math.floor(s%3600/60)).padStart(2,'0')}:${String(s%60).padStart(2,'0')}`; };
+  function tick() {
+    const vh = innerHeight, r = track.getBoundingClientRect();
+    let t = (0 - r.top) / (r.height - vh); t = Math.max(0, Math.min(1, t));
+    const heroPart = 1.12; // in the hero the thread is drawn up to the first swell
+    prog = heroPart + t * (W + 0.4 - heroPart);
+    cam = Math.max(0, Math.min(W - aspect, prog - aspect * 0.62));
+    for (const el of items) {
+      const wx = Number(el.dataset.x), wy = Number(el.dataset.y), d = Number(el.dataset.d);
+      const sx = (wx - cam * d) * vh + (1 - d) * innerWidth * 0.5;
+      el.style.transform = `translate(${sx.toFixed(1)}px, ${(wy * vh).toFixed(1)}px)`;
+      el.classList.toggle('on', prog > wx - 0.05);
+    }
+    const step = prog < 1.3 ? 0 : prog < 2.05 ? 1 : prog < 3.4 ? 2 : 3;
+    steps.forEach((s, i) => s.classList.toggle('on', i === step));
+    const vodSec = Math.min(1, Math.max(0, prog / W)) * 23042;
+    hudT.textContent = fmt(vodSec); hudP.textContent = Math.round(Math.min(1, prog / W) * 100) + '%'; hudN.textContent = String(peaks.filter((p) => prog > p).length);
+  }
+  addEventListener('scroll', tick, { passive: true }); addEventListener('resize', tick); tick();
+})();
+</script>

@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <!-- the ground colour before any stylesheet arrives (the app CSS is loaded by the module
+         script, so without this the browser paints its own white first: a "flashbang" by night) -->
+    <link rel="icon" href="/icons/mark.svg" type="image/svg+xml" />
+    <link rel="icon" href="/icons/icon-192.png" type="image/png" sizes="192x192" />
+    <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png" />
+    <style>
+      html {
+        background: #fbf9fa;
+        color-scheme: light;
+      }
+      html[data-theme='dark'] {
+        background: #000000;
+        color-scheme: dark;
+      }
+    </style>
+    <script>
+      // day / night before first paint (mirrors settingsStore)
+      try {
+        var t = JSON.parse(localStorage.getItem('hypeline.settings.v1') || '{}').theme || 'system';
+        var d =
+          t === 'dark' || (t === 'system' && matchMedia('(prefers-color-scheme: dark)').matches);
+        document.documentElement.dataset.theme = d ? 'dark' : 'light';
+      } catch (e) {}
+    </script>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Hypeline</title>
+    <link
+      rel="preload"
+      href="/fonts/gloock-400-latin.woff2"
+      as="font"
+      type="font/woff2"
+      crossorigin
+    />
+    <link
+      rel="preload"
+      href="/fonts/manrope-400-latin.woff2"
+      as="font"
+      type="font/woff2"
+      crossorigin
+    />
+  </head>
+  <body>
+    <div id="app"></div>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>
