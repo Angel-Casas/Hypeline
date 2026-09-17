@@ -2,6 +2,16 @@ name = "hypeline-shim"
 main = "worker.js"
 compatibility_date = "2026-09-01"
 
+# The relay's own subdomain. `*.workers.dev` is blocked by some corporate DNS, ad blockers
+# and browser extensions, and when it is, the app looks broken rather than blocked
+# (2026-09-16). A custom domain avoids that, and `wrangler deploy` creates both the route and
+# its DNS record — the zone must be on the same Cloudflare account (hypeline.live moved there
+# 2026-09-17). Deleting this block does not remove the domain; do that in the dashboard.
+# Self-hosting on a domain of your own? Change it, or delete it and use *.workers.dev.
+[[routes]]
+pattern = "relay.hypeline.live"
+custom_domain = true
+
 [vars]
 # The origins allowed to use this relay. The live app, and nothing else — `ALLOW_LOCAL`
 # covers development. "*" would let any site use it.

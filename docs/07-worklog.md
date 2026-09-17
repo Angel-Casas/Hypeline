@@ -1248,3 +1248,18 @@ control, append to `dist/sw.js` as a stand-in deploy, and the untouched tab
 raises the toast without reloading. 101 unit tests, lint and build clean.
 **Angel:** after this ships, the *next* deploy is the one an open tab will
 announce by itself.
+
+## 2026-09-17 (cont.) — hypeline.live moved to Cloudflare
+
+**What changed.** The zone is on Cloudflare's nameservers (major/aisha),
+with the four GitHub Pages A records and the `www` CNAME intact and
+**unproxied** — verified from outside: both apex and `www` still answer 200
+from `server: GitHub.com` with no `cf-ray`, so Pages keeps managing its own
+certificate. The email records are gone (unused). `shim/wrangler.toml` now
+declares `relay.hypeline.live` as a `[[routes]]` custom domain, so
+`wrangler deploy` creates the route and its DNS record itself; `shim/README.md`
+and `.env.example` follow. **Angel:** `cd shim && wrangler deploy`, check
+`https://relay.hypeline.live/health`, then set the `VITE_SHIM_URL`
+repository variable to `https://relay.hypeline.live` and re-run the deploy
+workflow. The `*.workers.dev` URL keeps working, so nothing breaks in
+between.

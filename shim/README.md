@@ -55,17 +55,21 @@ is one edit away.
 
 `*.workers.dev` is blocked by some DNS resolvers, networks and privacy
 extensions — we hit exactly that during development, and it looks like the app
-is broken when it happens. If the relay's domain is on Cloudflare you can give
-it a subdomain of your own: Workers & Pages → the Worker → Settings → Domains &
-Routes → Add → Custom domain (say `relay.hypeline.live`), then update
-`VITE_SHIM_URL` and rebuild.
+is broken when it happens. So the relay answers on a subdomain of its own,
+`relay.hypeline.live`, declared as a `[[routes]]` entry with
+`custom_domain = true` in `wrangler.toml`: `wrangler deploy` creates the route
+_and_ its DNS record, provided the zone is on the same Cloudflare account
+(`hypeline.live` moved to Cloudflare's nameservers on 2026-09-17). The
+`*.workers.dev` URL keeps working alongside it.
 
-That needs the zone's DNS to be on Cloudflare. `hypeline.live` is on the
-registrar's nameservers today, so moving it is the prerequisite: add the zone in
-Cloudflare, copy the existing records across (the four GitHub Pages A records
-and the AAAA ones, **proxy off / grey cloud**, so Pages keeps serving and
-managing its own certificate), switch the nameservers at the registrar, and then
-add the Worker's custom domain.
+Cloudflare proxies a Worker's custom domain by definition — that orange cloud is
+the Worker itself, and is not the grey-cloud rule that the GitHub Pages records
+follow. Removing the `[[routes]]` block does not remove the domain; do that in
+Workers & Pages → the Worker → Settings → Domains & Routes.
+
+Self-hosting? Point `pattern` at a subdomain of your own, or delete the block
+and live with `*.workers.dev`. Either way, `VITE_SHIM_URL` must match, and the
+app's origin must be in `ALLOWED_ORIGINS`.
 
 ## Tests
 
