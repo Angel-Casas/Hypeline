@@ -339,6 +339,23 @@ and load as plain images from any origin (no hotlink check). The parser in
 `lib/twitch/storyboard.ts` matches; frames confirmed in the moment chips end-to-end with a
 local relay.
 
+### Storyboard levels — which one to draw (2026-09-17)
+
+Of the two levels Twitch publishes, `low` is 160×90 and `high` is 220×124
+(one sprite sheet of 200 frames vs four of 50). The moment cards draw a
+frame much wider than 160 px, so `low` looked like mush; the default ask is
+220 px now. Both load straight from the CDN as CSS backgrounds, so neither
+touches the relay.
+
+### Static hosts gzip the ffmpeg core (2026-09-17)
+
+GitHub Pages serves `ffmpeg-core.wasm` (32,232,419 bytes) with
+`content-encoding: gzip` and `content-length: 10,327,561`. Anything that
+compares streamed bytes against `Content-Length` — `@ffmpeg/util`'s
+`downloadWithProgress` does — will decide the download is incomplete. See
+ADR-25; `vite dev` and `vite preview` serve it uncompressed, which is why
+this only ever appeared in production.
+
 ### Scoring v0.3 — walls, moods, copypasta, sensitivity (2026-09-15)
 
 Per 15 s bucket, on top of v0.2: **wall** = the emote (from `m.e`, not words)

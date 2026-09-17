@@ -465,3 +465,36 @@ frames are unaffected (they load straight from Twitch as images).
 `*.workers.dev` stays a liability for some users' networks; the fix is a
 custom domain, which needs the zone on Cloudflare (hypeline.live is on the
 registrar's nameservers today) — steps in `shim/README.md`.
+
+## ADR-25 — Load the ffmpeg core ourselves, and take Twitch's larger storyboard (2026-09-17)
+
+**Context.** The first export from hypeline.live failed with
+`Failed to execute 'arrayBuffer' on 'Response': body stream already read`,
+while `vite dev` was fine. The culprit is `toBlobURL` in `@ffmpeg/util`
+0.12.2: its progress path reads the body as a stream and then compares the
+bytes it got against `Content-Length`, throwing `incompleted download` when
+they disagree; its `catch` calls `arrayBuffer()` on that same, already
+drained response, so the real reason is replaced by a stream error. On a
+static host the 32 MB core is served gzipped, so `Content-Length` is the
+*compressed* size (10.3 MB on GitHub Pages) and the comparison can never
+hold. Reproduced exactly by serving `dist/` with gzip and running the old
+code and the new one side by side in Chromium.
+
+Separately, the frames on the moment cards read as mush: Twitch publishes
+two storyboard levels, 160×90 (`low`) and 220×124 (`high`), and we asked
+for 160 — the cards draw them far larger than that.
+
+**Decision.** Download the core ourselves (`blobUrl` in
+`lib/video/ffmpeg.ts`): read the body once, never touch the response again.
+An encoded body hides its decoded size, so progress runs against
+`CORE_WASM_BYTES` in `lib/video/coreSize.ts`, which
+`scripts/copy-ffmpeg-core.mjs` rewrites whenever `@ffmpeg/core` is bumped.
+`parseStoryboard`/`pickLevel` now default to 220 px.
+
+**Consequences.** One dependency less at the loading edge — `@ffmpeg/util`
+is no longer imported at all — and a progress bar that stays honest behind
+gzip. Sharper frames cost four sprite sheets per VOD instead of one (~2×
+the pixels, still a few hundred KB, straight from Twitch's CDN and outside
+the relay). If a future core changes size and the postinstall script has
+not run, the bar is merely wrong, never broken. The unit test streams more
+bytes than it declares, so the old shape would fail it.

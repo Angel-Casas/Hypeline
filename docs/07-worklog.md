@@ -1219,3 +1219,20 @@ gate is and is not, the curl-gets-403 gotcha, and the custom-domain path.
 100 unit tests. **Angel:** `cd shim && wrangler deploy`; optionally move
 the zone to Cloudflare for `relay.hypeline.live`, then update the
 `VITE_SHIM_URL` repository variable.
+
+## 2026-09-17 (cont.) — Why the first real export broke
+
+**What changed.** ADR-25. `lib/video/ffmpeg.ts` loads the core through its
+own `blobUrl` instead of `@ffmpeg/util`'s `toBlobURL`: gzip on GitHub Pages
+made `Content-Length` disagree with the streamed bytes, and the library's
+fallback re-read a drained body — the `body stream already read` error
+Angel hit on the first export from hypeline.live. New
+`lib/video/coreSize.ts` (`CORE_WASM_BYTES`, rewritten by
+`scripts/copy-ffmpeg-core.mjs`) keeps the progress bar honest behind gzip.
+Storyboards now take Twitch's 220×124 level rather than 160×90, so the
+moment cards are sharp. Verified by serving `dist/` gzipped and running the
+old and new code side by side (old threw Angel's exact error, new got all
+32,232,419 bytes) and then the full cut e2e against that server: fast 16:9,
+precise 9:16 and split all exported. 101 unit tests, lint and build clean.
+**Angel:** nothing to do; ships with the next push. Still open: the
+nameserver move, then `relay.hypeline.live` and `VITE_SHIM_URL`.

@@ -9,7 +9,7 @@
  * sidestep that in dev and are harmless in production.
  */
 import { FFmpeg } from '@ffmpeg/ffmpeg';
-import { toBlobURL } from '@ffmpeg/util';
+import { CORE_WASM_BYTES } from './coreSize';
 
 let instance: FFmpeg | null = null;
 let loading: Promise<FFmpeg> | null = null;
@@ -31,6 +31,49 @@ export interface FfmpegLoadProgress {
   ratio?: number;
 }
 
+/**
+ * Download a file into a `blob:` URL, reporting progress.
+ *
+ * Not `toBlobURL` from `@ffmpeg/util`: its progress path compares the bytes it reads against
+ * `Content-Length`, but a static host serves the 32 MB core gzipped, so that header is the
+ * *compressed* size and the comparison always fails. Its fallback then calls `arrayBuffer()`
+ * on a response whose body it has already drained, and the real error is replaced by
+ * "body stream already read" — what Angel hit on the first export from hypeline.live
+ * (2026-09-17), while `vite dev`, which serves the core uncompressed, was fine.
+ *
+ * Here the body is read once and the response is never touched again. When it arrives
+ * encoded the decoded size is unknown, so progress runs against `expected` instead.
+ */
+async function blobUrl(
+  url: string,
+  mimeType: string,
+  expected?: number,
+  onBytes?: (received: number, total: number | undefined) => void,
+): Promise<string> {
+  const res = await fetch(url);
+  if (!res.ok) throw new Error(`${url} → HTTP ${res.status}`);
+  const declared = Number(res.headers.get('content-length') || 0);
+  const total = (res.headers.get('content-encoding') ? expected : declared || expected) || undefined;
+  const reader = res.body?.getReader();
+  if (!reader) {
+    // no streaming body (old browsers, some test doubles): one read, still only one
+    const buf = await res.arrayBuffer();
+    onBytes?.(buf.byteLength, buf.byteLength);
+    return URL.createObjectURL(new Blob([buf], { type: mimeType }));
+  }
+  const chunks: Uint8Array[] = [];
+  let received = 0;
+  for (;;) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    chunks.push(value);
+    received += value.length;
+    onBytes?.(received, total);
+  }
+  onBytes?.(received, received);
+  return URL.createObjectURL(new Blob(chunks as BlobPart[], { type: mimeType }));
+}
+
 export function getFfmpeg(onProgress?: (p: FfmpegLoadProgress) => void): Promise<FFmpeg> {
   if (instance) return Promise.resolve(instance);
   if (loading) return loading;
@@ -40,11 +83,11 @@ export function getFfmpeg(onProgress?: (p: FfmpegLoadProgress) => void): Promise
     if (!urls) {
       const base = `${import.meta.env.BASE_URL.replace(/\/$/, '')}/ffmpeg`;
       const [coreURL, wasmURL] = await Promise.all([
-        toBlobURL(`${base}/ffmpeg-core.js`, 'text/javascript'),
-        toBlobURL(`${base}/ffmpeg-core.wasm`, 'application/wasm', true, (e) =>
+        blobUrl(`${base}/ffmpeg-core.js`, 'text/javascript'),
+        blobUrl(`${base}/ffmpeg-core.wasm`, 'application/wasm', CORE_WASM_BYTES, (received, total) =>
           onProgress?.({
             stage: 'downloading-core',
-            ratio: e.total ? e.received / e.total : undefined,
+            ratio: total ? Math.min(1, received / total) : undefined,
           }),
         ),
       ]);

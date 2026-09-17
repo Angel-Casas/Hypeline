@@ -37,15 +37,21 @@ export interface Frame {
   height: number;
 }
 
-/** Pick the level closest to (but preferring at or above) `wantWidth`. */
-export function pickLevel(levels: StoryboardLevel[], wantWidth = 160): StoryboardLevel | null {
+/**
+ * Pick the level closest to (but preferring at or above) `wantWidth`.
+ *
+ * Twitch ships two: 160×90 ('low') and 220×124 ('high'). The moment cards show the frame
+ * far larger than 160 px, which read as mush (Angel, 2026-09-17), so the default asks for
+ * the larger one — four sprite sheets instead of one, still only a few hundred KB.
+ */
+export function pickLevel(levels: StoryboardLevel[], wantWidth = 220): StoryboardLevel | null {
   const ok = levels.filter((l) => l.images?.length && l.cols > 0 && l.rows > 0 && l.interval > 0);
   if (!ok.length) return null;
   const above = ok.filter((l) => l.width >= wantWidth).sort((a, b) => a.width - b.width);
   return above[0] ?? ok.sort((a, b) => b.width - a.width)[0]!;
 }
 
-export function parseStoryboard(json: unknown, url: string, wantWidth = 160): Storyboard | null {
+export function parseStoryboard(json: unknown, url: string, wantWidth = 220): Storyboard | null {
   if (!Array.isArray(json)) return null;
   const level = pickLevel(json as StoryboardLevel[], wantWidth);
   if (!level) return null;
