@@ -77,12 +77,23 @@ undocumented endpoints, the design system, and a running worklog.
 ## Deploying
 
 The build is static: `pnpm build` writes `dist/`, which any host can serve.
-Two details matter for a single-page app on a static host — both already in
-the build: `public/CNAME` carries the custom domain, and `scripts/
-spa-fallback.mjs` copies `index.html` to `404.html` so deep links
-(`/dashboard/<vod>`, and Twitch's sign-in redirect) survive a hard load.
-GitHub Pages needs an Actions workflow to run the build; `dist/` itself is
-never committed.
+Two details matter for a single-page app on a static host, both already in the
+build: `public/CNAME` carries the custom domain, and `scripts/spa-fallback.mjs`
+copies `index.html` to `404.html` so deep links (`/dashboard/<vod>`, and
+Twitch's sign-in redirect) survive a hard load.
+
+hypeline.live is GitHub Pages, published by
+`.github/workflows/deploy.yml` on every push to `main` — Pages only builds
+Jekyll by itself, so the workflow is what produces the site, and it runs the
+lint and the unit tests first so a broken build never reaches the domain.
+`dist/` is never committed. Two repository variables (Settings → Secrets and
+variables → Actions → **Variables**) are baked into that build, both optional
+and neither secret:
+
+| variable                | without it                                     |
+| ----------------------- | ---------------------------------------------- |
+| `VITE_SHIM_URL`         | cutting, thumbnails and transcription stay off |
+| `VITE_TWITCH_CLIENT_ID` | the signed-in Twitch home stays off            |
 
 ## Contributing
 

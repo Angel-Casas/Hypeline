@@ -13,6 +13,4 @@ design/landing/*.html
 !design/landing/*.dc.html
 _to_delete
 *.tgz
-
-# previews Claude delivered into the project folder (not part of the app)
-Claude outputs/
+*.tsbuildinfo

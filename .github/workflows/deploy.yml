@@ -1,0 +1,58 @@
+# Build the app and publish it to GitHub Pages (hypeline.live).
+#
+# Pages cannot build a Vite app by itself — it only knows Jekyll — so with the source set to
+# "GitHub Actions" this workflow is what produces the site. It also gates a deploy behind the
+# checks, so a broken build never reaches the domain.
+#
+# Two repository *variables* (Settings → Secrets and variables → Actions → Variables) are
+# baked into the build; neither is a secret, and both are optional:
+#   VITE_SHIM_URL          the video relay (shim/) — without it, cutting and thumbnails are off
+#   VITE_TWITCH_CLIENT_ID  the Twitch app — without it, the signed-in home is off
+name: Deploy to Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# one deploy at a time; a newer push wins
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run lint
+      - run: npm test
+      - run: npm run build
+        env:
+          VITE_SHIM_URL: ${{ vars.VITE_SHIM_URL }}
+          VITE_TWITCH_CLIENT_ID: ${{ vars.VITE_TWITCH_CLIENT_ID }}
+          VITE_GITHUB_REPO: ${{ github.repository }}
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

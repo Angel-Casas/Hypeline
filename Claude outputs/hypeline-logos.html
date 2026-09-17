@@ -1,0 +1,182 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Hypeline · the H Spine, six ways</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Gloock&family=Manrope:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --ground: #fbf9fa; --ground2: #f3eef2; --ink: #221c2a; --muted: #6f6779; --line: rgba(34,28,42,.12);
+    --glass: rgba(255,255,255,.55); --glass-line: rgba(255,255,255,.9);
+    --pink: #ff77b5; --peach: #ffa968; --butter: #ffde68; --sky: #8eb0ff; --lilac: #b39cff;
+  }
+  .night {
+    --ground: #000; --ground2: #0c0a0f; --ink: #f3edf6; --muted: #9b91a5; --line: rgba(255,255,255,.14);
+    --glass: rgba(24,20,30,.78); --glass-line: rgba(255,255,255,.14);
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; font-family: 'Manrope', system-ui, sans-serif; background: #f3eef2; color: #221c2a; }
+  header { padding: 40px 32px 8px; max-width: 1180px; margin: 0 auto; }
+  h1 { font-family: 'Gloock', Georgia, serif; font-weight: 400; font-size: 40px; margin: 0 0 8px; letter-spacing: -.01em; }
+  .eyebrow { font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: .18em; text-transform: uppercase; color: #6f6779; }
+  p.lead { max-width: 62ch; color: #3b3444; line-height: 1.55; margin: 8px 0 0; font-size: 15px; }
+  main { max-width: 1180px; margin: 0 auto; padding: 16px 32px 64px; display: grid; gap: 18px; grid-template-columns: repeat(auto-fill, minmax(360px, 1fr)); }
+  .card { border-radius: 22px; background: rgba(255,255,255,.62); border: 1px solid rgba(255,255,255,.9); padding: 18px 20px 16px; display: grid; grid-template-columns: 1fr; gap: 12px; min-width: 0; }
+  .card h2 { grid-column: 1 / -1; font-family: 'Gloock', Georgia, serif; font-weight: 400; font-size: 20px; margin: 0; display: flex; align-items: baseline; gap: 10px; }
+  .card h2 .n { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: #6f6779; letter-spacing: .14em; }
+  .card p { grid-column: 1 / -1; margin: 0; font-size: 13px; line-height: 1.5; color: #3b3444; }
+  .stage { border-radius: 16px; background: var(--ground); border: 1px solid var(--line); padding: 12px 14px; display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 112px; min-width: 0; }
+  .stage.night { background: var(--ground); }
+  .big { width: 72px; height: 72px; flex: none; }
+  .rail { display: inline-flex; align-items: center; gap: 8px; padding: 8px 10px; border-radius: 999px; background: var(--glass); border: 1px solid var(--glass-line); backdrop-filter: blur(12px); }
+  .rail svg { width: 30px; height: 30px; }
+  .rail .btn { width: 30px; height: 30px; border-radius: 999px; background: var(--glass); border: 1px solid var(--glass-line); display: grid; place-items: center; color: var(--ink); }
+  .rail .btn svg { width: 14px; height: 14px; }
+  .fav { width: 16px; height: 16px; flex: none; }
+  .lbl { font-family: 'JetBrains Mono', monospace; font-size: 10px; color: var(--muted); letter-spacing: .12em; text-transform: uppercase; display: block; margin-top: 8px; }
+  .col { display: flex; flex-direction: column; gap: 4px; align-items: center; }
+  svg { display: block; overflow: visible; }
+  .ink { color: var(--ink); }
+  .pill { display: inline-block; font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: .12em; text-transform: uppercase; padding: 3px 9px; border-radius: 999px; background: rgba(34,28,42,.07); color: #3b3444; margin-left: auto; }
+  footer { max-width: 1180px; margin: 0 auto; padding: 0 32px 48px; color: #6f6779; font-size: 13px; line-height: 1.6; }
+</style>
+</head>
+<body>
+<header>
+  <div class="eyebrow">Hypeline · logo exploration</div>
+  <h1>The H Spine, six ways</h1>
+  <p class="lead">The original (02) stays as the reference. Five variations follow, each changing one idea: the letter's feet, which part carries the silk, whether the thread runs through, whether a pin stands on the peak, and how it sits as an app icon. Same three sizes as before, day and night.</p>
+</header>
+
+<svg width="0" height="0" style="position:absolute">
+  <defs>
+    <linearGradient id="silk" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#ffa968"/><stop offset=".3" stop-color="#ff77b5"/><stop offset=".62" stop-color="#b39cff"/><stop offset=".85" stop-color="#8eb0ff"/><stop offset="1" stop-color="#ffde68"/>
+    </linearGradient>
+    <linearGradient id="silkV" x1="0" y1="1" x2="0" y2="0">
+      <stop offset="0" stop-color="#8eb0ff"/><stop offset=".45" stop-color="#b39cff"/><stop offset=".8" stop-color="#ff77b5"/><stop offset="1" stop-color="#ffa968"/>
+    </linearGradient>
+    <linearGradient id="silkD" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#ffde68"/><stop offset=".35" stop-color="#ff77b5"/><stop offset=".7" stop-color="#b39cff"/><stop offset="1" stop-color="#8eb0ff"/>
+    </linearGradient>
+    <linearGradient id="silkU" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="64" y2="0">
+      <stop offset="0" stop-color="#ffa968"/><stop offset=".3" stop-color="#ff77b5"/><stop offset=".62" stop-color="#b39cff"/><stop offset=".85" stop-color="#8eb0ff"/><stop offset="1" stop-color="#ffde68"/>
+    </linearGradient>
+    <linearGradient id="silkVU" gradientUnits="userSpaceOnUse" x1="0" y1="56" x2="0" y2="8">
+      <stop offset="0" stop-color="#8eb0ff"/><stop offset=".45" stop-color="#b39cff"/><stop offset=".8" stop-color="#ff77b5"/><stop offset="1" stop-color="#ffa968"/>
+    </linearGradient>
+    <radialGradient id="glow" cx=".5" cy=".9" r=".8">
+      <stop offset="0" stop-color="#ff77b5" stop-opacity=".9"/><stop offset=".5" stop-color="#b39cff" stop-opacity=".55"/><stop offset="1" stop-color="#8eb0ff" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+</svg>
+
+<main>
+
+<article class="card">
+  <h2><span class="n">02</span> The H Spine <span class="pill">reference</span></h2>
+  <p>The original: two heavy ink stems, a silk peak for a crossbar. Kept exactly as it was.</p>
+  <template id="a">
+    <svg viewBox="0 0 64 64" fill="none">
+      <path d="M14 10 V54 M50 10 V54" stroke="currentColor" stroke-width="7" stroke-linecap="round"/>
+      <path d="M14 38 C 22 38, 24 20, 32 20 S 42 38, 50 38" stroke="url(#silk)" stroke-width="5.5" stroke-linecap="round"/>
+    </svg>
+  </template>
+  <div class="stage" data-use="a"></div>
+  <div class="stage night" data-use="a"></div>
+</article>
+
+<article class="card">
+  <h2><span class="n">02·a</span> Serif feet <span class="pill">Gloock</span></h2>
+  <p>The stems get the wordmark's slab feet and heads, so the mark and the Gloock "Hypeline" on the landing page are visibly the same letter. Tapered, slightly thinner stems; the peak stays silk.</p>
+  <template id="b">
+    <svg viewBox="0 0 64 64" fill="none">
+      <path d="M9 11 H21 M9 53 H21 M43 11 H55 M43 53 H55" stroke="currentColor" stroke-width="3.2" stroke-linecap="round"/>
+      <path d="M15 11 V53 M49 11 V53" stroke="currentColor" stroke-width="5.6" stroke-linecap="butt"/>
+      <path d="M15 38 C 22 38, 25 20, 32 20 S 42 38, 49 38" stroke="url(#silk)" stroke-width="5" stroke-linecap="round"/>
+    </svg>
+  </template>
+  <div class="stage" data-use="b"></div>
+  <div class="stage night" data-use="b"></div>
+</article>
+
+<article class="card">
+  <h2><span class="n">02·b</span> Inverted <span class="pill">silk stems</span></h2>
+  <p>The colour swaps sides: the stems wear the silk (vertical, peach at the top to sky at the foot) and the peak is ink. More colour in the rail, and the ink peak is the crisper shape at 16 px.</p>
+  <template id="c">
+    <svg viewBox="0 0 64 64" fill="none">
+      <path d="M14 10 V54" stroke="url(#silkVU)" stroke-width="7" stroke-linecap="round"/>
+      <path d="M50 10 V54" stroke="url(#silkVU)" stroke-width="7" stroke-linecap="round"/>
+      <path d="M14 38 C 22 38, 24 20, 32 20 S 42 38, 50 38" stroke="currentColor" stroke-width="5.5" stroke-linecap="round"/>
+    </svg>
+  </template>
+  <div class="stage" data-use="c"></div>
+  <div class="stage night" data-use="c"></div>
+</article>
+
+<article class="card">
+  <h2><span class="n">02·c</span> Thread through <span class="pill">timeline</span></h2>
+  <p>The crossbar does not stop at the stems: the thread runs in from the left as a hairline, rises into the peak between the stems, and runs out to the right. The H becomes a window onto a longer timeline, which is what the dashboard is.</p>
+  <template id="d">
+    <svg viewBox="0 0 64 64" fill="none">
+      <path d="M2 40 H14" stroke="url(#silkU)" stroke-width="2.4" stroke-linecap="round" opacity=".8"/>
+      <path d="M50 40 H62" stroke="url(#silkU)" stroke-width="2.4" stroke-linecap="round" opacity=".8"/>
+      <path d="M14 10 V54 M50 10 V54" stroke="currentColor" stroke-width="7" stroke-linecap="round"/>
+      <path d="M14 40 C 22 40, 24 18, 32 18 S 42 40, 50 40" stroke="url(#silk)" stroke-width="5.5" stroke-linecap="round"/>
+    </svg>
+  </template>
+  <div class="stage" data-use="d"></div>
+  <div class="stage night" data-use="d"></div>
+</article>
+
+<article class="card">
+  <h2><span class="n">02·d</span> Pinned <span class="pill">moment</span></h2>
+  <p>A pin stands on the peak — the moment marker from the heatmap — so the letter also tells the story: two handles, a peak, a pin. The stems are a touch shorter to give the pin headroom inside the same square.</p>
+  <template id="e">
+    <svg viewBox="0 0 64 64" fill="none">
+      <path d="M14 16 V56 M50 16 V56" stroke="currentColor" stroke-width="7" stroke-linecap="round"/>
+      <path d="M14 42 C 22 42, 24 26, 32 26 S 42 42, 50 42" stroke="url(#silk)" stroke-width="5.5" stroke-linecap="round"/>
+      <path d="M32 26 V14" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/>
+      <circle cx="32" cy="10" r="4" fill="currentColor"/>
+      <circle cx="32" cy="10" r="1.6" fill="var(--ground)"/>
+    </svg>
+  </template>
+  <div class="stage" data-use="e"></div>
+  <div class="stage night" data-use="e"></div>
+</article>
+
+<article class="card">
+  <h2><span class="n">02·e</span> On the tile <span class="pill">app icon</span></h2>
+  <p>The H Spine set on a rounded paper tile with the silk hairline ring the rail and player already wear. This is the form for the PWA / home-screen icon; in the rail it is the same mark without the tile, so both can coexist.</p>
+  <template id="f">
+    <svg viewBox="0 0 64 64" fill="none">
+      <rect x="3" y="3" width="58" height="58" rx="17" fill="var(--ground2)" stroke="url(#silkD)" stroke-width="2.2"/>
+      <path d="M20 17 V47 M44 17 V47" stroke="currentColor" stroke-width="5.6" stroke-linecap="round"/>
+      <path d="M20 36 C 25 36, 27 24, 32 24 S 39 36, 44 36" stroke="url(#silk)" stroke-width="4.4" stroke-linecap="round"/>
+    </svg>
+  </template>
+  <div class="stage" data-use="f"></div>
+  <div class="stage night" data-use="f"></div>
+</article>
+
+</main>
+
+<footer>
+  Notes: 02·a is the one that ties back to the wordmark; 02·c reads most like "timeline" and works as a wide lockup too (the hairlines can extend under the word "Hypeline" on the landing page); 02·d carries the most meaning but is the busiest at 16 px; 02·e is not an alternative so much as the icon form of whichever you pick. 02·b is the boldest in the rail.
+</footer>
+
+<script>
+  const home = '<svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9.5 10 4l7 5.5"/><path d="M5 8.5V16h10V8.5"/><path d="M8.5 16v-4h3v4"/></svg>';
+  const moon = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z"/></svg>';
+  for (const stage of document.querySelectorAll('.stage')) {
+    const svg = document.getElementById(stage.dataset.use).content.firstElementChild.outerHTML;
+    stage.innerHTML = `
+      <div class="col"><div class="big ink">${svg}</div><span class="lbl">72 px</span></div>
+      <div class="col"><div class="rail ink">${svg}<span class="btn">${home}</span><span class="btn">${moon}</span></div><span class="lbl">rail</span></div>
+      <div class="col"><div class="fav ink">${svg}</div><span class="lbl">16 px</span></div>`;
+  }
+</script>
+</body>
+</html>

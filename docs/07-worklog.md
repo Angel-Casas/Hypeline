@@ -1190,3 +1190,18 @@ a closing link), `package.json` gained `homepage`/`repository`,
 survive a hard load. **Blocked/next:** the domain resolves to GitHub Pages
 but 404s — nothing is published yet (the repo is still local, and Pages
 needs an Actions workflow to build a Vite app).
+
+## 2026-09-17 (cont.) — Pages needs a workflow
+
+**What changed.** Angel pushed and set Pages' source to GitHub Actions, but
+the Actions tab was empty and the domain still 404'd: Pages builds only
+Jekyll, so with that source _something_ has to produce the site.
+`.github/workflows/deploy.yml` does it on every push to `main` (and on
+demand): checkout, Node 22 with an npm cache, `npm ci`, **lint, unit
+tests**, `npm run build`, then `upload-pages-artifact` + `deploy-pages`
+with the `pages`/`id-token` permissions and a `pages` concurrency group.
+`VITE_SHIM_URL` and `VITE_TWITCH_CLIENT_ID` come from repository
+_variables_ (public values, not secrets); `VITE_GITHUB_REPO` is
+`github.repository`. Verified `npm ci` + the ffmpeg postinstall from a
+clean tree. **Angel:** add the two variables, then push (or run the
+workflow by hand) — the first green run publishes hypeline.live.
