@@ -1236,3 +1236,15 @@ old and new code side by side (old threw Angel's exact error, new got all
 precise 9:16 and split all exported. 101 unit tests, lint and build clean.
 **Angel:** nothing to do; ships with the next push. Still open: the
 nameserver move, then `relay.hypeline.live` and `VITE_SHIM_URL`.
+
+## 2026-09-17 (cont.) — The update toast, before the reload
+
+**What changed.** ADR-26. The toast never appeared on its own because
+nothing ever asked the service worker to look: `lib/pwa.ts` now holds the
+registration and calls `update()` every 15 minutes, on tab focus, and on
+`online`, throttled to one check a minute and skipped while offline.
+`e2e/pwa.mjs` gained a real-worker section — install, reload into its
+control, append to `dist/sw.js` as a stand-in deploy, and the untouched tab
+raises the toast without reloading. 101 unit tests, lint and build clean.
+**Angel:** after this ships, the *next* deploy is the one an open tab will
+announce by itself.

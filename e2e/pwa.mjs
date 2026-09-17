@@ -5,6 +5,7 @@
  * waiting and only reloads when the user says so.
  */
 import { chromium } from 'playwright';
+import { appendFileSync, readFileSync, writeFileSync } from 'node:fs';
 
 const BASE = process.env.BASE ?? 'http://localhost:4173';
 const EXEC = process.env.CHROMIUM;
@@ -85,6 +86,46 @@ await toast.waitFor({ state: 'visible', timeout: 5000 });
 await p.locator('[data-testid="update-reload"]').click();
 await p.waitForFunction(() => window.__stamp === undefined, null, { timeout: 10000 });
 console.log('Reload reloads the page');
+// A real deploy, seen by a tab that never navigates (2026-09-17): the page registers its
+// worker, a new build lands on the server, and the app asks the worker to look again —
+// no reload, no F5. `online` forces the check past its one-a-minute gap.
+const SW = 'dist/sw.js';
+const before = readFileSync(SW, 'utf8');
+const ctx2 = await b.newContext({ viewport: { width: 1280, height: 900 } });
+await ctx2.addInitScript(() => {
+  localStorage.setItem('hypeline.locale', 'en');
+  localStorage.setItem('hypeline.tour.v1', 'done');
+  navigator.serviceWorker?.ready.then(() => (window.__swReady = true));
+});
+const p2 = await ctx2.newPage();
+p2.on('pageerror', (e) => errors.push(String(e)));
+await p2.goto(BASE + '/dashboard');
+// the first visit installs the worker but is not controlled by it (no clientsClaim: the
+// page that loaded before the worker existed keeps the network it started with)
+await p2.waitForFunction(
+  () => window.__swReady === true,
+  null,
+  { timeout: 20000 },
+);
+await p2.reload();
+await p2.waitForFunction(() => navigator.serviceWorker.controller !== null, null, {
+  timeout: 20000,
+});
+await p2.evaluate(() => (window.__stamp = Math.random()));
+const toast2 = p2.locator('[data-testid="update-toast"]');
+console.log('controlled by a worker, no toast yet:', (await toast2.count()) === 0);
+try {
+  appendFileSync(SW, `\n// deploy ${Date.now()}\n`); // a new build on the server
+  await p2.evaluate(() => window.dispatchEvent(new Event('online')));
+  await toast2.waitFor({ state: 'visible', timeout: 20000 });
+  console.log('the open tab noticed the deploy by itself:', (await toast2.innerText()).replace(/\s+/g, ' '));
+  if (!(await p2.evaluate(() => window.__stamp !== undefined)))
+    throw new Error('the page reloaded instead of asking');
+} finally {
+  writeFileSync(SW, before);
+}
+await ctx2.close();
+
 const real = errors.filter((e) => !/ResizeObserver/.test(e));
 console.log('page errors:', real.length ? real : 'none');
 await b.close();

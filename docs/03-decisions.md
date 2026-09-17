@@ -498,3 +498,24 @@ the pixels, still a few hundred KB, straight from Twitch's CDN and outside
 the relay). If a future core changes size and the postinstall script has
 not run, the bar is merely wrong, never broken. The unit test streams more
 bytes than it declares, so the old shape would fail it.
+
+## ADR-26 — An open tab checks for its own updates (2026-09-17)
+
+**Context.** ADR-22's update toast only ever appeared after a reload, which
+is the one moment it is useless: the reload already fetched the new build.
+A browser re-fetches `sw.js` when the page navigates, and otherwise not at
+all, so a tab left open through a deploy — the normal way Hypeline is used,
+one long editing session — never hears about it.
+
+**Decision.** `lib/pwa.ts` keeps the registration from `onRegisteredSW` and
+calls `registration.update()` every 15 minutes, when the tab becomes
+visible again, and (forced, past the gap) when the network returns. Checks
+are throttled to one a minute so flicking between tabs costs nothing, and
+skipped outright while `navigator.onLine` is false.
+
+**Consequences.** One conditional request for `sw.js` per quarter hour per
+open tab — a few hundred bytes against a static host, and nothing at all
+while offline. Nothing else changes: the worker still waits, the toast
+still asks, and the reload is still the user's. The e2e now proves the
+whole path against a real service worker — install, take control, publish a
+new `sw.js`, and watch a tab that never navigated raise the toast.
