@@ -90,7 +90,9 @@ export const useClipStore = defineStore('clip', () => {
 
   const inSec = ref<number | null>(null);
   const outSec = ref<number | null>(null);
-  const mode = ref<CutMode>('fast');
+  // frame-exact by default: a clip that starts up to 2 s early is the more expensive mistake,
+  // and 'fast' is one menu item away when the speed matters (Angel, 2026-09-17)
+  const mode = ref<CutMode>('precise');
   const aspect = ref<Aspect>('16:9');
   const cropCenterX = ref(0.5);
   const split = ref<SplitLayout>({ ...DEFAULT_SPLIT });

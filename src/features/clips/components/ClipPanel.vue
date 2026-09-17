@@ -7,7 +7,8 @@ import { useSettingsStore } from '@/features/settings/settingsStore';
 import { useAiStore } from '@/features/ai/stores/aiStore';
 import { useVodStore } from '@/features/vod/stores/vodStore';
 import { formatHms } from '@/lib/twitch/vodUrl';
-import type { CutProgress } from '@/lib/video/cut';
+import type { Aspect, CutMode, CutProgress } from '@/lib/video/cut';
+import MenuButton from '@/ui/MenuButton.vue';
 import { frameBackground, type Storyboard } from '@/lib/twitch/storyboard';
 import { silkAt } from '@/ui/thread/silk';
 
@@ -15,7 +16,8 @@ import { silkAt } from '@/ui/thread/silk';
  * "Filmstrip" (design/dashboard/hypeline-clip-panel.html #7, Angel 2026-09-15): the range
  * is an editor's trim — the storyboard frames at In and Out are the handles (silk placeholders
  * without the shim), the duration runs between them on a silk bar, tapping a frame seeks
- * there and the time on a frame is editable in place. Settings are segmented pills below.
+ * there and the time on a frame is editable in place. Below it, one line: the preset pills and
+ * a menu per setting (ADR-27).
  */
 const props = defineProps<{
   vodId: string;
@@ -195,6 +197,18 @@ const CAPTION_STYLES = computed(
     ] as const,
 );
 
+/** The menus take `{ v, l, note }`; the pills' tooltips become the note. */
+const MODE_OPTIONS = computed(() => MODES.value.map((m) => ({ v: m.v, l: m.l })));
+const ASPECT_OPTIONS = computed(() =>
+  ASPECTS.value.map((a) => ({ v: a.v, l: a.l, note: a.t || undefined })),
+);
+/** What each pill shows when its menu is shut: the current value, short. */
+const qualityLabel = computed(
+  () => QUALITY.value.find((q) => q.v === settings.preferredHeight)?.l ?? '—',
+);
+const modeLabel = computed(() => (mode.value === 'fast' ? t('clip.fast') : t('clip.exact')));
+const aspectLabel = computed(() => ASPECTS.value.find((a) => a.v === aspect.value)?.l ?? '—');
+
 function parseHms(s: string): number | null {
   const m = /^(?:(\d+):)?(\d{1,2}):(\d{1,2}(?:\.\d+)?)$/.exec(s.trim());
   if (!m) return null;
@@ -313,11 +327,9 @@ function download(url: string, name: string) {
     </div>
     <div class="border-line border-t"></div>
 
-    <!-- presets: one tap for the usual destinations -->
-    <div class="flex flex-wrap items-center gap-1.5">
-      <span class="text-muted font-mono text-[10px] tracking-[0.1em] uppercase">{{
-        t('clip.preset')
-      }}</span>
+    <!-- one line for every setting: preset pills, then a menu each (ADR-27). The panel used
+         to spend five stacked rows on this and pushed Export below the fold. -->
+    <div class="flex flex-wrap items-center gap-2">
       <span class="seg" role="group" :aria-label="t('clip.preset')">
         <button
           v-for="pr in PRESETS"
@@ -331,132 +343,145 @@ function download(url: string, name: string) {
           {{ pr.l }}
         </button>
       </span>
-    </div>
-    <!-- format: segmented pills -->
-    <div class="flex flex-wrap items-center gap-1.5">
-      <span class="seg" role="group" :aria-label="t('clip.quality')">
-        <button
-          v-for="q in QUALITY"
-          :key="q.v"
-          type="button"
-          class="seg-opt font-mono"
-          :aria-pressed="settings.preferredHeight === q.v"
-          @click="settings.preferredHeight = q.v"
-        >
-          {{ q.l }}
-        </button>
-      </span>
-      <span class="seg" role="group" :aria-label="t('clip.mode')">
-        <button
-          v-for="m in MODES"
-          :key="m.v"
-          type="button"
-          class="seg-opt"
-          :aria-pressed="mode === m.v"
-          :title="m.t"
-          @click="mode = m.v"
-        >
-          {{ m.l }}
-        </button>
-      </span>
-      <span class="seg" role="group" :aria-label="t('clip.aspect')">
-        <button
-          v-for="a in ASPECTS"
-          :key="a.v"
-          type="button"
-          class="seg-opt"
-          :aria-pressed="aspect === a.v"
-          :title="a.t"
-          @click="aspect = a.v"
-        >
-          {{ a.l }}
-        </button>
-      </span>
-    </div>
-    <label v-if="aspect === 'split'" class="flex items-center gap-2 text-xs">
-      <span class="text-muted">{{ t('clip.camStrip') }}</span>
-      <input
-        v-model.number="store.split.camShare"
-        type="range"
-        min="0.25"
-        max="0.5"
-        step="0.01"
-        class="flex-1"
+      <MenuButton
+        :label="t('clip.sizeLabel')"
+        :value="qualityLabel"
+        :options="QUALITY"
+        :model-value="settings.preferredHeight"
+        data-testid="pick-quality"
+        @update:model-value="settings.preferredHeight = Number($event)"
       />
-      <span class="font-mono">{{ Math.round(store.split.camShare * 100) }}%</span>
-    </label>
-    <label v-if="aspect === '9:16' || aspect === '1:1'" class="flex items-center gap-2 text-xs">
-      <span class="text-muted">{{ t('clip.cropCentre') }}</span>
-      <input v-model.number="cropCenterX" type="range" min="0" max="1" step="0.01" class="flex-1" />
-      <span class="font-mono">{{ Math.round(cropCenterX * 100) }}%</span>
-    </label>
-
-    <!-- captions -->
-    <div class="flex flex-wrap items-center gap-x-3 gap-y-1.5 text-xs">
-      <label
-        class="flex items-center gap-2"
-        :title="captionCues.length ? '' : t('clip.transcribeFirstTip')"
-      >
-        <input v-model="captionsOn" type="checkbox" :disabled="!captionCues.length" />
-        {{ t('clip.captions') }}
-        <span class="text-muted">{{
-          captionCues.length
-            ? t('clip.cuesReencode', { n: captionCues.length })
-            : t('clip.transcribeFirst')
-        }}</span>
-      </label>
-      <template v-if="captionsOn && captionCues.length">
-        <span class="seg" role="group" :aria-label="t('clip.captionStyle')">
-          <button
-            v-for="c in CAPTION_STYLES"
-            :key="c.v"
-            type="button"
-            class="seg-opt"
-            :aria-pressed="captionStyle === c.v"
-            @click="captionStyle = c.v"
-          >
-            {{ c.l }}
-          </button>
-        </span>
-        <label class="flex items-center gap-1"
-          ><input v-model="captionsUppercase" type="checkbox" /> {{ t('clip.uppercase') }}</label
-        >
-        <span class="text-muted">{{ t('clip.timingNote') }}</span>
-      </template>
-    </div>
-
-    <!-- thumbnail -->
-    <div class="flex flex-wrap items-center gap-2 text-xs">
-      <span class="text-muted">{{ t('clip.thumbnail') }}</span>
-      <input
-        v-model="thumbTitle"
-        class="field min-w-32 flex-1 py-1!"
-        :placeholder="t('clip.thumbTitlePlaceholder')"
-        maxlength="80"
+      <MenuButton
+        :label="t('clip.cutLabel')"
+        :value="modeLabel"
+        :options="MODE_OPTIONS"
+        :model-value="mode"
+        data-testid="pick-mode"
+        @update:model-value="mode = $event as CutMode"
       />
-      <button
-        v-if="aiTitle && aiTitle !== thumbTitle"
-        class="text-accent underline"
-        @click="thumbTitle = aiTitle"
+      <MenuButton
+        :label="t('clip.shapeLabel')"
+        :value="aspectLabel"
+        :options="ASPECT_OPTIONS"
+        :model-value="aspect"
+        data-testid="pick-aspect"
+        @update:model-value="aspect = $event as Aspect"
       >
-        {{ t('clip.useAiTitle') }}
-      </button>
-      <button
-        v-if="inSec != null"
-        class="btn-ghost px-2.5! py-1! text-xs"
-        :disabled="thumbBusy || !settings.relayUrl || locked"
-        @click="store.grabThumbnailAt(props.vodId, inSec)"
+        <!-- the crop sliders belong to the shape that needs them, so the row never grows -->
+        <label v-if="aspect === 'split'" class="flex items-center gap-2 text-xs">
+          <span class="text-muted">{{ t('clip.camStrip') }}</span>
+          <input
+            v-model.number="store.split.camShare"
+            type="range"
+            min="0.25"
+            max="0.5"
+            step="0.01"
+            class="flex-1"
+          />
+          <span class="font-mono">{{ Math.round(store.split.camShare * 100) }}%</span>
+        </label>
+        <label
+          v-else-if="aspect === '9:16' || aspect === '1:1'"
+          class="flex items-center gap-2 text-xs"
+        >
+          <span class="text-muted">{{ t('clip.cropCentre') }}</span>
+          <input
+            v-model.number="cropCenterX"
+            type="range"
+            min="0"
+            max="1"
+            step="0.01"
+            class="flex-1"
+          />
+          <span class="font-mono">{{ Math.round(cropCenterX * 100) }}%</span>
+        </label>
+      </MenuButton>
+      <MenuButton
+        :label="t('clip.capsLabel')"
+        :value="captionsOn ? t('clip.captionsOn') : t('clip.captionsOff')"
+        :title="captionCues.length ? undefined : t('clip.transcribeFirstTip')"
+        data-testid="pick-captions"
       >
-        {{ t('clip.useInFrame') }}
-      </button>
-      <button
-        class="btn-ghost px-2.5! py-1! text-xs"
-        :disabled="thumbBusy || !settings.relayUrl || locked"
-        @click="store.grabThumbnailAt(props.vodId, props.currentTime)"
+        <div class="flex flex-col gap-2 text-xs">
+          <label class="flex items-center gap-2">
+            <input v-model="captionsOn" type="checkbox" :disabled="!captionCues.length" />
+            {{ t('clip.captions') }}
+          </label>
+          <p class="text-muted">
+            {{
+              captionCues.length
+                ? t('clip.cuesReencode', { n: captionCues.length })
+                : t('clip.transcribeFirst')
+            }}
+          </p>
+          <template v-if="captionsOn && captionCues.length">
+            <span class="seg self-start" role="group" :aria-label="t('clip.captionStyle')">
+              <button
+                v-for="c in CAPTION_STYLES"
+                :key="c.v"
+                type="button"
+                class="seg-opt"
+                :aria-pressed="captionStyle === c.v"
+                @click="captionStyle = c.v"
+              >
+                {{ c.l }}
+              </button>
+            </span>
+            <label class="flex items-center gap-2"
+              ><input v-model="captionsUppercase" type="checkbox" /> {{ t('clip.uppercase') }}</label
+            >
+            <p class="text-muted">{{ t('clip.timingNote') }}</p>
+          </template>
+        </div>
+      </MenuButton>
+      <MenuButton
+        :label="t('clip.thumbLabel')"
+        :value="thumbnail || thumbTitle ? t('clip.thumbSet') : t('clip.thumbNone')"
+        wide
+        data-testid="pick-thumbnail"
       >
-        {{ t('clip.grabAtPlayhead') }}
-      </button>
-      <span v-if="thumbBusy" class="text-muted">{{ thumbStageLabel }}</span>
+        <template #default="{ close }">
+          <div class="flex flex-col gap-2 text-xs">
+            <input
+              v-model="thumbTitle"
+              class="field py-1!"
+              :placeholder="t('clip.thumbTitlePlaceholder')"
+              maxlength="80"
+            />
+            <button
+              v-if="aiTitle && aiTitle !== thumbTitle"
+              class="text-accent self-start underline"
+              @click="thumbTitle = aiTitle"
+            >
+              {{ t('clip.useAiTitle') }}
+            </button>
+            <div class="flex flex-wrap gap-2">
+              <button
+                v-if="inSec != null"
+                class="btn-ghost px-2.5! py-1! text-xs"
+                :disabled="thumbBusy || !settings.relayUrl || locked"
+                @click="
+                  store.grabThumbnailAt(props.vodId, inSec);
+                  close();
+                "
+              >
+                {{ t('clip.useInFrame') }}
+              </button>
+              <button
+                class="btn-ghost px-2.5! py-1! text-xs"
+                :disabled="thumbBusy || !settings.relayUrl || locked"
+                @click="
+                  store.grabThumbnailAt(props.vodId, props.currentTime);
+                  close();
+                "
+              >
+                {{ t('clip.grabAtPlayhead') }}
+              </button>
+            </div>
+          </div>
+        </template>
+      </MenuButton>
+      <span v-if="thumbBusy" class="text-muted text-xs">{{ thumbStageLabel }}</span>
     </div>
     <p
       v-if="thumbError"

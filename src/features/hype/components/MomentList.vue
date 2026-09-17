@@ -41,6 +41,18 @@ function setChip(id: string, el: unknown) {
   if (el instanceof HTMLElement) chipEls.set(id, el);
   else chipEls.delete(id);
 }
+/**
+ * Desktop only, the grid is capped and scrolls (ADR-27): a sensitive VOD finds twenty peaks
+ * and the list used to push the clip panel off the screen. Keep the chosen one in view when
+ * the choice came from elsewhere — a pin on the timeline, or the keyboard.
+ */
+watch(
+  () => props.activeId,
+  (id) => {
+    if (!id) return;
+    void nextTick(() => chipEls.get(id)?.scrollIntoView({ block: 'nearest' }));
+  },
+);
 /** Touch screens: no hover, so a tap opens the card first. */
 const coarse =
   typeof matchMedia === 'function' && matchMedia('(hover: none), (pointer: coarse)').matches;
@@ -149,7 +161,7 @@ const chips = computed(() => {
 
 <template>
   <div class="flex flex-col gap-2">
-    <ol class="grid grid-cols-[repeat(auto-fill,minmax(92px,1fr))] gap-1.5">
+    <ol class="chips grid grid-cols-[repeat(auto-fill,minmax(92px,1fr))] gap-1.5">
       <li
         v-for="c in chips"
         :key="c.m.id"
@@ -257,6 +269,26 @@ const chips = computed(() => {
 </template>
 
 <style scoped>
+/* A phone scrolls the page, which is the right scroll there; a desktop has the panel beside
+   the player and must not lose the export button below the fold. */
+@media (min-width: 1024px) {
+  .chips {
+    max-height: 13.5rem;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    padding-right: 4px;
+    scrollbar-width: thin;
+    scrollbar-color: color-mix(in srgb, var(--color-ink) 22%, transparent) transparent;
+  }
+  .chips::-webkit-scrollbar {
+    width: 8px;
+  }
+  .chips::-webkit-scrollbar-thumb {
+    background: color-mix(in srgb, var(--color-ink) 20%, transparent);
+    border-radius: 999px;
+  }
+}
+
 .moment-card {
   overflow: hidden;
   border-radius: 14px;

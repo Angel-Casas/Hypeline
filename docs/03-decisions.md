@@ -476,7 +476,7 @@ bytes it got against `Content-Length`, throwing `incompleted download` when
 they disagree; its `catch` calls `arrayBuffer()` on that same, already
 drained response, so the real reason is replaced by a stream error. On a
 static host the 32 MB core is served gzipped, so `Content-Length` is the
-*compressed* size (10.3 MB on GitHub Pages) and the comparison can never
+_compressed_ size (10.3 MB on GitHub Pages) and the comparison can never
 hold. Reproduced exactly by serving `dist/` with gzip and running the old
 code and the new one side by side in Chromium.
 
@@ -519,3 +519,46 @@ while offline. Nothing else changes: the worker still waits, the toast
 still asks, and the reload is still the user's. The e2e now proves the
 whole path against a real service worker — install, take control, publish a
 new `sw.js`, and watch a tab that never navigated raise the toast.
+
+## ADR-27 — The clip settings become menus, and long lists scroll (2026-09-17)
+
+**Context.** The clip panel spent five stacked rows on settings — preset
+pills, then quality, mode and aspect as three pill groups, then captions,
+then the thumbnail line — each row full width and mostly empty. On a
+desktop the whole dashboard fitted the screen except this, so Export sat
+below the fold (Angel, 2026-09-17). The moments grid made it worse: a
+sensitive VOD finds twenty peaks and every extra row pushed the clip panel
+further down.
+
+Five layouts were mocked against the real tokens and measured
+(`design/clips/clip-controls.html`): dropdowns, a preset summary with an
+"Adjust" disclosure, an editable sentence, two columns, and a pinned export
+bar. Angel chose the dropdowns.
+
+**Decision.** A new `ui/MenuButton.vue`: a pill that shows a setting's
+current value and opens a small paper menu — a list of choices via
+`options`/`modelValue`, arbitrary content via the slot, or both. Quality,
+mode, aspect, captions and thumbnail each become one, and the crop and
+cam-strip sliders move inside the shape menu that needs them, so no
+conditional row can appear. The preset pills stay pills: one tap is the
+point of a preset. The menu is teleported to the body and clamped inside
+the viewport rather than anchored to an edge. The pills' labels are short
+words of their own (`size`, `cut`, `shape`, `subs`, `thumb`) — "Quality"
+and "Aspect" cost a whole row's width in several languages.
+
+Separately, `MomentList`'s grid is capped at 13.5rem with its own scrollbar
+from 1024 px up, and the chosen moment is scrolled into view when the
+choice came from the timeline. Phones keep the page scroll, which is the
+right scroll there.
+
+Also: the default cut mode is now `precise`, not `fast` — a clip that
+starts up to two seconds early is the more expensive mistake, and speed is
+one menu item away.
+
+**Consequences.** Five rows become two at 1440 px and three at 1280 (the
+middle column, not the design, is the limit); Export is above the fold on
+every desktop size we checked. A setting now costs a click to change where
+it used to cost none — the trade Angel picked knowingly. The menus carry
+`data-testid="pick-<name>"`, and `e2e/cut.mjs` and `e2e/ai.mjs` drive them
+through a shared `pickSetting` helper. Five new strings per catalog, ten
+catalogs.

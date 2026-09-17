@@ -1,0 +1,547 @@
+<!doctype html>
+<html lang="en" data-theme="night">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Clip controls — five ways</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Gloock&family=Manrope:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --color-ground:#fbf9fa; --color-ground-2:#f3eef2; --color-ink:#221c2a; --color-ink-2:#3b3444;
+  --color-muted:#6f6779; --color-line:rgba(34,28,42,.12); --color-accent:#7a4f8e;
+  --color-lift:#fff; --glass-sm-bg:rgba(255,255,255,.55); --glass-sm-line:rgba(255,255,255,.9);
+  --glass-bg:rgba(255,255,255,.42); --glass-line:rgba(255,255,255,.85);
+  --field-bg:rgba(255,255,255,.6); --field-line:rgba(34,28,42,.14); --ghost-bg:rgba(255,255,255,.5);
+  --menu-bg:#fff; --scrim:rgba(34,28,42,.32);
+  --font-mono:'JetBrains Mono',ui-monospace,monospace;
+}
+[data-theme="night"]{
+  --color-ground:#000; --color-ground-2:#0c0a0f; --color-ink:#f3edf6; --color-ink-2:#d6cddb;
+  --color-muted:#9b91a5; --color-line:rgba(255,255,255,.14); --color-accent:#c9a3df;
+  --color-lift:#2a2333; --glass-sm-bg:rgba(24,20,30,.78); --glass-sm-line:rgba(255,255,255,.14);
+  --glass-bg:rgba(255,255,255,.06); --glass-line:rgba(255,255,255,.12);
+  --field-bg:rgba(255,255,255,.05); --field-line:rgba(255,255,255,.16); --ghost-bg:rgba(255,255,255,.04);
+  --menu-bg:#14111a; --scrim:rgba(0,0,0,.58);
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--color-ground);color:var(--color-ink);
+  font-family:Manrope,system-ui,sans-serif;font-size:14px;line-height:1.55;
+  padding:28px 20px 80px;-webkit-font-smoothing:antialiased}
+.wrap{max-width:1000px;margin:0 auto}
+h1{font-family:Gloock,serif;font-weight:400;font-size:30px;line-height:1.15;margin:0 0 6px}
+h2{font-family:Gloock,serif;font-weight:400;font-size:20px;margin:0}
+.lede{color:var(--color-muted);max-width:66ch;margin:0 0 6px}
+.eyebrow{font-family:var(--font-mono);font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--color-muted)}
+.topbar{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-bottom:22px;flex-wrap:wrap}
+.toggle{border:1px solid var(--color-line);background:var(--ghost-bg);color:var(--color-ink);
+  border-radius:999px;padding:7px 14px;font:inherit;font-size:12px;cursor:pointer;white-space:nowrap}
+
+/* ---- the panel frame each mock sits in ---- */
+.card{border:1px solid var(--color-line);background:var(--color-ground-2);border-radius:18px;
+  padding:18px;margin:0 0 26px}
+.card > header{display:flex;align-items:baseline;justify-content:space-between;gap:14px;flex-wrap:wrap;margin-bottom:4px}
+.why{color:var(--color-muted);font-size:13px;margin:6px 0 16px;max-width:70ch}
+.mock{border:1px dashed var(--color-line);border-radius:14px;padding:14px;background:var(--color-ground);
+  display:flex;flex-direction:column;gap:10px;position:relative}
+.h{font-family:var(--font-mono);font-size:11px;color:var(--color-muted);white-space:nowrap}
+.h b{color:var(--color-ink);font-weight:500}
+.saved{color:#3f9160}
+[data-theme="night"] .saved{color:#7fd8a4}
+
+/* ---- real utilities, lifted from src/style.css ---- */
+.seg{display:inline-flex;padding:3px;gap:2px;border-radius:999px;
+  background:color-mix(in srgb,var(--color-ink) 7%,transparent)}
+.seg-opt{padding:4px 10px;border-radius:999px;font:inherit;font-size:11.5px;font-weight:600;
+  line-height:1.3;color:var(--color-muted);white-space:nowrap;cursor:pointer;border:0;background:none;
+  transition:background-color .15s,color .15s}
+.seg-opt:hover{color:var(--color-ink)}
+.seg-opt[aria-pressed="true"]{background:var(--color-ink);color:var(--color-ground)}
+.mono{font-family:var(--font-mono)}
+.btn-silk{border:0;border-radius:12px;padding:.5rem .9rem;font:inherit;font-size:.875rem;font-weight:600;
+  color:#221c2a;cursor:pointer;
+  background:linear-gradient(110deg,#cfdcff,#ddd0ff,#ffd0e4,#ffdcc4,#fff0bd,#cfdcff,#ddd0ff);
+  background-size:300% 100%;animation:drift 7s linear infinite;
+  box-shadow:0 8px 24px rgba(174,129,255,.22),inset 0 1px 0 rgba(255,255,255,.6)}
+@keyframes drift{to{background-position:300% 0}}
+.btn-ghost{border:1px solid var(--color-line);background:var(--ghost-bg);color:var(--color-ink);
+  border-radius:12px;padding:.5rem .9rem;font:inherit;font-size:.875rem;cursor:pointer}
+.btn-ghost.sm{padding:.25rem .625rem;font-size:12px}
+.field{background:var(--field-bg);border:1px solid var(--field-line);border-radius:12px;
+  padding:.5rem .75rem;font-family:var(--font-mono);font-size:.85rem;color:var(--color-ink);width:100%}
+.field.sm{padding:.25rem .6rem;font-size:12px}
+.field::placeholder{color:var(--color-muted)}
+.row{display:flex;flex-wrap:wrap;align-items:center;gap:8px}
+.muted{color:var(--color-muted)}
+.xs{font-size:12px}
+input[type=checkbox]{accent-color:var(--color-accent);width:15px;height:15px}
+
+/* ---- dropdown ---- */
+.dd{position:relative;display:inline-block}
+.dd-btn{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--color-line);
+  background:var(--ghost-bg);color:var(--color-ink);border-radius:999px;padding:5px 10px 5px 12px;
+  font:inherit;font-size:12px;cursor:pointer;white-space:nowrap}
+.dd-btn .k{color:var(--color-muted);font-size:10.5px;font-family:var(--font-mono);
+  letter-spacing:.08em;text-transform:uppercase}
+.dd-btn .v{font-weight:600}
+.dd-btn .caret{opacity:.5;font-size:9px;margin-left:1px}
+.dd-btn:hover{border-color:color-mix(in srgb,var(--color-ink) 28%,transparent)}
+.dd-menu{position:absolute;z-index:40;top:calc(100% + 6px);left:0;min-width:172px;
+  background:var(--menu-bg);border:1px solid var(--color-line);border-radius:14px;padding:5px;
+  box-shadow:0 18px 44px rgba(0,0,0,.28);display:none}
+.dd.open .dd-menu{display:block}
+.dd-item{display:flex;align-items:center;justify-content:space-between;gap:12px;width:100%;
+  border:0;background:none;color:var(--color-ink);font:inherit;font-size:13px;text-align:left;
+  padding:7px 10px;border-radius:9px;cursor:pointer}
+.dd-item:hover{background:color-mix(in srgb,var(--color-ink) 8%,transparent)}
+.dd-item .note{color:var(--color-muted);font-size:11px}
+.dd-item[aria-checked="true"]::after{content:'✓';color:var(--color-accent);font-size:12px}
+.pop{position:absolute;z-index:40;top:calc(100% + 6px);left:0;width:min(330px,80vw);
+  background:var(--menu-bg);border:1px solid var(--color-line);border-radius:16px;padding:12px;
+  box-shadow:0 18px 44px rgba(0,0,0,.28);display:none}
+.dd.open .pop{display:block}
+
+/* ---- variant-specific ---- */
+.sentence{display:flex;flex-wrap:wrap;align-items:center;gap:6px;font-size:13.5px;line-height:2.1}
+.inline-dd{border:0;background:none;color:var(--color-ink);font:inherit;font-size:13.5px;font-weight:600;
+  cursor:pointer;padding:1px 3px;border-bottom:1.5px dotted color-mix(in srgb,var(--color-ink) 45%,transparent)}
+.inline-dd:hover{border-bottom-style:solid;color:var(--color-accent)}
+.cols{display:grid;grid-template-columns:1fr 1fr;gap:10px 22px;align-items:start}
+.col{display:flex;flex-direction:column;gap:9px}
+.cell{display:flex;flex-wrap:wrap;align-items:center;gap:8px}
+.cell .lab{width:52px;flex:none;text-align:right}
+.lab{font-family:var(--font-mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--color-muted)}
+.summary{display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:12.5px}
+.chip{border:1px solid var(--color-line);border-radius:999px;padding:2px 9px;font-size:11.5px;
+  font-family:var(--font-mono);color:var(--color-ink-2);background:var(--ghost-bg)}
+.disclose{border:0;background:none;color:var(--color-accent);font:inherit;font-size:12.5px;cursor:pointer;
+  text-decoration:underline;text-decoration-style:dotted;text-underline-offset:3px;padding:0}
+.hidden{display:none}
+.panel5{height:205px;display:flex;flex-direction:column;gap:10px;overflow:hidden}
+.panel5 .scrollbox{flex:1;max-height:none}
+.sticky-bar{padding-top:10px;border-top:1px solid var(--color-line)}
+.scrollbox{max-height:150px;overflow-y:auto;padding-right:6px;display:flex;flex-direction:column;gap:8px;
+  scrollbar-width:thin;scrollbar-color:color-mix(in srgb,var(--color-ink) 22%,transparent) transparent}
+.fakeline{height:11px;border-radius:999px;background:color-mix(in srgb,var(--color-ink) 9%,transparent)}
+.note{font-size:12px;color:var(--color-muted)}
+.foot{border-top:1px solid var(--color-line);margin-top:34px;padding-top:18px}
+ul.plain{padding-left:18px;margin:8px 0 0}
+ul.plain li{margin-bottom:6px;color:var(--color-muted)}
+ul.plain li b{color:var(--color-ink);font-weight:600}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<div class="topbar">
+  <div>
+    <p class="eyebrow">Hypeline · clip panel</p>
+    <h1>Five ways to stop the controls eating the screen</h1>
+    <p class="lede">Every mock below is built from the real tokens and utilities — same <code>seg</code> pills,
+      same silk button, same fields. The dropdowns open. The number on each card is its measured height,
+      compared against today's block.</p>
+  </div>
+  <button class="toggle" id="theme">☀︎ Day</button>
+</div>
+
+<!-- ============ TODAY ============ -->
+<div class="card">
+  <header>
+    <div><span class="eyebrow">Today</span><h2>What it looks like now</h2></div>
+    <span class="h" id="h-now">measuring…</span>
+  </header>
+  <p class="why">Six stacked rows, each one full width and mostly empty. The export button — the thing you
+    actually came for — ends up below the fold.</p>
+  <div class="mock" id="m-now">
+    <div class="row">
+      <span class="eyebrow">Preset</span>
+      <span class="seg">
+        <button class="seg-opt">TikTok</button><button class="seg-opt">Shorts</button>
+        <button class="seg-opt">X / Discord</button><button class="seg-opt">Square</button>
+      </span>
+    </div>
+    <div class="row">
+      <span class="seg">
+        <button class="seg-opt mono">source</button><button class="seg-opt mono" aria-pressed="true">720p</button>
+        <button class="seg-opt mono">480p</button><button class="seg-opt mono">360p</button>
+      </span>
+      <span class="seg">
+        <button class="seg-opt">fast · ±2 s</button><button class="seg-opt" aria-pressed="true">exact</button>
+      </span>
+      <span class="seg">
+        <button class="seg-opt" aria-pressed="true">16:9</button><button class="seg-opt">9:16</button>
+        <button class="seg-opt">cam + game</button><button class="seg-opt">1:1</button>
+      </span>
+    </div>
+    <div class="row xs"><label class="row" style="gap:8px"><input type="checkbox" disabled> Captions</label>
+      <span class="muted">· transcribe the range first</span></div>
+    <div class="row xs">
+      <span class="muted">Thumbnail</span>
+      <input class="field sm" style="flex:1;min-width:150px" placeholder="Title on the image (optional)">
+      <button class="btn-ghost sm">Use In frame</button>
+      <button class="btn-ghost sm">Grab at playhead</button>
+    </div>
+    <div class="row">
+      <button class="btn-silk">Export clip</button>
+      <button class="btn-ghost xs">Preview</button>
+      <button class="btn-ghost xs">+ Queue</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ 1 ============ -->
+<div class="card">
+  <header>
+    <div><span class="eyebrow">Option 1</span><h2>One line of dropdowns</h2></div>
+    <span class="h" id="h-1">measuring…</span>
+  </header>
+  <p class="why">The three pill groups become three small menus that show their current value. Presets keep their
+    pills, because one tap is the point of a preset. Captions and thumbnail move into a menu of their own.
+    Everything stays one click away, nothing is hidden behind a mode.</p>
+  <div class="mock" id="m-1">
+    <div class="row">
+      <span class="seg">
+        <button class="seg-opt">TikTok</button><button class="seg-opt">Shorts</button>
+        <button class="seg-opt">X / Discord</button><button class="seg-opt">Square</button>
+      </span>
+      <span class="dd" data-dd>
+        <button class="dd-btn" data-dd-btn><span class="k">size</span><span class="v mono" data-val>720p</span><span class="caret">▼</span></button>
+        <div class="dd-menu">
+          <button class="dd-item" data-pick>source <span class="note">biggest file</span></button>
+          <button class="dd-item" data-pick aria-checked="true">720p</button>
+          <button class="dd-item" data-pick>480p</button>
+          <button class="dd-item" data-pick>360p</button>
+        </div>
+      </span>
+      <span class="dd" data-dd>
+        <button class="dd-btn" data-dd-btn><span class="k">cut</span><span class="v" data-val>exact</span><span class="caret">▼</span></button>
+        <div class="dd-menu">
+          <button class="dd-item" data-pick>fast <span class="note">±2 s, instant</span></button>
+          <button class="dd-item" data-pick aria-checked="true">exact <span class="note">re-encodes</span></button>
+        </div>
+      </span>
+      <span class="dd" data-dd>
+        <button class="dd-btn" data-dd-btn><span class="k">shape</span><span class="v" data-val>16:9</span><span class="caret">▼</span></button>
+        <div class="dd-menu">
+          <button class="dd-item" data-pick aria-checked="true">16:9</button>
+          <button class="dd-item" data-pick>9:16</button>
+          <button class="dd-item" data-pick>cam + game</button>
+          <button class="dd-item" data-pick>1:1</button>
+        </div>
+      </span>
+      <span class="dd" data-dd>
+        <button class="dd-btn" data-dd-btn><span class="v">Thumbnail</span><span class="caret">▼</span></button>
+        <div class="pop">
+          <p class="eyebrow" style="margin:0 0 8px">Thumbnail</p>
+          <input class="field sm" placeholder="Title on the image (optional)">
+          <div class="row" style="margin-top:8px">
+            <button class="btn-ghost sm">Use In frame</button>
+            <button class="btn-ghost sm">Grab at playhead</button>
+          </div>
+        </div>
+      </span>
+      <label class="row xs" style="gap:6px" title="transcribe the range first">
+        <input type="checkbox" disabled> <span class="muted">Captions</span>
+      </label>
+    </div>
+    <div class="row">
+      <button class="btn-silk">Export clip</button>
+      <button class="btn-ghost xs">Preview</button>
+      <button class="btn-ghost xs">+ Queue</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ 2 ============ -->
+<div class="card">
+  <header>
+    <div><span class="eyebrow">Option 2</span><h2>Preset, then a summary you can open</h2></div>
+    <span class="h" id="h-2">measuring…</span>
+  </header>
+  <p class="why">A preset already decides shape, cut and size, so most of the time those three rows are just
+    restating what the preset said. Show them as a read-only summary with an "Adjust" link; the full controls
+    drop down when someone wants them and stay open for the rest of the session.</p>
+  <div class="mock" id="m-2">
+    <div class="row">
+      <span class="eyebrow">Preset</span>
+      <span class="seg">
+        <button class="seg-opt" aria-pressed="true">TikTok</button><button class="seg-opt">Shorts</button>
+        <button class="seg-opt">X / Discord</button><button class="seg-opt">Square</button>
+      </span>
+    </div>
+    <div class="summary">
+      <span class="chip">9:16</span><span class="chip">720p</span><span class="chip">exact</span>
+      <span class="chip">no captions</span>
+      <button class="disclose" data-toggle="#adv-2">Adjust</button>
+    </div>
+    <div id="adv-2" class="hidden" style="display:none;flex-direction:column;gap:9px;
+        border-left:0;padding-top:4px">
+      <div class="row">
+        <span class="seg">
+          <button class="seg-opt mono">source</button><button class="seg-opt mono" aria-pressed="true">720p</button>
+          <button class="seg-opt mono">480p</button><button class="seg-opt mono">360p</button>
+        </span>
+        <span class="seg">
+          <button class="seg-opt">fast · ±2 s</button><button class="seg-opt" aria-pressed="true">exact</button>
+        </span>
+      </div>
+      <div class="row">
+        <span class="seg">
+          <button class="seg-opt">16:9</button><button class="seg-opt" aria-pressed="true">9:16</button>
+          <button class="seg-opt">cam + game</button><button class="seg-opt">1:1</button>
+        </span>
+        <label class="row xs" style="gap:6px"><input type="checkbox" disabled> <span class="muted">Captions</span></label>
+      </div>
+      <div class="row xs">
+        <span class="muted">Thumbnail</span>
+        <input class="field sm" style="flex:1;min-width:140px" placeholder="Title on the image (optional)">
+        <button class="btn-ghost sm">Use In frame</button>
+        <button class="btn-ghost sm">Grab at playhead</button>
+      </div>
+    </div>
+    <div class="row">
+      <button class="btn-silk">Export clip</button>
+      <button class="btn-ghost xs">Preview</button>
+      <button class="btn-ghost xs">+ Queue</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ 3 ============ -->
+<div class="card">
+  <header>
+    <div><span class="eyebrow">Option 3</span><h2>A sentence you can edit</h2></div>
+    <span class="h" id="h-3">measuring…</span>
+  </header>
+  <p class="why">The settings read as one line of English, each underlined word a menu. It states what will
+    happen rather than listing switches, and it is the only option that also explains itself to a first-time
+    user. Risk: prose wraps differently in ten languages, so it needs care in German and Japanese.</p>
+  <div class="mock" id="m-3">
+    <div class="row">
+      <span class="seg">
+        <button class="seg-opt">TikTok</button><button class="seg-opt">Shorts</button>
+        <button class="seg-opt">X / Discord</button><button class="seg-opt">Square</button>
+      </span>
+    </div>
+    <div class="sentence">
+      <span class="muted">Cut</span>
+      <span class="dd" data-dd><button class="inline-dd" data-dd-btn data-val>15 s</button>
+        <div class="dd-menu"><button class="dd-item" data-pick>the marked range</button><button class="dd-item" data-pick>15 s</button><button class="dd-item" data-pick>30 s</button></div></span>
+      <span class="muted">at</span>
+      <span class="dd" data-dd><button class="inline-dd" data-dd-btn data-val>720p</button>
+        <div class="dd-menu"><button class="dd-item" data-pick>source</button><button class="dd-item" data-pick aria-checked="true">720p</button><button class="dd-item" data-pick>480p</button><button class="dd-item" data-pick>360p</button></div></span>
+      <span class="muted">in</span>
+      <span class="dd" data-dd><button class="inline-dd" data-dd-btn data-val>16:9</button>
+        <div class="dd-menu"><button class="dd-item" data-pick aria-checked="true">16:9</button><button class="dd-item" data-pick>9:16</button><button class="dd-item" data-pick>cam + game</button><button class="dd-item" data-pick>1:1</button></div></span>
+      <span class="muted">,</span>
+      <span class="dd" data-dd><button class="inline-dd" data-dd-btn data-val>frame-exact</button>
+        <div class="dd-menu"><button class="dd-item" data-pick>fast <span class="note">±2 s</span></button><button class="dd-item" data-pick aria-checked="true">frame-exact</button></div></span>
+      <span class="muted">, with</span>
+      <span class="dd" data-dd><button class="inline-dd" data-dd-btn data-val>no captions</button>
+        <div class="dd-menu"><button class="dd-item" data-pick aria-checked="true">no captions</button><button class="dd-item" data-pick>captions <span class="note">transcribe first</span></button></div></span>
+      <span class="muted">and</span>
+      <span class="dd" data-dd><button class="inline-dd" data-dd-btn data-val>no thumbnail</button>
+        <div class="pop">
+          <p class="eyebrow" style="margin:0 0 8px">Thumbnail</p>
+          <input class="field sm" placeholder="Title on the image (optional)">
+          <div class="row" style="margin-top:8px">
+            <button class="btn-ghost sm">Use In frame</button><button class="btn-ghost sm">Grab at playhead</button>
+          </div>
+        </div></span>
+      <span class="muted">.</span>
+    </div>
+    <div class="row">
+      <button class="btn-silk">Export clip</button>
+      <button class="btn-ghost xs">Preview</button>
+      <button class="btn-ghost xs">+ Queue</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ 4 ============ -->
+<div class="card">
+  <header>
+    <div><span class="eyebrow">Option 4</span><h2>Two columns, nothing hidden</h2></div>
+    <span class="h" id="h-4">measuring…</span>
+  </header>
+  <p class="why">No menus at all: two labelled columns, so the empty space at the end of every row becomes the
+    next row instead. Everything stays visible and one tap away — the honest option if you would rather not
+    trade clicks for pixels. Below about 900 px it falls back to today's single stack, so this only helps the
+    desktop, which is where the problem is.</p>
+  <div class="mock" id="m-4">
+    <div class="cols">
+      <div class="col">
+        <div class="cell"><span class="lab">Preset</span>
+          <span class="seg">
+            <button class="seg-opt">TikTok</button><button class="seg-opt">Shorts</button>
+            <button class="seg-opt">X&nbsp;/&nbsp;Discord</button><button class="seg-opt">Square</button>
+          </span>
+        </div>
+        <div class="cell"><span class="lab">Shape</span>
+          <span class="seg">
+            <button class="seg-opt" aria-pressed="true">16:9</button><button class="seg-opt">9:16</button>
+            <button class="seg-opt">cam + game</button><button class="seg-opt">1:1</button>
+          </span>
+        </div>
+        <div class="cell"><span class="lab">Format</span>
+          <span class="seg">
+            <button class="seg-opt mono">source</button><button class="seg-opt mono" aria-pressed="true">720p</button>
+            <button class="seg-opt mono">480p</button><button class="seg-opt mono">360p</button>
+          </span>
+          <span class="seg">
+            <button class="seg-opt">fast</button><button class="seg-opt" aria-pressed="true">exact</button>
+          </span>
+        </div>
+      </div>
+      <div class="col">
+        <div class="cell"><span class="lab">Words</span>
+          <label class="row xs" style="gap:6px"><input type="checkbox" disabled> <span class="muted">Captions · transcribe first</span></label>
+        </div>
+        <div class="cell"><span class="lab">Thumb</span>
+          <input class="field sm" style="flex:1;min-width:120px" placeholder="Title on the image (optional)">
+        </div>
+        <div class="cell"><span class="lab"></span>
+          <button class="btn-ghost sm">Use In frame</button>
+          <button class="btn-ghost sm">Grab at playhead</button>
+        </div>
+      </div>
+    </div>
+    <div class="row">
+      <button class="btn-silk">Export clip</button>
+      <button class="btn-ghost xs">Preview</button>
+      <button class="btn-ghost xs">+ Queue</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ 5 ============ -->
+<div class="card">
+  <header>
+    <div><span class="eyebrow">Option 5</span><h2>Settings scroll, the export bar never does</h2></div>
+    <span class="h" id="h-5">measuring…</span>
+  </header>
+  <p class="why">Leave the controls exactly as they are, but give them a bounded scroll area and pin the export
+    row to the bottom of the panel. The fold stops mattering: whatever you scroll to, Export is under your
+    cursor. Scroll the box below to feel it. This is the one that pairs with the moments list fix, since it is
+    the same idea applied twice.</p>
+  <div class="mock panel5" id="m-5">
+    <div class="scrollbox">
+      <div class="row">
+        <span class="eyebrow">Preset</span>
+        <span class="seg">
+          <button class="seg-opt">TikTok</button><button class="seg-opt">Shorts</button>
+          <button class="seg-opt">X / Discord</button><button class="seg-opt">Square</button>
+        </span>
+      </div>
+      <div class="row">
+        <span class="seg">
+          <button class="seg-opt mono">source</button><button class="seg-opt mono" aria-pressed="true">720p</button>
+          <button class="seg-opt mono">480p</button><button class="seg-opt mono">360p</button>
+        </span>
+        <span class="seg">
+          <button class="seg-opt">fast · ±2 s</button><button class="seg-opt" aria-pressed="true">exact</button>
+        </span>
+      </div>
+      <div class="row">
+        <span class="seg">
+          <button class="seg-opt" aria-pressed="true">16:9</button><button class="seg-opt">9:16</button>
+          <button class="seg-opt">cam + game</button><button class="seg-opt">1:1</button>
+        </span>
+      </div>
+      <div class="row xs"><label class="row" style="gap:8px"><input type="checkbox" disabled> Captions</label>
+        <span class="muted">· transcribe the range first</span></div>
+      <div class="row xs">
+        <span class="muted">Thumbnail</span>
+        <input class="field sm" style="flex:1;min-width:150px" placeholder="Title on the image (optional)">
+        <button class="btn-ghost sm">Use In frame</button>
+        <button class="btn-ghost sm">Grab at playhead</button>
+      </div>
+    </div>
+    <div class="sticky-bar">
+      <div class="row">
+        <button class="btn-silk">Export clip</button>
+        <button class="btn-ghost xs">Preview</button>
+        <button class="btn-ghost xs">+ Queue</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="foot">
+  <p class="eyebrow">Also asked for</p>
+  <h2 style="margin:2px 0 8px">The moments list</h2>
+  <p class="why" style="margin-bottom:0">Whichever of the five you pick, the moments list gets the same
+    treatment independently: a bounded height with its own scrollbar once it passes about six moments, so a
+    sensitive VOD with twenty peaks stops pushing the clip panel down the page. On a phone it stays as it is —
+    there, the page scroll is the right scroll.</p>
+  <ul class="plain">
+    <li><b>1 — Dropdowns.</b> Biggest saving, keeps every control reachable, costs a click per change.</li>
+    <li><b>2 — Summary.</b> Rewards the preset workflow; the fiddly controls are there when wanted.</li>
+    <li><b>3 — Sentence.</b> The most characterful, the most work to translate well.</li>
+    <li><b>4 — Two columns.</b> No new interaction to learn, a middling saving, desktop only.</li>
+    <li><b>5 — Pinned bar.</b> Doesn't shrink anything; fixes the panel's height so the fold stops mattering.</li>
+  </ul>
+</div>
+
+</div>
+
+<script>
+// theme
+const root = document.documentElement, tb = document.getElementById('theme');
+tb.onclick = () => {
+  const night = root.dataset.theme === 'night';
+  root.dataset.theme = night ? 'day' : 'night';
+  tb.textContent = night ? '☾ Night' : '☀︎ Day';
+  requestAnimationFrame(measure);
+};
+
+// dropdowns
+document.addEventListener('click', (e) => {
+  const btn = e.target.closest('[data-dd-btn]');
+  const pick = e.target.closest('[data-pick]');
+  const openOne = btn ? btn.closest('[data-dd]') : null;
+  document.querySelectorAll('[data-dd].open').forEach((d) => { if (d !== openOne) d.classList.remove('open'); });
+  if (btn) { openOne.classList.toggle('open'); return; }
+  if (pick) {
+    const dd = pick.closest('[data-dd]');
+    const label = pick.firstChild.textContent.trim();
+    const val = dd.querySelector('[data-val]');
+    if (val) val.textContent = label;
+    dd.querySelectorAll('[data-pick]').forEach((i) => i.setAttribute('aria-checked', i === pick ? 'true' : 'false'));
+    dd.classList.remove('open');
+    requestAnimationFrame(measure);
+    return;
+  }
+  const toggle = e.target.closest('[data-toggle]');
+  if (toggle) {
+    const el = document.querySelector(toggle.dataset.toggle);
+    const shown = el.style.display !== 'none';
+    el.style.display = shown ? 'none' : 'flex';
+    toggle.textContent = shown ? 'Adjust' : 'Done';
+    requestAnimationFrame(measure);
+  }
+});
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') document.querySelectorAll('[data-dd].open').forEach((d) => d.classList.remove('open'));
+});
+
+// heights
+function measure() {
+  const now = Math.round(document.getElementById('m-now').getBoundingClientRect().height);
+  document.getElementById('h-now').innerHTML = `<b>${now} px</b> tall`;
+  for (const n of [1, 2, 3, 4, 5]) {
+    const h = Math.round(document.getElementById('m-' + n).getBoundingClientRect().height);
+    const d = now - h;
+    let tag = d > 0 ? `<span class="saved">−${d} px</span>` : (d < 0 ? `+${-d} px` : 'same');
+    if (n === 5) tag = `<span class="saved">fixed, never grows</span>`;
+    document.getElementById('h-' + n).innerHTML = `<b>${h} px</b> · ${tag}`;
+  }
+}
+window.addEventListener('resize', measure);
+document.fonts?.ready.then(measure);
+measure();
+</script>
+</body>
+</html>

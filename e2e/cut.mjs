@@ -16,6 +16,17 @@ const SHIM = 'https://shim.test';
 const VOD = '2871164819';
 const LENGTH = 23042;
 
+/** The clip settings are menus now (ADR-27): open the pill, choose from the paper menu. */
+async function pickSetting(page, which, label) {
+  await page.click(`[data-testid="pick-${which}"]`);
+  // a menu row is "<label><note>", so match on the label as a substring
+  await page
+    .locator('[data-testid="pick-menu"] [role="menuitemradio"]', { hasText: label })
+    .first()
+    .click();
+  await page.waitForTimeout(120);
+}
+
 const fixture = readFileSync(
   new URL('../src/features/hype/__tests__/fixtures/tokyosims_2871164819.jsonl', import.meta.url),
   'utf8',
@@ -186,12 +197,14 @@ async function exportAndWait(label) {
   return info;
 }
 
+// 'exact' is the default now (Angel, 2026-09-17); the stream-copy path needs asking for
+await pickSetting(p, 'mode', 'fast');
 const fast = await exportAndWait('fast 16:9');
 if (!(fast.duration > 13 && fast.duration < 18))
   throw new Error('fast cut duration off: ' + fast.duration);
 
-await p.click('[aria-label="Aspect"] button:text-is("9:16")');
-await p.click('[aria-label="Mode"] button:text-is("exact")');
+await pickSetting(p, 'aspect', '9:16');
+await pickSetting(p, 'mode', 'exact');
 await p.locator('input[placeholder="h:mm:ss"]').nth(1).fill('0:34:10');
 await p.locator('input[placeholder="h:mm:ss"]').nth(1).dispatchEvent('change');
 const vert = await exportAndWait('precise 9:16 (5 s)');
@@ -200,12 +213,14 @@ if (!(vert.w === 404 && vert.h === 720))
 if (!(vert.duration > 4.8 && vert.duration < 5.3))
   throw new Error('precise duration off: ' + vert.duration);
 
-await p.click('[aria-label="Aspect"] button:text-is("cam + game")');
+await pickSetting(p, 'aspect', 'cam + game');
 const split = await exportAndWait('precise split cam+game (5 s)');
 if (!(split.w === 406 && split.h === 720))
   throw new Error('split output wrong: ' + JSON.stringify(split));
 
 // Thumbnail: grab a titled frame at In with the split framing still selected; decode the PNG in-page.
+// Title and both grab buttons live in the Thumbnail menu now.
+await p.click('[data-testid="pick-thumbnail"]');
 await p.locator('input[placeholder="Title on the image (optional)"]').fill('HE ACTUALLY DID IT');
 await p.getByRole('button', { name: 'Use In frame' }).click();
 await p.waitForSelector('img[data-testid="thumbnail"]', { timeout: 300000 });

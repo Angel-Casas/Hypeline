@@ -1267,3 +1267,19 @@ in the file), so it 404s and the live build has no relay until the variable
 is updated — deploy and rebuild in one sitting. Verified from outside:
 `relay.hypeline.live/health` 200, `origin not allowed` for other sites,
 `host not allowed` for non-Twitch URLs.
+
+## 2026-09-17 (cont.) — The clip panel stops eating the screen
+
+**What changed.** ADR-27. New `ui/MenuButton.vue` (value pill + teleported
+paper menu, clamped to the viewport, arrow keys, Escape); `ClipPanel` now
+spends one wrapped line on settings instead of five rows, with the crop
+sliders living inside the shape menu and the thumbnail fields inside theirs.
+`MomentList`'s grid is capped and scrolls on desktop, and follows the
+selection. Default cut mode is `precise`. Ten catalogs gained `sizeLabel`,
+`cutLabel`, `shapeLabel`, `capsLabel`, `thumbLabel`, `captionsOn/Off`,
+`thumbSet/None` (488 strings each). `e2e/cut.mjs` and `e2e/ai.mjs` drive the
+menus through a `pickSetting` helper and `cut.mjs` now asks for `fast`
+explicitly. 101 unit tests, 14/14 e2e, lint and build clean. Measured in the
+real dashboard: settings row 65 px at 1440 and above, 100 px at 1280, from
+~170 px before. The five mocks Angel chose from are in
+`design/clips/clip-controls.html`.

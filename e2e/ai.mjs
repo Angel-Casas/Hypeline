@@ -8,6 +8,17 @@ import { readFileSync, existsSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { execFileSync } from 'node:child_process';
 
+/** The clip settings are menus now (ADR-27): open the pill, choose from the paper menu. */
+async function pickSetting(page, which, label) {
+  await page.click(`[data-testid="pick-${which}"]`);
+  // a menu row is "<label><note>", so match on the label as a substring
+  await page
+    .locator('[data-testid="pick-menu"] [role="menuitemradio"]', { hasText: label })
+    .first()
+    .click();
+  await page.waitForTimeout(120);
+}
+
 const BASE = process.env.BASE ?? 'http://localhost:4173';
 const EXEC = process.env.CHROMIUM;
 const SEG_DIR = process.env.SEG_DIR ?? 'e2e/fixtures/segments';
@@ -132,9 +143,10 @@ await p.waitForFunction(() => document.body.innerText.includes('grandma what are
 console.log('cached transcript served without a new STT call:', seen.stt === before.stt);
 
 // Captions: with a matching transcript, the Captions checkbox is enabled; export a captioned 9:16 clip.
-const cap = p.getByLabel(/Captions/);
-await cap.check();
-await p.click('[aria-label="Aspect"] button:text-is("9:16")');
+await p.click('[data-testid="pick-captions"]');
+await p.locator('[data-testid="pick-menu"] input[type="checkbox"]').first().check();
+await p.keyboard.press('Escape');
+await pickSetting(p, 'aspect', '9:16');
 const vidsBefore = await p.locator('video').count();
 await p.getByRole('button', { name: 'Export clip' }).click();
 await p.waitForFunction((n) => document.querySelectorAll('video').length > n, vidsBefore, { timeout: 300000 });
