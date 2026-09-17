@@ -14,7 +14,7 @@ export default tseslint.config(
     languageOptions: { parserOptions: { parser: tseslint.parser }, globals: { ...globals.browser } },
   },
   {
-    files: ['scripts/**/*.mjs', 'e2e/**/*.mjs', 'shim/**/*.js'],
+    files: ['scripts/**/*.mjs', 'e2e/**/*.mjs', 'shim/**/*.js', 'shim/**/*.mjs'],
     languageOptions: { globals: { ...globals.node, ...globals.browser } },
   },
   {

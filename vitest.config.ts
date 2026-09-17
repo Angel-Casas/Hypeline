@@ -9,6 +9,8 @@ export default defineConfig({
   },
   test: {
     environment: 'jsdom',
-    include: ['src/**/*.test.ts'],
+    // the relay's gates are tested too: locking the app out of its own relay is a
+    // deploy-breaking mistake, and it is cheap to catch here (2026-09-17)
+    include: ['src/**/*.test.ts', 'shim/*.test.mjs'],
   },
 });

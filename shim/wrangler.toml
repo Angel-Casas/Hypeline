@@ -3,17 +3,23 @@ main = "worker.js"
 compatibility_date = "2026-09-01"
 
 [vars]
-# Lock this down to your app origin(s) before sharing the URL, e.g.
-# "http://localhost:5173,https://hypeline.pages.dev"
-ALLOWED_ORIGINS = "http://localhost:5173,http://localhost:4173"
+# The origins allowed to use this relay. The live app, and nothing else — `ALLOW_LOCAL`
+# covers development. "*" would let any site use it.
+ALLOWED_ORIGINS = "https://hypeline.live"
+# Also allow localhost / 127.0.0.1 / private-LAN origins, so `vite dev`, `vite preview` and a
+# phone on the same wifi keep working. Set to "false" if you would rather list them by hand.
+ALLOW_LOCAL = "true"
 # Requests per minute per IP. A 60 s clip at source quality is ~7 segment
 # requests + 2 playlists; 120/min is generous for one person, tight for abuse.
 RATE_LIMIT_RPM = "120"
 
-# Optional: Workers Rate Limiting binding (more accurate than the in-isolate
-# fallback). Uncomment to use; `limit` must match RATE_LIMIT_RPM.
-# [[unsafe.bindings]]
-# name = "LIMITER"
-# type = "ratelimit"
-# namespace_id = "1001"
-# simple = { limit = 120, period = 60 }
+# Cloudflare's own rate limiter: counted across the edge, unlike the in-isolate fallback in
+# worker.js. `limit` should match RATE_LIMIT_RPM above; `period` may only be 10 or 60.
+# Needs wrangler 4.36+.
+[[ratelimits]]
+name = "LIMITER"
+namespace_id = "1001"
+
+  [ratelimits.simple]
+  limit = 120
+  period = 60

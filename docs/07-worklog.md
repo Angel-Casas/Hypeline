@@ -1205,3 +1205,17 @@ _variables_ (public values, not secrets); `VITE_GITHUB_REPO` is
 `github.repository`. Verified `npm ci` + the ffmpeg postinstall from a
 clean tree. **Angel:** add the two variables, then push (or run the
 workflow by hand) — the first green run publishes hypeline.live.
+
+## 2026-09-17 (cont.) — The relay, before the crowd
+
+**What changed.** ADR-24. `shim/wrangler.toml`: `ALLOWED_ORIGINS` =
+hypeline.live, new `ALLOW_LOCAL` for dev and phones, `[[ratelimits]]`
+binding (the stable syntax; the old `[[unsafe.bindings]]` form is gone) at
+120/min. `worker.js`: the local-origin matcher, a `/` and `/health` route
+that answers 200 without an Origin, and an honest User-Agent pointing at
+the repo. New `shim/worker.test.mjs` (5 tests) is in `npm test` — vitest's
+include now covers `shim/*.test.mjs`. `shim/README.md` rewritten: what the
+gate is and is not, the curl-gets-403 gotcha, and the custom-domain path.
+100 unit tests. **Angel:** `cd shim && wrangler deploy`; optionally move
+the zone to Cloudflare for `relay.hypeline.live`, then update the
+`VITE_SHIM_URL` repository variable.

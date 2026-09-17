@@ -439,3 +439,29 @@ The README says plainly what the link pays the project.
 
 **Consequences.** Two places to change if the programme ends; the string is
 `settings.referralNote` in all ten catalogs.
+
+## ADR-24 — The relay is locked to the app, politely (2026-09-17)
+
+**Context.** hypeline.live is public, so the video relay's URL is now
+discoverable by anyone. It is a stateless proxy for Twitch video the
+viewer could already fetch, but an open proxy is still someone else's
+bandwidth bill and a nuisance magnet.
+
+**Decision.** `ALLOWED_ORIGINS = https://hypeline.live` plus
+`ALLOW_LOCAL = true` (localhost, 127.0.0.1 and private-LAN origins, so
+`vite dev` and a phone on the same wifi keep working), and the
+`[[ratelimits]]` binding at 120 requests per minute per IP — Cloudflare's
+own limiter, counted across the edge, with the in-isolate counter as the
+fallback. `GET /` and `/health` answer 200 without an Origin, because
+opening the relay in a tab is the first thing anyone does when frames stop
+loading and "missing ?u=" reads like a fault. `shim/worker.test.mjs` runs
+in `npm test`, so CI would catch the app being locked out of its own relay.
+
+**Consequences.** A `curl` with no `Origin` now gets 403 — by design; use
+`/health`. The gate is a courtesy, not authentication: browsers always send
+`Origin` on a cross-origin `fetch`, so it stops other _sites_, not a script
+that sets its own headers, and the README says so plainly. Storyboard
+frames are unaffected (they load straight from Twitch as images).
+`*.workers.dev` stays a liability for some users' networks; the fix is a
+custom domain, which needs the zone on Cloudflare (hypeline.live is on the
+registrar's nameservers today) — steps in `shim/README.md`.

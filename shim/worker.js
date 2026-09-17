@@ -11,9 +11,17 @@
  * Config (wrangler.toml [vars]):
  *   ALLOWED_ORIGINS  comma-separated page origins allowed to call the shim
  *                    ("*" = anyone; lock it to your app origin in production)
+ *   ALLOW_LOCAL      "true" also allows localhost and private-LAN origins, so
+ *                    `vite dev` and a phone on the same wifi keep working
  *   RATE_LIMIT_RPM   requests per minute per client IP (0 = off). Uses the
  *                    Workers Rate Limiting binding when configured (see toml),
  *                    otherwise a best-effort in-isolate counter.
+ *
+ * Note what the origin allowlist is and is not: browsers always send `Origin`
+ * on a cross-origin `fetch`, so it keeps other *sites* from using this relay,
+ * and the rate limit keeps one IP from hammering it. Neither stops a script
+ * that sets its own headers — this is a courtesy gate on a public, stateless
+ * proxy, not an authentication boundary.
  */
 
 const ALLOWED_HOSTS = [
@@ -24,6 +32,10 @@ const ALLOWED_HOSTS = [
 ];
 const PASS_RESPONSE_HEADERS = ['content-type', 'content-length', 'cache-control', 'etag', 'last-modified', 'cf-cache-status'];
 const MAX_UPSTREAM_BYTES = 64 * 1024 * 1024; // a single segment is ~3–10 MB; refuse anything absurd
+
+/** localhost, 127.0.0.1, ::1 and the private ranges a phone on the same wifi comes from. */
+const LOCAL_ORIGIN =
+  /^https?:\/\/(localhost|127\.0\.0\.1|\[::1\]|10(\.\d{1,3}){3}|192\.168(\.\d{1,3}){2}|172\.(1[6-9]|2\d|3[01])(\.\d{1,3}){2})(:\d+)?$/;
 
 // Best-effort fallback limiter (per isolate, resets when the isolate recycles).
 const buckets = new Map();
@@ -45,7 +57,8 @@ export default {
     const origin = request.headers.get('Origin') || '';
     const allowed = (env.ALLOWED_ORIGINS || '*').split(',').map((s) => s.trim()).filter(Boolean);
     const anyOrigin = allowed.includes('*');
-    const originOk = anyOrigin || allowed.includes(origin);
+    const localOk = String(env.ALLOW_LOCAL ?? '') === 'true' && LOCAL_ORIGIN.test(origin);
+    const originOk = anyOrigin || allowed.includes(origin) || localOk;
     const cors = {
       'Access-Control-Allow-Origin': anyOrigin ? '*' : origin,
       'Access-Control-Allow-Methods': 'GET, HEAD, OPTIONS',
@@ -57,6 +70,17 @@ export default {
     const deny = (status, msg) => new Response(msg, { status, headers: cors });
 
     if (request.method === 'OPTIONS') return new Response(null, { status: 204, headers: cors });
+
+    // A plain visit to the Worker's own URL: say so. Opening the relay in a tab is the first
+    // thing anyone does when frames stop loading, and "missing ?u=" reads like a fault
+    // (Angel, 2026-09-16). No config is echoed, and this needs no Origin.
+    const { pathname, searchParams } = new URL(request.url);
+    if (!searchParams.has('u') && (pathname === '/' || pathname === '/health'))
+      return new Response('Hypeline video relay · ok\n', {
+        status: 200,
+        headers: { 'content-type': 'text/plain; charset=utf-8', 'access-control-allow-origin': '*' },
+      });
+
     if (!originOk) return deny(403, 'origin not allowed');
     if (request.method !== 'GET' && request.method !== 'HEAD') return deny(405, 'method not allowed');
 
@@ -71,7 +95,7 @@ export default {
       }
     }
 
-    const target = new URL(request.url).searchParams.get('u');
+    const target = searchParams.get('u');
     if (!target) return deny(400, 'missing ?u=');
     let url;
     try {
@@ -83,7 +107,7 @@ export default {
 
     const upstream = await fetch(url.toString(), {
       method: request.method,
-      headers: { Range: request.headers.get('Range') || '', 'User-Agent': 'Hypeline-shim/0.2 (+https://github.com/hypeline)' },
+      headers: { Range: request.headers.get('Range') || '', 'User-Agent': 'Hypeline-relay/0.3 (+https://github.com/Angel-Casas/Hypeline)' },
       cf: { cacheEverything: true, cacheTtl: 300 },
     });
     const len = Number(upstream.headers.get('content-length') || 0);
