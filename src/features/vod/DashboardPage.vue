@@ -1163,7 +1163,7 @@ watch(
    own background, where the glass is right. */
 @media (max-width: 1023.98px) {
   .rail-drawer {
-    background: color-mix(in srgb, var(--color-ground) 94%, transparent);
+    background: color-mix(in srgb, var(--color-ground) 86%, transparent);
     backdrop-filter: blur(24px) saturate(1.2);
     -webkit-backdrop-filter: blur(24px) saturate(1.2);
   }

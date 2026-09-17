@@ -40,7 +40,7 @@ Rounded 12–18 px. Shadows only on glass.
 `glass` is a window: it wants the page's own background behind it. Put it
 over content — a drawer, a popover — and the text behind it shows through
 and neither can be read (Angel, 2026-09-17). Anything that floats over the
-dashboard uses `sheet` instead: 94 % of `--color-ground` (so near-opaque
+dashboard uses `sheet` instead: 86 % of `--color-ground` (so near-opaque
 paper by day, near-opaque black by night) with a 24 px backdrop blur, and a
 `--scrim` behind it. Same rule as the scrim tokens — the surface must read
 in both themes, and `--color-ground` is the only colour that flips with

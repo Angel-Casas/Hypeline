@@ -1303,8 +1303,9 @@ the app's true black; its background is pure black now (the mark is
 untouched — a linear stretch sending the old background to 0). The
 apple-touch icon was transparent, which renders inconsistently, so it is
 baked onto black too. New `sheet` utility in `src/style.css` for panels that
-float over the page: 94 % `--color-ground` plus a 24 px blur, near-opaque in
-both themes. The rail drawer below `lg` and `ShortcutsHelp` use it, and the
+float over the page: 86 % `--color-ground` plus a 24 px blur, near-opaque in
+both themes — 94 % first, eased back a notch because it read as flat
+(Angel). The settings modal keeps its own 94 %. The rail drawer below `lg` and `ShortcutsHelp` use it, and the
 drawer's scrim blur went from 2 px to 6 px — the drawer was `glass` over
 live content and unreadable (Angel, screenshot). At `lg` the rail is a
 column on the page background and keeps the glass. `docs/08-design-system.md`
