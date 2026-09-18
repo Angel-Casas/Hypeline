@@ -513,11 +513,11 @@ watch(() => settings.sensitivity, computeBaseline);
 .vchip,
 .pack {
   --ring-w: 1.5px;
-  --ring-g: var(--silk-warm);
+  --ring-stops: var(--silk-warm-stops);
   transition: background-color var(--hover-ease);
 }
 .vchip.mine {
-  --ring-g: var(--silk-cool);
+  --ring-stops: var(--silk-cool-stops);
 }
 
 .vchip::before,

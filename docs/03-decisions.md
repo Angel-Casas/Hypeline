@@ -894,3 +894,43 @@ One open tension, worth watching: the silk ring already means "this one
 matters" on the player and the moment chips, and now also means "the pointer
 is here". If that reads as noise, the hover ring is the half to change —
 `--ring-g` takes a quieter gradient without touching anything else.
+
+## ADR-36 — A gradient token holds stops, never `var(--silk-a)` (2026-09-18)
+
+**Context.** Angel noticed the silk rings had stopped turning — not the hover
+ones, the ones that are ringed by default. The animation was _running_:
+probing `::before` gave `animation-play-state: running` and `--silk-a:
+86.2469deg`, advancing every frame. Not one pixel moved.
+
+**Cause.** A custom property's `var()`s are substituted where the property is
+**declared**, not where it is used. ADR deduplicating the ramp put the whole
+gradient in one token on `:root`:
+
+```css
+--silk-conic: conic-gradient(from var(--silk-a), …); /* declared on :root */
+```
+
+so `var(--silk-a)` resolved against `:root`, where the registered property
+(`inherits: false`) sits at its initial `0deg` forever. Every ring painted the
+same frozen gradient while its own `--silk-a` animated underneath, unread.
+
+**Decision.** The tokens hold **colour stops only** — `--silk-stops`,
+`--silk-warm-stops`, `--silk-cool-stops` — and each use site writes its own
+`conic-gradient(from var(--silk-a), var(--ring-stops, var(--silk-stops)))`.
+The single source of truth for the colours is kept, which is what ADR-34's
+deduplication was for; only the angle moves to where it can be animated. The
+per-element override is `--ring-stops` rather than `--ring-g`.
+
+**Also.** The frost's fill was painting to the border box while a ring's
+`::before` is absolutely positioned and so sits on the **padding** box —
+inside the element's own border. That left a hairline of white outside the
+ring and the button read as having two borders (Angel's screenshot).
+`background-clip: padding-box` on the frost makes the ring the edge, with
+nothing drawn beyond it.
+
+**Consequences.** Verified by animation rather than by inspection, which is
+the only way this class of bug shows: two screenshots two seconds apart,
+diffed. Before, the maximum channel difference across the ring was **0**;
+after, **151**, for the resting rings and the hover rings, in both themes.
+`e2e/_hover.mjs` cannot see this — it reads rules, not pixels — so any future
+change to the ramp should be checked the same way.

@@ -27,10 +27,17 @@
   /* "lift": the colour surfaces move towards when they rise (hover rows, active items) */
   --color-lift: #ffffff;
   /*
-   * The one silk gradient, shared by `silk-ring` and `silk-frame` — it lived in both of them
-   * and the player's frame silently kept an old version through two rounds of changes
-   * (Angel, 2026-09-18). `--silk-a` resolves against whichever element uses this, so the
-   * animation still belongs to the element, not to the token.
+   * The one silk ramp, shared by `silk-ring` and `silk-frame` — it lived in both of them and
+   * the player's frame silently kept an old version through two rounds of changes (Angel,
+   * 2026-09-18).
+   *
+   * These tokens hold **the colour stops only**, and every use site writes its own
+   * `conic-gradient(from var(--silk-a), var(--silk-stops))`. That is not a style choice: a
+   * custom property's `var()`s are substituted where the property is *declared*, so a
+   * `conic-gradient(from var(--silk-a), …)` written here resolves `--silk-a` against `:root` —
+   * where, being registered with `inherits: false`, it is frozen at its initial 0deg. The
+   * animation ran, the angle advanced, and not one pixel moved (Angel spotted the rings had
+   * gone static, 2026-09-18).
    *
    * Cool-led: sky and lilac for two thirds of the turn, then a short flare through petal,
    * coral and apricot. The ramp **mirrors** rather than looping, and that is the whole trick.
@@ -42,21 +49,9 @@
    * tints (near-white, and wider than the saturated stops). So: no transparency, no tints,
    * no jump.
    */
-  --silk-conic: conic-gradient(
-    from var(--silk-a),
-    #8eb0ff 0deg,
-    #7f9cff 40deg,
-    #9b8bff 80deg,
-    #ae81ff 120deg,
-    #d982e0 155deg,
-    #ff77b5 190deg,
-    #ff8f9c 220deg,
-    #ffa968 250deg,
-    #ff8f9c 285deg,
-    #ff77b5 310deg,
-    #ae81ff 340deg,
-    #8eb0ff 360deg
-  );
+  --silk-stops:
+    #8eb0ff 0deg, #7f9cff 40deg, #9b8bff 80deg, #ae81ff 120deg, #d982e0 155deg, #ff77b5 190deg,
+    #ff8f9c 220deg, #ffa968 250deg, #ff8f9c 285deg, #ff77b5 310deg, #ae81ff 340deg, #8eb0ff 360deg;
   /*
    * Two half-silks, for places where the ring has to *say* something rather than just belong.
    * Same construction as the full ramp — mirrored, no transparency, no pale tints — but each
@@ -64,30 +59,12 @@
    * on a 1.5 px edge (Angel, 2026-09-18): **warm** for what Hypeline shipped, **cool** for
    * what the user added themselves.
    */
-  --silk-warm: conic-gradient(
-    from var(--silk-a),
-    #ffe07a 0deg,
-    #ffd15e 45deg,
-    #ffbb5c 90deg,
-    #ffa968 135deg,
-    #ff9d4d 180deg,
-    #ffa968 225deg,
-    #ffbb5c 270deg,
-    #ffd15e 315deg,
-    #ffe07a 360deg
-  );
-  --silk-cool: conic-gradient(
-    from var(--silk-a),
-    #8eb0ff 0deg,
-    #7f9cff 45deg,
-    #9b8bff 90deg,
-    #ae81ff 135deg,
-    #bd7fff 180deg,
-    #ae81ff 225deg,
-    #9b8bff 270deg,
-    #7f9cff 315deg,
-    #8eb0ff 360deg
-  );
+  --silk-warm-stops:
+    #ffe07a 0deg, #ffd15e 45deg, #ffbb5c 90deg, #ffa968 135deg, #ff9d4d 180deg, #ffa968 225deg,
+    #ffbb5c 270deg, #ffd15e 315deg, #ffe07a 360deg;
+  --silk-cool-stops:
+    #8eb0ff 0deg, #7f9cff 45deg, #9b8bff 90deg, #ae81ff 135deg, #bd7fff 180deg, #ae81ff 225deg,
+    #9b8bff 270deg, #7f9cff 315deg, #8eb0ff 360deg;
   /* Scrims behind overlays. They must DIM in both themes: `--color-ink` flips to near-white
      by night, so an ink-tinted veil lit the page up instead (Angel, 2026-09-17). */
   /*
@@ -410,7 +387,7 @@ body {
   pointer-events: none;
   opacity: 0;
   transition: opacity var(--hover-ease);
-  background: var(--ring-g, var(--silk-conic));
+  background: conic-gradient(from var(--silk-a), var(--ring-stops, var(--silk-stops)));
   -webkit-mask:
     linear-gradient(#000 0 0) content-box,
     linear-gradient(#000 0 0);
@@ -444,6 +421,11 @@ body {
 :is(button, a, [role='button']).glass-sm:hover:not(:disabled),
 .btn-ghost.btn-ghost:hover:not(:disabled) {
   background-color: var(--frost-bg);
+  /* A ring's `::before` is absolutely positioned, so `inset: 0` is the **padding** box — inside
+     the element's own border. A background painted to the border box therefore shows a hairline
+     of fill *outside* the ring, and the button reads as having two borders (Angel, 2026-09-18).
+     Clipping the fill to the padding box makes the ring the edge, with nothing beyond it. */
+  background-clip: padding-box;
   backdrop-filter: blur(6px) saturate(1.5) brightness(var(--frost-bright));
   -webkit-backdrop-filter: blur(6px) saturate(1.5) brightness(var(--frost-bright));
   border-color: transparent;
@@ -588,8 +570,11 @@ body {
     /* hairline by default; a surface can ask for more with --ring-w (the player uses 3px) */
     padding: var(--ring-w, 1.5px);
     pointer-events: none;
-    /* `--ring-g` lets one ring wear a different silk (warm / cool) without a second utility */
-    background: var(--ring-g, var(--silk-conic)), linear-gradient(var(--color-line) 0 0);
+    /* `--ring-stops` lets one ring wear a different silk (warm / cool) without a second
+       utility. The gradient is written *here*, not in the token — see `--silk-stops`. */
+    background:
+      conic-gradient(from var(--silk-a), var(--ring-stops, var(--silk-stops))),
+      linear-gradient(var(--color-line) 0 0);
     -webkit-mask:
       linear-gradient(#000 0 0) content-box,
       linear-gradient(#000 0 0);
@@ -619,8 +604,11 @@ body {
     inset: 0;
     border-radius: inherit;
     z-index: -1;
-    /* `--ring-g` lets one ring wear a different silk (warm / cool) without a second utility */
-    background: var(--ring-g, var(--silk-conic)), linear-gradient(var(--color-line) 0 0);
+    /* `--ring-stops` lets one ring wear a different silk (warm / cool) without a second
+       utility. The gradient is written *here*, not in the token — see `--silk-stops`. */
+    background:
+      conic-gradient(from var(--silk-a), var(--ring-stops, var(--silk-stops))),
+      linear-gradient(var(--color-line) 0 0);
     animation: silk-turn 8s linear infinite;
   }
 }

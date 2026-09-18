@@ -574,6 +574,10 @@ Things to know:
 - the hover ring is `::after`, because `silk-ring` owns `::before`. An
   element that **already** wears a ring keeps it and thickens it to 2.5 px
   instead of growing a second one;
+- the frost is clipped to the **padding box**. A ring's pseudo-element is
+  absolutely positioned, so it sits inside the element's own border; a fill
+  painted to the border box shows a hairline outside the ring and the control
+  reads as having two borders (ADR-36);
 - **a frost cannot whiten an already-white panel** — the vocabulary rows
   move by one value out of 255 — so it also carries a top highlight and a
   pane shadow, and those plus the ring are the cue on flat surfaces. The

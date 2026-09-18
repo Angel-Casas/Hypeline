@@ -1491,3 +1491,25 @@ a gradient edge no longer has to invert with anything.
 
 114 tests, 15 e2e suites, lint and build green; the hover audit reports "all
 covered" in both themes. **Next:** Angel has 11 commits to push.
+
+## 2026-09-18 (cont.) — The rings were frozen, and the frost overshot the ring
+
+**What changed.** Two things Angel spotted in one screenshot. The frost's
+fill painted to the border box while the ring sits on the padding box, so a
+hairline of white showed _outside_ the ring and the button read as having two
+borders; `background-clip: padding-box` makes the ring the edge.
+
+And the default silk rings had stopped turning. The animation was running and
+`--silk-a` was advancing — but the gradient lived in a token declared on
+`:root`, and a custom property's `var()`s are substituted where they are
+declared, so every ring was painting the angle frozen at `:root`'s initial
+0deg. ADR-36: the tokens hold the colour stops, each use site writes its own
+`conic-gradient(from var(--silk-a), …)`. The hover rings animate too, which
+is what Angel asked for alongside.
+
+Proved with two frames two seconds apart, diffed: max channel difference went
+from **0** to **151**, resting and hovered, both themes. The hover audit reads
+rules rather than pixels and could never have caught this.
+
+114 tests, 15 e2e suites, lint and build green. **Next:** Angel has 12 commits
+to push.
