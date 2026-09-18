@@ -623,6 +623,9 @@
     "packs": {
       "name": "Starter packs",
       "detect": "Detect from this VOD",
+      "detectedOn": "Turned on {packs}.",
+      "detectedAlready": "{packs} was already on — nothing to change.",
+      "detectedNone": "No other language stood out. English is on, and whatever this chat actually says is in the two lists above.",
       "help": "Each pack is a set of defaults in one language. Emote names are language-neutral and always on.",
       "people": "{n} people",
       "enNote": "on by default",

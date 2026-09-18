@@ -623,6 +623,9 @@
     "packs": {
       "name": "起始包",
       "detect": "從這個 VOD 偵測",
+      "detectedOn": "已開啟 {packs}。",
+      "detectedAlready": "{packs} 本來就開著，沒有變動。",
+      "detectedNone": "沒有其他語言特別突出。英文是開著的，這個聊天室真正在說的字都在上面兩個清單裡。",
       "help": "每個包是一種語言的預設字。表情名稱與語言無關，永遠開啟。",
       "people": "{n} 人",
       "enNote": "預設開啟",

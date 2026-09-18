@@ -1529,3 +1529,15 @@ Also: the kind label is separated from the word by a dash now, and the
 `YOURS` tag is gone from user-added chips — the cool ring already said it.
 
 118 tests (4 new), 15 e2e suites, lint and build green.
+
+## 2026-09-18 (cont.) — Detection answers, and stops undoing your choices
+
+**What changed.** ADR-38. "Detect from this VOD" now says which packs it
+turned on, or that they were already on, or that no other language stood out
+— the last being the common case on an English chat, and the reason the
+button looked broken. It also **adds** to the enabled packs instead of
+replacing them: pressing detect used to silently switch off a pack the user
+had chosen by hand.
+
+118 tests, 15 e2e suites (vocab.mjs now checks the message, including on a
+second press), lint, build and locale parity green.

@@ -623,6 +623,9 @@
     "packs": {
       "name": "Başlangıç paketleri",
       "detect": "Bu VOD’dan algıla",
+      "detectedOn": "{packs} açıldı.",
+      "detectedAlready": "{packs} zaten açıktı — değişen bir şey yok.",
+      "detectedNone": "Başka bir dil öne çıkmadı. İngilizce açık ve bu sohbetin gerçekten söyledikleri yukarıdaki iki listede.",
       "help": "Her paket bir dildeki varsayılan kelimelerdir. Emote adları dilden bağımsızdır ve hep açıktır.",
       "people": "{n} kişi",
       "enNote": "varsayılan açık",

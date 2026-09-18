@@ -65,6 +65,29 @@ const columns = computed(() => [
   { key: 'most' as const, rows: most.value, unit: t('vocab.most.uses') },
 ]);
 const counts = ref<Record<string, number>>({});
+/**
+ * What "Detect from this VOD" just did, in words. Without it the button is silent whenever the
+ * answer is "nothing to change" — which is the common case for an English chat, where English
+ * is already on (Angel, 2026-09-18). It also **adds** rather than replacing: detection used to
+ * overwrite the list, so a pack the user had turned on by hand vanished without a word.
+ */
+const detectNote = ref<string | null>(null);
+let noteTimer: ReturnType<typeof setTimeout> | null = null;
+function detect() {
+  const want = packsToEnable(counts.value);
+  const names = (ids: string[]) =>
+    ids.map((id) => packs.value.find((p) => p.id === id)?.name ?? id).join(', ');
+  const already = want.filter((id) => vocab.state.packs.includes(id));
+  const added = want.filter((id) => !vocab.state.packs.includes(id));
+  if (added.length) vocab.setPacks([...vocab.state.packs, ...added]);
+  detectNote.value = added.length
+    ? t('vocab.packs.detectedOn', { packs: names(added) })
+    : already.length
+      ? t('vocab.packs.detectedAlready', { packs: names(already) })
+      : t('vocab.packs.detectedNone');
+  if (noteTimer) clearTimeout(noteTimer);
+  noteTimer = setTimeout(() => (detectNote.value = null), 8000);
+}
 const packs = computed(() =>
   PACKS.map((p) => ({
     ...p,
@@ -199,7 +222,10 @@ onMounted(() => {
   computeBaseline();
   document.addEventListener('keydown', onKey);
 });
-onBeforeUnmount(() => document.removeEventListener('keydown', onKey));
+onBeforeUnmount(() => {
+  document.removeEventListener('keydown', onKey);
+  if (noteTimer) clearTimeout(noteTimer);
+});
 // the sensitivity slider changes how many peaks surface, so the baseline has to follow
 watch(() => settings.sensitivity, computeBaseline);
 </script>
@@ -374,11 +400,7 @@ watch(() => settings.sensitivity, computeBaseline);
         <section class="box mt-3">
           <div class="flex items-baseline justify-between gap-2">
             <h3 class="text-[13px] font-bold">{{ t('vocab.packs.name') }}</h3>
-            <button
-              class="mini hover-frost"
-              data-testid="vocab-detect"
-              @click="vocab.setPacks(packsToEnable(counts))"
-            >
+            <button class="mini hover-frost" data-testid="vocab-detect" @click="detect()">
               {{ t('vocab.packs.detect') }}
             </button>
           </div>
@@ -408,6 +430,14 @@ watch(() => settings.sensitivity, computeBaseline);
               <small>{{ p.users ? t('vocab.packs.people', { n: p.users }) : '0' }}</small>
             </button>
           </div>
+          <p
+            v-if="detectNote"
+            class="mt-2 text-[11.5px] leading-relaxed text-ink"
+            role="status"
+            data-testid="vocab-detect-note"
+          >
+            {{ detectNote }}
+          </p>
         </section>
 
         <!-- row 4: before / after -->

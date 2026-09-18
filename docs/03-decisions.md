@@ -970,3 +970,31 @@ without a dictionary, not a reason to skip the other seven. Also cosmetic: the
 kind label is now separated by a dash (`POGGERS – EMOTE`), and the `YOURS`
 tag is gone from the words a user adds, since the cool silk ring already says
 it.
+
+## ADR-38 — "Detect from this VOD" says what it did, and adds (2026-09-18)
+
+**Context.** The button was silent. On an English chat — where English is
+already on and nothing else stands out — clicking it changed nothing visible,
+so there was no way to tell it had worked at all (Angel, 2026-09-18). A
+control whose most common outcome is "nothing to change" has to say so, or it
+reads as broken.
+
+**Decision.** Detection reports one of three answers under the pack row, for
+eight seconds:
+
+- **"Turned on Español."** — naming what it switched on;
+- **"Español was already on — nothing to change."** — the result was right
+  before you asked;
+- **"No other language stood out. English is on, and whatever this chat
+  actually says is in the two lists above."** — which also points at the
+  thing that _is_ useful when detection finds nothing.
+
+**And it adds rather than replaces.** `setPacks(packsToEnable(counts))`
+overwrote the list, so a pack the user had turned on by hand disappeared the
+moment they pressed detect, with no message — a silent undo of their own
+choice. It now unions. Reset is still there for starting over, and is the
+honest place for "forget what I picked".
+
+**Consequences.** Three strings in ten catalogs. The e2e asserts both that
+the note names Español on a Spanish chat and that a _second_ press still
+answers, since the silent case was the whole bug.

@@ -130,6 +130,16 @@ const packs = await p
   .allInnerTexts();
 console.log('packs on after detect:', packs.map((s) => s.split('\n')[0].trim()).join(', '));
 if (!packs.some((s) => /Español/.test(s))) throw new Error('Español not detected');
+// and it has to *say* so: the button was silent whenever nothing changed (Angel, 2026-09-18)
+const note = await p.locator('[data-testid="vocab-detect-note"]').innerText();
+console.log('detect said:', note.trim());
+if (!/Español/.test(note)) throw new Error('detection did not report what it turned on');
+// clicking again, with nothing left to add, must still answer
+await p.locator('[data-testid="vocab-detect"]').click();
+await p.waitForTimeout(300);
+const again = await p.locator('[data-testid="vocab-detect-note"]').innerText();
+console.log('and again:', again.trim());
+if (!again.trim()) throw new Error('a second detect said nothing at all');
 
 const delta = await p.locator('[data-testid="vocab-delta"]').innerText();
 console.log('strip says:', delta.replace(/\s+/g, ' '));

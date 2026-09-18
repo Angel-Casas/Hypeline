@@ -623,6 +623,9 @@
     "packs": {
       "name": "Startpakete",
       "detect": "Aus diesem VOD erkennen",
+      "detectedOn": "{packs} eingeschaltet.",
+      "detectedAlready": "{packs} war schon an — nichts zu ändern.",
+      "detectedNone": "Keine weitere Sprache stach hervor. Englisch ist an, und was dieser Chat wirklich sagt, steht in den beiden Listen oben.",
       "help": "Jedes Paket ist ein Satz Standards in einer Sprache. Emote-Namen sind sprachneutral und immer an.",
       "people": "{n} Personen",
       "enNote": "standardmäßig an",

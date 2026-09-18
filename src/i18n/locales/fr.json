@@ -623,6 +623,9 @@
     "packs": {
       "name": "Packs de départ",
       "detect": "Détecter depuis ce VOD",
+      "detectedOn": "{packs} activé.",
+      "detectedAlready": "{packs} était déjà activé — rien à changer.",
+      "detectedNone": "Aucune autre langue ne s’est détachée. L’anglais est activé, et ce que ce chat dit vraiment est dans les deux listes ci-dessus.",
       "help": "Chaque pack est un jeu de valeurs par défaut dans une langue. Les noms d’emotes sont neutres et toujours actifs.",
       "people": "{n} personnes",
       "enNote": "activé par défaut",
