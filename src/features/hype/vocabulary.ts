@@ -272,6 +272,46 @@ export function seenTokens(msgs: ChatMessage[], limit = 60): SeenToken[] {
 }
 
 /**
+ * The plain frequency list: what this chat says most, counted by messages rather than by
+ * crowds. It is the companion to `seenTokens` — that one answers "what did a crowd reach for
+ * at once", this one answers "what does this community say all day", which is where a
+ * channel's catchphrases and its wallpaper emotes live. No spread filter here: a word that
+ * turns up everywhere is exactly what this list is for (Angel, 2026-09-18).
+ */
+export function topTokens(msgs: ChatMessage[], limit = 60): SeenToken[] {
+  const display = new Map<string, string>();
+  const isEmote = new Set<string>();
+  const uses = new Map<string, number>();
+  const users = new Map<string, Set<string>>();
+  for (const m of msgs) {
+    const add = (raw: string, emote: boolean) => {
+      const key = raw.toLowerCase();
+      if (emote) {
+        isEmote.add(key);
+        display.set(key, raw);
+      } else if (!display.has(key)) display.set(key, raw);
+      uses.set(key, (uses.get(key) ?? 0) + 1);
+      let set = users.get(key);
+      if (!set) users.set(key, (set = new Set()));
+      set.add(m.u);
+    };
+    for (const e of new Set(m.e)) add(e, true);
+    const low = m.m.toLowerCase();
+    for (const w of new Set(low.match(TOKEN_RE) ?? [])) if (w.length >= MIN_LEN) add(w, false);
+  }
+  return [...uses.entries()]
+    .map(([key, n]) => ({
+      token: display.get(key) ?? key,
+      users: users.get(key)?.size ?? 0,
+      peak: n,
+      kind: isEmote.has(key) ? ('emote' as const) : ('word' as const),
+    }))
+    .filter((s) => s.users >= 2)
+    .sort((a, b) => b.peak - a.peak || a.token.localeCompare(b.token))
+    .slice(0, limit);
+}
+
+/**
  * Words that belong to no language in particular. Twitch chat says these everywhere, so they
  * must not be the evidence that a chat speaks German (the example VOD's English chat lit up
  * Deutsch *and* Türkçe on `hahaha` alone — 2026-09-18).
