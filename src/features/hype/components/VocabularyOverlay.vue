@@ -508,6 +508,13 @@ watch(() => settings.sensitivity, computeBaseline);
 .pack {
   --ring-w: 1.5px;
   --ring-g: var(--silk-warm);
+  transition: background-color var(--hover-ease);
+}
+.pack:hover:not([aria-pressed='true']) {
+  background: var(--hover-wash);
+}
+.pack[aria-pressed='true']:hover {
+  background: var(--hover-wash-strong);
 }
 .vchip::before,
 .pack::before {
@@ -545,9 +552,15 @@ watch(() => settings.sensitivity, computeBaseline);
   opacity: 0.65;
   font-size: 12px;
   line-height: 1;
+  border-radius: 999px;
+  padding: 0 2px;
+  transition:
+    opacity var(--hover-ease),
+    background-color var(--hover-ease);
 }
 .vx:hover {
   opacity: 1;
+  background: var(--hover-wash-strong);
 }
 .seen {
   display: flex;
@@ -567,8 +580,11 @@ watch(() => settings.sensitivity, computeBaseline);
   padding: 3px 5px;
   border-radius: 9px;
 }
+.seenrow {
+  transition: background-color var(--hover-ease);
+}
 .seenrow:hover {
-  background: color-mix(in srgb, var(--color-ink) 7%, transparent);
+  background: var(--hover-wash);
 }
 .tok {
   display: flex;
@@ -612,9 +628,13 @@ watch(() => settings.sensitivity, computeBaseline);
   padding: 1px 7px;
   white-space: nowrap;
   color: var(--color-ink);
+  transition:
+    background-color var(--hover-ease),
+    border-color var(--hover-ease);
 }
 .mini:hover:not(:disabled) {
-  background: color-mix(in srgb, var(--color-ink) 10%, transparent);
+  background: var(--hover-wash);
+  border-color: var(--hover-line);
 }
 .mini:disabled {
   border-color: var(--pick);

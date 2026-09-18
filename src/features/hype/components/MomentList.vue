@@ -393,6 +393,9 @@ const chips = computed(() => {
 .chip.is-hot {
   transform: translateY(-2px);
 }
+.chip:hover {
+  box-shadow: var(--hover-shadow);
+}
 .chip.is-hot {
   box-shadow: inset 0 0 0 1px var(--glass-line);
 }

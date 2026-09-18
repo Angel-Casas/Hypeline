@@ -554,6 +554,24 @@ grey page, and grey is the one thing this palette must not produce (Angel,
 2026-09-18). Judge a veil from a screenshot of the whole screen, never from
 the panel alone: the grey was only visible _around_ the panel.
 
+## Hover (2026-09-18)
+
+Four tiers, one wash, never grey — the full reasoning is ADR-32.
+`hover-wash` for a surface the pointer is over (accent 11 %, 16 % by night),
+`hover-lift` for something it could pick up (2 px + `--hover-shadow`),
+`hover-line` for something it can type into (the border warms), and
+`hover-danger` for anything that deletes. All on `--hover-ease`. The tiers
+are already inside `btn-ghost`, `btn-ink`, `seg-opt`, `field` and any
+`glass-sm` that is a button or a link, so a new component usually needs
+nothing; when it does, it picks a tier rather than inventing a hover. A solid
+surface warms towards the accent instead of taking a wash, and an underlined
+word thickens its underline rather than filling.
+
+**Check it with `e2e/_hover.mjs`** after touching any control: it matches
+`:hover` rules against every visible button, link and field on five screens
+and prints what the pointer would not move. It should say "all covered" in
+both themes.
+
 ## Fields (2026-09-18)
 
 `--field-line` is an ink hairline (22 % day, 28 % night), not the white 95 %

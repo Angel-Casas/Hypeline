@@ -195,7 +195,7 @@ async function remove(r: Row) {
         <div class="text-muted font-mono text-[10.5px]">
           <RouterLink
             :to="`/dashboard/${r.vodId}`"
-            class="hover:text-ink underline decoration-dotted"
+            class="hover:decoration-solid underline decoration-dotted"
           >
             {{ r.vod?.ownerDisplayName ?? r.vodId }}</RouterLink
           >
@@ -207,7 +207,7 @@ async function remove(r: Row) {
           <span v-for="tag in r.tags ?? []" :key="tag" class="chip on">
             #{{ tag }}
             <button
-              class="ml-1 opacity-70 hover:opacity-100"
+              class="hover-danger ml-1 rounded px-1 opacity-70"
               :aria-label="t('gallery.removeTag', { tag })"
               @click="dropTag(r, tag)"
             >
@@ -269,9 +269,12 @@ async function remove(r: Row) {
 .purge {
   color: var(--color-danger);
   opacity: 0.75;
+  transition:
+    background-color var(--hover-ease),
+    opacity var(--hover-ease);
 }
 .purge:hover {
   opacity: 1;
-  background: color-mix(in srgb, var(--color-danger) 14%, transparent);
+  background: var(--hover-danger);
 }
 </style>

@@ -1408,3 +1408,21 @@ the × on each shipped English word, which until today was a picture. 114
 unit tests (3 new), all 15 e2e suites green, both themes checked from
 screenshots including the English-off state. **Next:** Angel has 7 commits
 to push.
+
+## 2026-09-18 (cont.) — Hover, standardised
+
+**What changed.** ADR-32: four hover tiers (`hover-wash`, `hover-lift`,
+`hover-line`, `hover-danger`) on one accent wash, built into the shared
+primitives so most components get one for free, and every ad-hoc ink wash in
+the app replaced. No hover is a grey any more, and several that had quietly
+become no-ops when `--color-muted` became ink are real again.
+
+`e2e/_hover.mjs` is new and is the useful half: it asks the CSSOM which
+`:hover` rules would match every visible control on five screens and reports
+the ones that would do nothing. First run: 56. It caught the "Erase
+everything" button (no style at all), the active library row and the
+sensitivity thumb — none of which anyone would have noticed by clicking
+around. Both themes now report "all covered".
+
+114 tests, all 15 e2e suites, lint and build green. **Next:** Angel has 8
+commits to push.

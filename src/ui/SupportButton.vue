@@ -135,7 +135,7 @@ onBeforeUnmount(() => document.removeEventListener('keydown', onKey));
               :href="href(d.kind)"
               target="_blank"
               rel="noopener"
-              class="door group flex items-center gap-3.5 rounded-2xl px-3.5 py-3 text-ink transition-colors hover:bg-ink/6 focus-visible:bg-ink/6"
+              class="door group flex items-center gap-3.5 rounded-2xl px-3.5 py-3 text-ink transition-colors hover-wash focus-visible:bg-[var(--hover-wash)]"
               :data-kind="d.kind"
               @click="open = false"
             >

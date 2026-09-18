@@ -726,12 +726,12 @@ function download(url: string, name: string) {
   color: var(--color-danger);
   opacity: 0.75;
   transition:
-    background-color 0.15s,
-    opacity 0.15s;
+    background-color var(--hover-ease),
+    opacity var(--hover-ease);
 }
 .purge:hover {
   opacity: 1;
-  background: color-mix(in srgb, var(--color-danger) 14%, transparent);
+  background: var(--hover-danger);
 }
 /* a handle: the frame (or silk) with a dark foot for the time */
 .handle {
@@ -762,6 +762,7 @@ function download(url: string, name: string) {
 }
 .handle:hover {
   transform: translateY(-2px);
+  box-shadow: var(--hover-shadow);
 }
 .handle.empty {
   background-image: none;
@@ -798,6 +799,13 @@ function download(url: string, name: string) {
   font-variant-numeric: tabular-nums;
   color: #f3edf6;
   outline: none;
+}
+.time {
+  border-radius: 6px;
+  transition: background-color var(--hover-ease);
+}
+.time:hover {
+  background: var(--hover-wash-strong);
 }
 .time:focus {
   text-decoration: underline;

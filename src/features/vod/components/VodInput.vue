@@ -33,7 +33,7 @@ function go(force = false) {
     class="flex gap-2"
     :class="
       pill
-        ? 'glass items-center rounded-full! p-2 pl-5'
+        ? 'glass hover-line items-center rounded-full! p-2 pl-5'
         : compact
           ? 'flex-col'
           : 'flex-wrap items-center'

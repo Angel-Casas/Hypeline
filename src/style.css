@@ -113,6 +113,19 @@
      enough to clear AA on paper. (It was mint for one build; Angel didn't want the green.) */
   --pick: #9a5a06;
   --pick-soft: color-mix(in srgb, #ffa968 22%, transparent);
+  /*
+   * Hover (ADR-32). One wash, three tiers, never grey. The wash is the **accent**, because a
+   * hover has to be distinguishable from `--pick-soft` (warm, "you chose this") and from the
+   * silk rings; an ink wash on paper is a grey, which is the thing we keep removing. Every
+   * interactive element in the app takes exactly one of `hover-wash`, `hover-lift` or
+   * `hover-line` — or, for a destructive one, `hover-danger`.
+   */
+  --hover-wash: color-mix(in srgb, var(--color-accent) 11%, transparent);
+  --hover-wash-strong: color-mix(in srgb, var(--color-accent) 18%, transparent);
+  --hover-line: color-mix(in srgb, var(--color-accent) 42%, transparent);
+  --hover-shadow: 0 10px 24px -14px color-mix(in srgb, var(--color-accent) 75%, transparent);
+  --hover-danger: color-mix(in srgb, var(--color-danger) 14%, transparent);
+  --hover-ease: 0.16s cubic-bezier(0.2, 0.7, 0.2, 1);
   --font-display: 'Gloock', 'Iowan Old Style', Georgia, serif;
   --font-sans: 'Manrope', 'Helvetica Neue', Arial, sans-serif;
   --font-mono: 'JetBrains Mono', Menlo, Consolas, monospace;
@@ -167,6 +180,12 @@
   --box-film: rgb(255 255 255 / 0.05);
   --pick: #ffc07a;
   --pick-soft: color-mix(in srgb, #ffa968 20%, transparent);
+  /* the night accent is already pale, so the same wash needs a little more of it to be seen */
+  --hover-wash: color-mix(in srgb, var(--color-accent) 16%, transparent);
+  --hover-wash-strong: color-mix(in srgb, var(--color-accent) 26%, transparent);
+  --hover-line: color-mix(in srgb, var(--color-accent) 55%, transparent);
+  --hover-shadow: 0 10px 24px -14px color-mix(in srgb, var(--color-accent) 60%, transparent);
+  --hover-danger: color-mix(in srgb, var(--color-danger) 18%, transparent);
   --glass-bg: rgba(255, 255, 255, 0.06);
   --glass-line: rgba(255, 255, 255, 0.12);
   --glass-inset: rgba(255, 255, 255, 0.08);
@@ -285,6 +304,10 @@ body {
   .hl-mesh {
     animation: none;
   }
+  /* the lift still *happens*, it just stops moving: the shadow alone carries it */
+  .hover-lift:hover:not(:disabled) {
+    transform: none;
+  }
 }
 
 /* Glass: panels that belong to the background. */
@@ -332,6 +355,57 @@ body {
   color: var(--color-muted);
 }
 /* Controls */
+/*
+ * The hover system (ADR-32). Nothing in the app invents its own hover: it picks a tier.
+ *
+ *   hover-wash  — a surface the pointer is *over*: menu rows, icon buttons, ghost buttons,
+ *                 list rows. The accent at 11 % (16 % by night). The quiet one.
+ *   hover-lift  — a thing the pointer could *pick up*: cards, chips, handles, tiles. 2 px up
+ *                 and an accent-tinted shadow. The visible one.
+ *   hover-line  — a thing the pointer can *type into or open*: fields and selects, where a
+ *                 fill would fight the text. The border warms instead.
+ *   hover-danger— the same as wash, in `--color-danger`, for anything that deletes.
+ *
+ * All four are `:not(:disabled)` and all four transition on `--hover-ease`. `hover-lift` is
+ * flattened under reduced motion, further down.
+ */
+@utility hover-wash {
+  transition:
+    background-color var(--hover-ease),
+    border-color var(--hover-ease),
+    color var(--hover-ease);
+  &:hover:not(:disabled) {
+    background: var(--hover-wash);
+  }
+}
+@utility hover-lift {
+  transition:
+    transform var(--hover-ease),
+    box-shadow var(--hover-ease),
+    background-color var(--hover-ease);
+  &:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: var(--hover-shadow);
+  }
+}
+@utility hover-line {
+  transition:
+    border-color var(--hover-ease),
+    background-color var(--hover-ease);
+  &:hover:not(:disabled),
+  &:focus-within {
+    border-color: var(--hover-line);
+  }
+}
+@utility hover-danger {
+  transition:
+    background-color var(--hover-ease),
+    opacity var(--hover-ease);
+  &:hover:not(:disabled) {
+    opacity: 1;
+    background: var(--hover-danger);
+  }
+}
 @utility btn-ink {
   background: var(--color-ink);
   color: var(--color-ground);
@@ -339,6 +413,13 @@ body {
   padding: 0.55rem 1rem;
   font-weight: 600;
   font-size: 0.875rem;
+  transition:
+    background-color var(--hover-ease),
+    transform var(--hover-ease);
+  /* a solid ink button cannot take a wash, so it warms towards the accent instead */
+  &:hover:not(:disabled) {
+    background: color-mix(in srgb, var(--color-ink) 86%, var(--color-accent));
+  }
 }
 @utility btn-ghost {
   border: 1px solid var(--color-line);
@@ -346,6 +427,13 @@ body {
   border-radius: 12px;
   padding: 0.5rem 0.9rem;
   font-size: 0.875rem;
+  transition:
+    background-color var(--hover-ease),
+    border-color var(--hover-ease);
+  &:hover:not(:disabled) {
+    background: var(--hover-wash);
+    border-color: var(--hover-line);
+  }
 }
 /* the silk button: a slowly drifting pastel gradient for the one action worth drawing the
    eye to (Angel, 2026-09-15: "Transcribe VOD"). Ink text on pastel in both themes. */
@@ -468,10 +556,14 @@ body {
   white-space: nowrap;
   cursor: pointer;
   transition:
-    background-color 0.15s,
-    color 0.15s;
-  &:hover {
-    color: var(--color-ink);
+    background-color var(--hover-ease),
+    color var(--hover-ease);
+  /* this used to be `color: ink` over `muted`, which has done nothing since muted became ink */
+  &:hover:not(:disabled):not([aria-pressed='true']) {
+    background: var(--hover-wash);
+  }
+  &[aria-pressed='true']:hover {
+    background: color-mix(in srgb, var(--color-ink) 86%, var(--color-accent));
   }
   &[aria-pressed='true'] {
     background: var(--color-ink);
@@ -490,11 +582,48 @@ body {
   font-family: var(--font-mono);
   font-size: 0.85rem;
   color: var(--color-ink);
+  transition:
+    border-color var(--hover-ease),
+    background-color var(--hover-ease);
+  &:hover:not(:disabled),
+  &:focus-within {
+    border-color: var(--hover-line);
+  }
 }
 .btn-ink:disabled,
 .btn-ghost:disabled {
   opacity: 0.45;
 }
+
+/*
+ * The two hovers that cannot live on a utility, because they have to apply wherever the
+ * classes already are (ADR-32).
+ *
+ * 1. `glass-sm` is both a chip and a button. When it is the second, it answers the pointer.
+ * 2. An underlined word *is* the control — a fill would look like a highlighter — so its
+ *    underline thickens and takes the accent instead.
+ */
+:is(button, a, [role='button']).glass-sm {
+  transition:
+    background-color var(--hover-ease),
+    border-color var(--hover-ease);
+}
+:is(button, a, [role='button']).glass-sm:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--color-accent) 12%, var(--glass-sm-bg));
+  border-color: var(--hover-line);
+}
+:is(a, button):is(.underline, .text-accent) {
+  text-underline-offset: 2px;
+  transition:
+    text-decoration-color var(--hover-ease),
+    color var(--hover-ease);
+}
+:is(a, button):is(.underline, .text-accent):hover:not(:disabled) {
+  color: var(--color-accent);
+  text-decoration-color: var(--color-accent);
+  text-decoration-thickness: 2px;
+}
+
 input:focus-visible,
 select:focus-visible,
 button:focus-visible {

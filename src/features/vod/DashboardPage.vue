@@ -578,7 +578,7 @@ watch(
             v-for="v in vods"
             :key="v.id"
             class="group flex items-center gap-2 rounded-xl px-2 py-1.5"
-            :class="v.id === info?.id ? 'bg-lift/70' : 'hover:bg-lift/40'"
+            :class="[v.id === info?.id ? 'bg-lift/70' : '', 'hover-wash']"
           >
             <button class="min-w-0 flex-1 text-left" @click="open(v.id)">
               <div class="truncate text-xs leading-tight font-semibold">{{ v.title || v.id }}</div>
@@ -811,7 +811,7 @@ watch(
             role="tab"
             :aria-selected="tab === tb.id"
             class="flex-1 rounded-full py-1.5 text-xs font-semibold transition-colors"
-            :class="tab === tb.id ? 'bg-ink text-ground' : 'text-muted hover:bg-lift/40'"
+            :class="tab === tb.id ? 'bg-ink text-ground' : 'text-muted hover-wash'"
             @click="tab = tb.id"
           >
             {{ tb.label }}
@@ -883,7 +883,7 @@ watch(
                 <li
                   v-for="m in liveFeed.slice(0, 6)"
                   :key="m.id"
-                  class="flex items-center gap-2 rounded-lg px-1.5 py-1 hover:bg-lift/40"
+                  class="flex items-center gap-2 rounded-lg px-1.5 py-1 hover-wash"
                 >
                   <button
                     class="font-mono text-[12px] font-semibold tabular-nums"
@@ -1218,7 +1218,7 @@ watch(
 }
 .home-card:hover {
   transform: translateY(-2px);
-  box-shadow: 0 18px 40px -20px rgba(22, 18, 26, 0.5);
+  box-shadow: var(--hover-shadow);
 }
 .live-tag {
   padding: 3px 7px;
@@ -1278,6 +1278,17 @@ watch(
   background: var(--color-ink);
   border: 3px solid var(--color-ground);
   box-shadow: 0 0 0 1px var(--color-line);
+  transition:
+    box-shadow var(--hover-ease),
+    background-color var(--hover-ease);
+}
+.sens:hover::-webkit-slider-thumb {
+  background: color-mix(in srgb, var(--color-ink) 86%, var(--color-accent));
+  box-shadow: 0 0 0 4px var(--hover-wash);
+}
+.sens:hover::-moz-range-thumb {
+  background: color-mix(in srgb, var(--color-ink) 86%, var(--color-accent));
+  box-shadow: 0 0 0 4px var(--hover-wash);
 }
 .sens::-moz-range-thumb {
   width: 12px;
@@ -1296,12 +1307,12 @@ watch(
   color: var(--color-danger);
   opacity: 0.75;
   transition:
-    background-color 0.15s,
-    opacity 0.15s;
+    background-color var(--hover-ease),
+    opacity var(--hover-ease);
 }
 .purge:hover {
   opacity: 1;
-  background: color-mix(in srgb, var(--color-danger) 14%, transparent);
+  background: var(--hover-danger);
 }
 /* the settings panel sits on a blurred page, so its glass is nearly solid to stay legible */
 .modal :deep(section) {

@@ -717,3 +717,46 @@ is the baseline that made this feature possible. Fields also got a real
 hairline (`--field-line` was white at 95 %, an inset highlight from when
 fields sat on tinted glass; on the whitened page of ADR-30 an input was
 recognisable only by its placeholder).
+
+## ADR-32 — One hover system, and a script that checks it (2026-09-18)
+
+**Context.** Hovers had grown one at a time: `hover:bg-ink/6` in seven
+components, `color-mix(ink 7 %)` in the vocabulary rows, `bg-lift/40` in the
+rail, `ink 10 %` on the token buttons, four different transition durations,
+and a `hover:text-ink` idiom that had silently become a no-op when
+`--color-muted` became ink (ADR-30). Most of them were an ink wash, which on
+paper is a grey — the thing we keep removing. Angel, finding two of them in
+the vocabulary panel: "find a standardized way… make sure we are using the
+same for all the app. Every hover over a button or element should include a
+hover effect, some more visible and others more succinct."
+
+**Decision.** One wash colour and four tiers, all on `--hover-ease`:
+
+| tier           | for                                                                            | what happens                      |
+| -------------- | ------------------------------------------------------------------------------ | --------------------------------- |
+| `hover-wash`   | a surface the pointer is _over_: rows, menu items, icon buttons, ghost buttons | accent at 11 % (16 % night)       |
+| `hover-lift`   | a thing it could _pick up_: cards, chips, handles, tiles                       | 2 px up + accent shadow           |
+| `hover-line`   | a thing it can _type into or open_: fields, selects                            | the border warms to the accent    |
+| `hover-danger` | anything that deletes                                                          | the same wash in `--color-danger` |
+
+The wash is the **accent**, not ink and not the warm silk: ink is a grey,
+and warm is already `--pick-soft`, "you chose this" — a hover and a selection
+must not look alike. Solid surfaces that cannot take a translucent wash
+(`btn-ink`, a pressed `seg-opt`, the sensitivity thumb) warm towards the
+accent instead, `color-mix(ink 86 %, accent)`. An underlined word is the
+control, so a fill would read as a highlighter: its underline thickens and
+takes the accent. `hover-lift` flattens under reduced motion, keeping only
+the shadow. The tiers are built into `btn-ghost`, `btn-ink`, `seg-opt`,
+`field` and interactive `glass-sm`, so most components inherit one without
+saying anything.
+
+**Consequences.** `e2e/_hover.mjs` is the part worth keeping: it walks every
+visible button, link and field on five screens and asks the CSSOM which
+`:hover` rules would match — `:hover` cannot be forced from script, so
+matching rules is the only way — then reports anything the pointer would not
+move, and anything whose hover is an ink wash. It found 56 on the first run,
+including three that were nobody's intent: the "Erase everything" button had
+no style at all, the _active_ library row was the one row that did not
+respond, and the sensitivity slider's thumb was inert. It is not in the suite
+loop (the `_` prefix): it is the check to run after touching a control, and
+the answer it should give is "all covered", in both themes.

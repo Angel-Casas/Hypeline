@@ -32,7 +32,7 @@ async function reload() {
         {{ busy ? '…' : t('update.action') }}
       </button>
       <button
-        class="text-muted grid h-7 w-7 shrink-0 place-items-center rounded-full text-[15px] leading-none hover:bg-ink/6"
+        class="text-muted grid h-7 w-7 shrink-0 place-items-center rounded-full text-[15px] leading-none hover-wash"
         :aria-label="t('update.later')"
         :title="t('update.later')"
         @click="needRefresh = false"

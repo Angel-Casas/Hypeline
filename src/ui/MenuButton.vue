@@ -137,7 +137,7 @@ onBeforeUnmount(() => {
           type="button"
           role="menuitemradio"
           :aria-checked="o.v === modelValue"
-          class="flex w-full items-center justify-between gap-3 rounded-xl px-2.5 py-1.5 text-left text-[13px] text-ink transition-colors hover:bg-ink/6 focus:bg-ink/6 focus:outline-none"
+          class="flex w-full items-center justify-between gap-3 rounded-xl px-2.5 py-1.5 text-left text-[13px] text-ink transition-colors hover-wash focus:bg-[var(--hover-wash)] focus:outline-none"
           :class="o.v === modelValue ? 'font-semibold' : ''"
           @click="pick(o.v)"
         >
@@ -170,8 +170,14 @@ onBeforeUnmount(() => {
   white-space: nowrap;
   transition: border-color 0.15s;
 }
+.pick {
+  transition:
+    border-color var(--hover-ease),
+    background-color var(--hover-ease);
+}
 .pick:hover:not(:disabled) {
-  border-color: color-mix(in srgb, var(--color-ink) 28%, transparent);
+  border-color: var(--hover-line);
+  background: var(--hover-wash);
 }
 .pick:disabled {
   opacity: 0.45;

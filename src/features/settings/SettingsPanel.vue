@@ -259,11 +259,30 @@ const KINDS: { id: 'vods' | 'clips' | 'ai' | 'cache'; key: 'vods' | 'clips' | 'a
   color: var(--color-danger);
   opacity: 0.75;
   transition:
-    background-color 0.15s,
-    opacity 0.15s;
+    background-color var(--hover-ease),
+    opacity var(--hover-ease);
 }
 .purge:hover {
   opacity: 1;
-  background: color-mix(in srgb, var(--color-danger) 14%, transparent);
+  background: var(--hover-danger);
+}
+/* "Erase everything" had no style of its own at all — no hover, and nothing marking it as the
+   destructive one on the screen (found by the hover audit, 2026-09-18). */
+.purge-all {
+  border: 1px solid color-mix(in srgb, var(--color-danger) 40%, transparent);
+  border-radius: 999px;
+  padding: 3px 10px;
+  color: var(--color-danger);
+  transition:
+    background-color var(--hover-ease),
+    border-color var(--hover-ease);
+}
+.purge-all:hover:not(:disabled) {
+  background: var(--hover-danger);
+  border-color: var(--color-danger);
+}
+.purge-all.armed {
+  background: var(--hover-danger);
+  font-weight: 700;
 }
 </style>
