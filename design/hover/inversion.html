@@ -1,0 +1,706 @@
+<!doctype html>
+<html lang="en" data-theme="day">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Hypeline — hover, seven ways</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Gloock&family=Manrope:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --ground: #fbf9fa;
+        --ground-2: #f3eef2;
+        --ink: #221c2a;
+        --line: rgba(34, 28, 42, 0.12);
+        --box: rgb(255 255 255 / 0.66);
+        --field-line: rgba(34, 28, 42, 0.22);
+        --pick-soft: color-mix(in srgb, #ffa968 22%, transparent);
+        --ease: 0.16s cubic-bezier(0.2, 0.7, 0.2, 1);
+        --mono: 'JetBrains Mono', ui-monospace, monospace;
+      }
+      [data-theme='night'] {
+        --ground: #000;
+        --ground-2: #0c0a0f;
+        --ink: #f3edf6;
+        --line: rgba(255, 255, 255, 0.14);
+        --box: rgb(255 255 255 / 0.05);
+        --field-line: rgba(255, 255, 255, 0.28);
+        --pick-soft: color-mix(in srgb, #ffa968 20%, transparent);
+      }
+      @property --silk-a {
+        syntax: '<angle>';
+        inherits: false;
+        initial-value: 0deg;
+      }
+      @keyframes silk-turn {
+        to {
+          --silk-a: 360deg;
+        }
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        padding: 26px 20px 80px;
+        background: var(--ground);
+        color: var(--ink);
+        font-family: Manrope, system-ui, sans-serif;
+        font-size: 14px;
+      }
+      .wrap {
+        max-width: 1080px;
+        margin: 0 auto;
+      }
+      h1 {
+        font-family: Gloock, serif;
+        font-weight: 400;
+        font-size: 30px;
+        margin: 0 0 6px;
+      }
+      h2 {
+        font-family: Gloock, serif;
+        font-weight: 400;
+        font-size: 20px;
+        margin: 0;
+      }
+      .eyebrow {
+        font-family: var(--mono);
+        font-size: 10.5px;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+      }
+      .lede {
+        max-width: 74ch;
+        margin: 0 0 4px;
+        line-height: 1.55;
+      }
+      .topbar {
+        display: flex;
+        justify-content: space-between;
+        gap: 16px;
+        align-items: flex-start;
+        margin-bottom: 24px;
+        flex-wrap: wrap;
+      }
+      .toggle {
+        border: 1px solid var(--line);
+        background: var(--box);
+        color: var(--ink);
+        border-radius: 999px;
+        padding: 8px 15px;
+        font: inherit;
+        font-size: 12px;
+        cursor: pointer;
+      }
+      .card {
+        border: 1px solid var(--line);
+        background: var(--ground-2);
+        border-radius: 18px;
+        padding: 15px 18px 18px;
+        margin: 0 0 16px;
+      }
+      .card > header {
+        display: flex;
+        justify-content: space-between;
+        align-items: baseline;
+        gap: 12px;
+        flex-wrap: wrap;
+      }
+      .why {
+        font-size: 12.5px;
+        margin: 6px 0 14px;
+        max-width: 78ch;
+        line-height: 1.6;
+        opacity: 0.92;
+      }
+      .demo {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 10px 14px;
+        background: var(--box);
+        border: 1px solid var(--line);
+        border-radius: 14px;
+        padding: 12px;
+      }
+
+      /* ---- the real elements, in their resting state ---- */
+      .row {
+        display: grid;
+        grid-template-columns: 150px 66px 26px auto;
+        align-items: center;
+        gap: 8px;
+        padding: 4px 6px;
+        border-radius: 9px;
+        width: 100%;
+        max-width: 470px;
+        transition:
+          background-color var(--ease),
+          color var(--ease);
+      }
+      .tok {
+        font-family: var(--mono);
+        font-size: 12.5px;
+        display: flex;
+        gap: 5px;
+        align-items: baseline;
+      }
+      .tok em {
+        font-style: normal;
+        font-size: 9.5px;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+      }
+      .bar {
+        height: 5px;
+        border-radius: 999px;
+        background: color-mix(in srgb, var(--ink) 12%, transparent);
+        position: relative;
+      }
+      .bar i {
+        position: absolute;
+        inset: 0 38% 0 0;
+        border-radius: 999px;
+        background: linear-gradient(90deg, #ff9bb8, #c9a3df, #ffd08a);
+      }
+      .n {
+        font-family: var(--mono);
+        font-size: 12px;
+        text-align: right;
+      }
+      .mini {
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        font: inherit;
+        font-size: 11px;
+        padding: 2px 8px;
+        background: transparent;
+        color: var(--ink);
+        white-space: nowrap;
+        cursor: pointer;
+        transition:
+          background-color var(--ease),
+          border-color var(--ease),
+          color var(--ease);
+      }
+      .ghost {
+        border: 1px solid var(--line);
+        background: var(--box);
+        color: var(--ink);
+        border-radius: 12px;
+        padding: 7px 14px;
+        font: inherit;
+        font-size: 13px;
+        cursor: pointer;
+        transition:
+          background-color var(--ease),
+          border-color var(--ease),
+          color var(--ease);
+      }
+      .icon {
+        width: 34px;
+        height: 34px;
+        display: grid;
+        place-items: center;
+        border: 1px solid var(--line);
+        background: var(--box);
+        color: var(--ink);
+        border-radius: 12px;
+        font-size: 15px;
+        cursor: pointer;
+        transition:
+          background-color var(--ease),
+          border-color var(--ease),
+          color var(--ease);
+      }
+      .pack {
+        position: relative;
+        isolation: isolate;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        border: 0;
+        border-radius: 999px;
+        padding: 4px 11px;
+        background: var(--box);
+        color: var(--ink);
+        font: inherit;
+        font-size: 12px;
+        cursor: pointer;
+        transition:
+          background-color var(--ease),
+          color var(--ease);
+      }
+      .pack::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        border-radius: inherit;
+        padding: 1.5px;
+        pointer-events: none;
+        background:
+          conic-gradient(
+            from var(--silk-a),
+            #ffe07a 0deg,
+            #ffd15e 45deg,
+            #ffbb5c 90deg,
+            #ffa968 135deg,
+            #ff9d4d 180deg,
+            #ffa968 225deg,
+            #ffbb5c 270deg,
+            #ffd15e 315deg,
+            #ffe07a 360deg
+          ),
+          linear-gradient(var(--line) 0 0);
+        -webkit-mask:
+          linear-gradient(#000 0 0) content-box,
+          linear-gradient(#000 0 0);
+        -webkit-mask-composite: xor;
+        mask:
+          linear-gradient(#000 0 0) content-box,
+          linear-gradient(#000 0 0);
+        mask-composite: exclude;
+        animation: silk-turn 14s linear infinite;
+      }
+      .pack small {
+        font-family: var(--mono);
+        font-size: 10px;
+      }
+      .link {
+        font-family: var(--mono);
+        font-size: 11.5px;
+        color: var(--ink);
+        text-decoration: underline;
+        text-underline-offset: 2px;
+        background: none;
+        border: 0;
+        padding: 0 2px;
+        cursor: pointer;
+        transition:
+          background-color var(--ease),
+          color var(--ease),
+          text-decoration-color var(--ease);
+      }
+
+      /* ======================= THE OPTIONS ======================= */
+
+      /* 0 — what is there now: the accent wash Angel does not want */
+      .o0 .row:hover,
+      .o0 .mini:hover,
+      .o0 .ghost:hover,
+      .o0 .icon:hover,
+      .o0 .pack:hover,
+      .o0 .link:hover {
+        background: color-mix(in srgb, #7a4f8e 11%, transparent);
+      }
+      [data-theme='night'] .o0 .row:hover,
+      [data-theme='night'] .o0 .mini:hover,
+      [data-theme='night'] .o0 .ghost:hover,
+      [data-theme='night'] .o0 .icon:hover,
+      [data-theme='night'] .o0 .pack:hover,
+      [data-theme='night'] .o0 .link:hover {
+        background: color-mix(in srgb, #c9a3df 16%, transparent);
+      }
+
+      /* 1 — straight inversion: ink fills, everything on it becomes the paper */
+      .o1 :is(.row, .mini, .ghost, .icon, .pack, .link):hover {
+        background: var(--ink);
+        color: var(--ground);
+        border-color: var(--ink);
+      }
+      .o1 :is(.row, .mini, .ghost, .icon, .pack, .link):hover .bar {
+        background: color-mix(in srgb, var(--ground) 30%, transparent);
+      }
+
+      /* 2 — warm inversion: the apricot end of the silk fills, ink stays ink */
+      .o2 :is(.row, .mini, .ghost, .icon, .pack, .link):hover {
+        background: #ffa968;
+        color: #221c2a;
+        border-color: #ff9d4d;
+      }
+      .o2 :is(.row, .mini, .ghost, .icon, .pack, .link):hover .bar {
+        background: rgba(34, 28, 42, 0.18);
+      }
+
+      /* 3 — silk inversion: the whole warm ramp fills, ink on top */
+      .o3 :is(.row, .mini, .ghost, .icon, .pack, .link):hover {
+        background: linear-gradient(100deg, #ffe07a, #ffbb5c 45%, #ffa968);
+        color: #221c2a;
+        border-color: transparent;
+      }
+      .o3 :is(.row, .mini, .ghost, .icon, .pack, .link):hover .bar {
+        background: rgba(34, 28, 42, 0.18);
+      }
+
+      /* 4 — wipe: the inversion arrives from the left rather than appearing */
+      .o4 :is(.row, .mini, .ghost, .icon, .pack, .link) {
+        position: relative;
+        isolation: isolate;
+        overflow: hidden;
+      }
+      .o4 :is(.row, .mini, .ghost, .icon, .pack, .link)::after {
+        content: '';
+        position: absolute;
+        inset: 0;
+        z-index: -1;
+        background: var(--ink);
+        transform: scaleX(0);
+        transform-origin: left;
+        transition: transform 0.22s cubic-bezier(0.2, 0.7, 0.2, 1);
+      }
+      .o4 :is(.row, .mini, .ghost, .icon, .pack, .link):hover::after {
+        transform: scaleX(1);
+      }
+      .o4 :is(.row, .mini, .ghost, .icon, .pack, .link):hover {
+        color: var(--ground);
+        border-color: var(--ink);
+      }
+      .o4 :is(.row, .mini, .ghost, .icon, .pack, .link):hover .bar {
+        background: color-mix(in srgb, var(--ground) 30%, transparent);
+      }
+
+      /* 5 — half inversion: ink fills, but the text keeps a palette hue instead of the paper */
+      .o5 :is(.row, .mini, .ghost, .icon, .pack, .link):hover {
+        background: var(--ink);
+        color: #ffd15e;
+        border-color: var(--ink);
+      }
+      [data-theme='night'] .o5 :is(.row, .mini, .ghost, .icon, .pack, .link):hover {
+        color: #7a4f8e;
+      }
+      .o5 :is(.row, .mini, .ghost, .icon, .pack, .link):hover .bar {
+        background: rgba(255, 209, 94, 0.25);
+      }
+
+      /* 6 — paper inversion: the *lightest* thing on the screen fills instead of the darkest */
+      .o6 :is(.row, .mini, .ghost, .icon, .pack, .link):hover {
+        background: var(--ink);
+        color: var(--ground);
+        border-color: var(--ink);
+      }
+      [data-theme='day'] .o6 :is(.row, .mini, .ghost, .icon, .pack, .link):hover {
+        background: #fff;
+        color: #221c2a;
+        border-color: #221c2a;
+        box-shadow: 0 0 0 1px #221c2a;
+      }
+      [data-theme='night'] .o6 :is(.row, .mini, .ghost, .icon, .pack, .link):hover {
+        background: #f3edf6;
+        color: #000;
+        border-color: #f3edf6;
+      }
+      .o6 :is(.row, .mini, .ghost, .icon, .pack, .link):hover .bar {
+        background: rgba(34, 28, 42, 0.18);
+      }
+
+      /* 7 — underline grows into a fill (the quiet one) */
+      .o7 :is(.row, .mini, .ghost, .icon, .pack, .link) {
+        position: relative;
+        isolation: isolate;
+        overflow: hidden;
+      }
+      .o7 :is(.row, .mini, .ghost, .icon, .pack, .link)::after {
+        content: '';
+        position: absolute;
+        inset: auto 0 0 0;
+        height: 2px;
+        z-index: -1;
+        background: var(--ink);
+        transition:
+          height 0.2s cubic-bezier(0.2, 0.7, 0.2, 1),
+          opacity var(--ease);
+        opacity: 0;
+      }
+      .o7 :is(.row, .mini, .ghost, .icon, .pack, .link):hover::after {
+        height: 100%;
+        opacity: 1;
+      }
+      .o7 :is(.row, .mini, .ghost, .icon, .pack, .link):hover {
+        color: var(--ground);
+      }
+      .o7 :is(.row, .mini, .ghost, .icon, .pack, .link):hover .bar {
+        background: color-mix(in srgb, var(--ground) 30%, transparent);
+      }
+
+      /* A nested control inside an inverted row has to invert with it, or it disappears —
+         ink text on an ink fill. Found by screenshotting option 1. */
+      .o1 .row:hover .mini,
+      .o4 .row:hover .mini,
+      .o5 .row:hover .mini,
+      .o7 .row:hover .mini {
+        color: var(--ground);
+        border-color: color-mix(in srgb, var(--ground) 45%, transparent);
+      }
+      .o2 .row:hover .mini,
+      .o3 .row:hover .mini,
+      .o6 .row:hover .mini {
+        color: #221c2a;
+        border-color: rgba(34, 28, 42, 0.35);
+      }
+      [data-theme='night'] .o6 .row:hover .mini {
+        color: #000;
+        border-color: rgba(0, 0, 0, 0.35);
+      }
+      .o5 .row:hover .mini {
+        color: #ffd15e;
+        border-color: rgba(255, 209, 94, 0.45);
+      }
+
+      .foot {
+        border-top: 1px solid var(--line);
+        margin-top: 26px;
+        padding-top: 16px;
+        font-size: 13px;
+        line-height: 1.6;
+      }
+      .note {
+        font-family: var(--mono);
+        font-size: 10.5px;
+        opacity: 0.8;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <div class="topbar">
+        <div>
+          <p class="eyebrow">Hypeline · hover</p>
+          <h1>Seven hovers, mostly inversions</h1>
+          <p class="lede">
+            Every option below is applied to the real elements it would affect: a “seen in this VOD”
+            row, its <b>+ important</b> button, a ghost button, an icon button, a starter pack (silk
+            ring and all) and an underlined link. Hover them. Switch themes with the button — an
+            inversion means something different in each, which is the whole question.
+          </p>
+        </div>
+        <button class="toggle" id="theme">☾ Night</button>
+      </div>
+
+      <div class="card o0">
+        <header>
+          <div>
+            <span class="eyebrow">Today</span>
+            <h2>The accent wash</h2>
+          </div>
+          <span class="note">what you have now</span>
+        </header>
+        <p class="why">
+          A violet film at 11 %. It is not grey, but it is not much of anything either — and on the
+          pack chips it fights the silk ring.
+        </p>
+        <div class="demo">
+          <div class="row">
+            <span class="tok"><b>POGGERS</b><em>emote</em></span
+            ><span class="bar"><i></i></span><span class="n">19</span>
+            <span><button class="mini">+ important</button></span>
+          </div>
+          <button class="ghost">Preview</button><button class="icon">☾</button>
+          <button class="pack">Español <small>0</small></button>
+          <button class="link">queue all 18 as clips</button>
+        </div>
+      </div>
+
+      <div class="card o1">
+        <header>
+          <div>
+            <span class="eyebrow">Option 1</span>
+            <h2>Straight inversion</h2>
+          </div>
+          <span class="note">ink fills · paper text</span>
+        </header>
+        <p class="why">
+          The element swaps with the page: ink background, ground-coloured text. By night that is
+          near-white on black becoming black on near-white, so it inverts <i>twice</i> as hard — the
+          strongest signal of the seven, and the most obviously “pressable”. The cost is weight: a
+          list of rows flashes a solid black bar under the pointer.
+        </p>
+        <div class="demo">
+          <div class="row">
+            <span class="tok"><b>POGGERS</b><em>emote</em></span
+            ><span class="bar"><i></i></span><span class="n">19</span>
+            <span><button class="mini">+ important</button></span>
+          </div>
+          <button class="ghost">Preview</button><button class="icon">☾</button>
+          <button class="pack">Español <small>0</small></button>
+          <button class="link">queue all 18 as clips</button>
+        </div>
+      </div>
+
+      <div class="card o2">
+        <header>
+          <div>
+            <span class="eyebrow">Option 2</span>
+            <h2>Warm inversion</h2>
+          </div>
+          <span class="note">apricot fills · ink text</span>
+        </header>
+        <p class="why">
+          The same swap, but the fill is the apricot from the warm silk rather than ink. Ink text
+          stays ink, so only the background flips — it reads as the element <i>lighting up</i>
+          rather than going dark. Identical in both themes, which is rare and worth something, and
+          it ties the hover to the rings. Risk: apricot is also
+          <code>--pick-soft</code>, so hover and “chosen” live next door.
+        </p>
+        <div class="demo">
+          <div class="row">
+            <span class="tok"><b>POGGERS</b><em>emote</em></span
+            ><span class="bar"><i></i></span><span class="n">19</span>
+            <span><button class="mini">+ important</button></span>
+          </div>
+          <button class="ghost">Preview</button><button class="icon">☾</button>
+          <button class="pack">Español <small>0</small></button>
+          <button class="link">queue all 18 as clips</button>
+        </div>
+      </div>
+
+      <div class="card o3">
+        <header>
+          <div>
+            <span class="eyebrow">Option 3</span>
+            <h2>Silk inversion</h2>
+          </div>
+          <span class="note">the warm ramp fills · ink text</span>
+        </header>
+        <p class="why">
+          Option 2 with the whole butter → apricot ramp instead of one flat hue, so the hovered
+          thing is briefly made of the same material as the rings. The most “Hypeline” of the seven.
+          On a wide row it is a lot of gradient; on small controls it is lovely.
+        </p>
+        <div class="demo">
+          <div class="row">
+            <span class="tok"><b>POGGERS</b><em>emote</em></span
+            ><span class="bar"><i></i></span><span class="n">19</span>
+            <span><button class="mini">+ important</button></span>
+          </div>
+          <button class="ghost">Preview</button><button class="icon">☾</button>
+          <button class="pack">Español <small>0</small></button>
+          <button class="link">queue all 18 as clips</button>
+        </div>
+      </div>
+
+      <div class="card o4">
+        <header>
+          <div>
+            <span class="eyebrow">Option 4</span>
+            <h2>Wipe inversion</h2>
+          </div>
+          <span class="note">ink arrives from the left</span>
+        </header>
+        <p class="why">
+          Option 1, but the ink <i>sweeps in</i> from the left edge over 220 ms instead of
+          appearing. The motion is the point: it makes even a quiet control feel answered, and the
+          direction gives a row the same reading direction as its text. Under reduced motion it
+          would simply appear, which is option 1.
+        </p>
+        <div class="demo">
+          <div class="row">
+            <span class="tok"><b>POGGERS</b><em>emote</em></span
+            ><span class="bar"><i></i></span><span class="n">19</span>
+            <span><button class="mini">+ important</button></span>
+          </div>
+          <button class="ghost">Preview</button><button class="icon">☾</button>
+          <button class="pack">Español <small>0</small></button>
+          <button class="link">queue all 18 as clips</button>
+        </div>
+      </div>
+
+      <div class="card o5">
+        <header>
+          <div>
+            <span class="eyebrow">Option 5</span>
+            <h2>Half inversion</h2>
+          </div>
+          <span class="note">ink fills · butter text</span>
+        </header>
+        <p class="why">
+          The background inverts but the text lands on a palette hue rather than the paper — butter
+          by day, violet by night. Inversion with a colour left in it. It is the most distinctive
+          and the least neutral; on a long list it starts to feel like a theme of its own.
+        </p>
+        <div class="demo">
+          <div class="row">
+            <span class="tok"><b>POGGERS</b><em>emote</em></span
+            ><span class="bar"><i></i></span><span class="n">19</span>
+            <span><button class="mini">+ important</button></span>
+          </div>
+          <button class="ghost">Preview</button><button class="icon">☾</button>
+          <button class="pack">Español <small>0</small></button>
+          <button class="link">queue all 18 as clips</button>
+        </div>
+      </div>
+
+      <div class="card o6">
+        <header>
+          <div>
+            <span class="eyebrow">Option 6</span>
+            <h2>Paper inversion</h2>
+          </div>
+          <span class="note">the lightest thing fills</span>
+        </header>
+        <p class="why">
+          The mirror of option 1: instead of the darkest value filling, the <i>lightest</i> does —
+          pure white with an ink hairline by day, the near-white ink colour by night. By day it is
+          the quietest of all the inversions (the page is already nearly white, so only the edge and
+          the crispness change); by night it is as loud as option 1. Handy if the black bar in
+          option 1 is too much on paper but right on black.
+        </p>
+        <div class="demo">
+          <div class="row">
+            <span class="tok"><b>POGGERS</b><em>emote</em></span
+            ><span class="bar"><i></i></span><span class="n">19</span>
+            <span><button class="mini">+ important</button></span>
+          </div>
+          <button class="ghost">Preview</button><button class="icon">☾</button>
+          <button class="pack">Español <small>0</small></button>
+          <button class="link">queue all 18 as clips</button>
+        </div>
+      </div>
+
+      <div class="card o7">
+        <header>
+          <div>
+            <span class="eyebrow">Option 7</span>
+            <h2>Underline grows into a fill</h2>
+          </div>
+          <span class="note">a 2 px rule becomes the whole element</span>
+        </header>
+        <p class="why">
+          A hairline sits at the bottom edge and grows upward until it has filled the element and
+          inverted the text. It starts as the smallest possible hint and ends as a full inversion,
+          which makes it the natural “succinct” tier — a menu row can stop at the hairline while a
+          button goes all the way.
+        </p>
+        <div class="demo">
+          <div class="row">
+            <span class="tok"><b>POGGERS</b><em>emote</em></span
+            ><span class="bar"><i></i></span><span class="n">19</span>
+            <span><button class="mini">+ important</button></span>
+          </div>
+          <button class="ghost">Preview</button><button class="icon">☾</button>
+          <button class="pack">Español <small>0</small></button>
+          <button class="link">queue all 18 as clips</button>
+        </div>
+      </div>
+
+      <div class="foot">
+        Whichever you pick becomes <code>hover-wash</code> in <code>src/style.css</code> and every
+        row, menu item, icon button and ghost button in the app follows it. The other two tiers do
+        not change: <code>hover-lift</code> (cards and chips rise) and <code>hover-danger</code>
+        (anything that deletes goes red). Tell me the number — and say if you want a different one
+        for the loud places than for the quiet ones, since 4 and 7 are built to do exactly that.
+      </div>
+    </div>
+    <script>
+      const root = document.documentElement,
+        tb = document.getElementById('theme');
+      tb.onclick = () => {
+        const night = root.dataset.theme === 'night';
+        root.dataset.theme = night ? 'day' : 'night';
+        tb.textContent = night ? '☾ Night' : '☀ Day';
+      };
+    </script>
+  </body>
+</html>

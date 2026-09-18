@@ -800,12 +800,18 @@ function download(url: string, name: string) {
   color: #f3edf6;
   outline: none;
 }
+/* An <input> cannot carry the wipe — no pseudo-element — so it inverts in place. The foot it
+   sits on is already dark, so "inverted" here means the paper colour with ink text. */
 .time {
   border-radius: 6px;
-  transition: background-color var(--hover-ease);
+  padding: 0 3px;
+  transition:
+    background-color var(--hover-ease),
+    color var(--hover-ease);
 }
 .time:hover {
-  background: var(--hover-wash-strong);
+  background: var(--color-ground);
+  color: var(--color-ink);
 }
 .time:focus {
   text-decoration: underline;

@@ -114,18 +114,23 @@
   --pick: #9a5a06;
   --pick-soft: color-mix(in srgb, #ffa968 22%, transparent);
   /*
-   * Hover (ADR-32). One wash, three tiers, never grey. The wash is the **accent**, because a
-   * hover has to be distinguishable from `--pick-soft` (warm, "you chose this") and from the
-   * silk rings; an ink wash on paper is a grey, which is the thing we keep removing. Every
-   * interactive element in the app takes exactly one of `hover-wash`, `hover-lift` or
-   * `hover-line` — or, for a destructive one, `hover-danger`.
+   * Hover (ADR-32, rewritten by ADR-33). **Inversion, wiped in from the left**: the hovered
+   * thing swaps with the page — ink fills, everything on it becomes the paper — and the fill
+   * arrives as a sweep rather than appearing. No tint, no wash, so there is no grey and
+   * nothing competing with `--pick-soft` (warm, "you chose this") or the silk rings. The two
+   * colours are the theme's own ground and ink, which is why it inverts twice as hard at
+   * night: near-white on black becomes black on near-white.
    */
-  --hover-wash: color-mix(in srgb, var(--color-accent) 11%, transparent);
-  --hover-wash-strong: color-mix(in srgb, var(--color-accent) 18%, transparent);
-  --hover-line: color-mix(in srgb, var(--color-accent) 42%, transparent);
-  --hover-shadow: 0 10px 24px -14px color-mix(in srgb, var(--color-accent) 75%, transparent);
+  --invert-bg: var(--color-ink);
+  --invert-fg: var(--color-ground);
+  /* the danger red has to survive landing on the inverted fill, so it lightens there */
+  --invert-danger: #ff8fa0;
+  --hover-line: var(--color-ink);
+  --hover-shadow: 0 10px 24px -14px rgba(22, 18, 26, 0.55);
   --hover-danger: color-mix(in srgb, var(--color-danger) 14%, transparent);
   --hover-ease: 0.16s cubic-bezier(0.2, 0.7, 0.2, 1);
+  /* the sweep. Long enough to read as motion, short enough not to lag the pointer. */
+  --wipe: 0.22s cubic-bezier(0.2, 0.7, 0.2, 1);
   --font-display: 'Gloock', 'Iowan Old Style', Georgia, serif;
   --font-sans: 'Manrope', 'Helvetica Neue', Arial, sans-serif;
   --font-mono: 'JetBrains Mono', Menlo, Consolas, monospace;
@@ -180,11 +185,9 @@
   --box-film: rgb(255 255 255 / 0.05);
   --pick: #ffc07a;
   --pick-soft: color-mix(in srgb, #ffa968 20%, transparent);
-  /* the night accent is already pale, so the same wash needs a little more of it to be seen */
-  --hover-wash: color-mix(in srgb, var(--color-accent) 16%, transparent);
-  --hover-wash-strong: color-mix(in srgb, var(--color-accent) 26%, transparent);
-  --hover-line: color-mix(in srgb, var(--color-accent) 55%, transparent);
-  --hover-shadow: 0 10px 24px -14px color-mix(in srgb, var(--color-accent) 60%, transparent);
+  /* night inverts the other way by itself: --color-ink is near-white and --color-ground black */
+  --invert-danger: #b03a4a;
+  --hover-shadow: 0 10px 24px -14px rgba(0, 0, 0, 0.75);
   --hover-danger: color-mix(in srgb, var(--color-danger) 18%, transparent);
   --glass-bg: rgba(255, 255, 255, 0.06);
   --glass-line: rgba(255, 255, 255, 0.12);
@@ -308,6 +311,11 @@ body {
   .hover-lift:hover:not(:disabled) {
     transform: none;
   }
+  /* the inversion still happens too — it simply arrives rather than sweeping */
+  .hover-invert::after,
+  .btn-ghost::after {
+    transition: none;
+  }
 }
 
 /* Glass: panels that belong to the background. */
@@ -358,25 +366,93 @@ body {
 /*
  * The hover system (ADR-32). Nothing in the app invents its own hover: it picks a tier.
  *
- *   hover-wash  — a surface the pointer is *over*: menu rows, icon buttons, ghost buttons,
- *                 list rows. The accent at 11 % (16 % by night). The quiet one.
+ *   hover-invert— anything the pointer can press: menu rows, icon buttons, ghost buttons, list
+ *                 rows, chips, links. Ink wipes in from the left and the content becomes the
+ *                 paper (Angel, 2026-09-18: straight inversion with the wipe).
  *   hover-lift  — a thing the pointer could *pick up*: cards, chips, handles, tiles. 2 px up
  *                 and an accent-tinted shadow. The visible one.
  *   hover-line  — a thing the pointer can *type into or open*: fields and selects, where a
  *                 fill would fight the text. The border warms instead.
- *   hover-danger— the same as wash, in `--color-danger`, for anything that deletes.
+ *   hover-danger— a red wash, for anything that deletes. The one hover that is not an inversion,
+ *                 because red-on-red says nothing.
  *
  * All four are `:not(:disabled)` and all four transition on `--hover-ease`. `hover-lift` is
  * flattened under reduced motion, further down.
  */
-@utility hover-wash {
+@utility hover-invert {
+  position: relative;
+  isolation: isolate;
   transition:
-    background-color var(--hover-ease),
-    border-color var(--hover-ease),
-    color var(--hover-ease);
-  &:hover:not(:disabled) {
-    background: var(--hover-wash);
+    color var(--hover-ease),
+    border-color var(--hover-ease);
+  /*
+   * The fill is a pseudo-element rather than a background, so it can *move*. `isolation`
+   * makes this element a stacking context, and inside one a negative z-index child paints
+   * above the element's own background but below its content — which is exactly the layer a
+   * wipe needs, and is why this works on glass and on a translucent ghost button alike.
+   */
+  /*
+   * `border-radius: inherit` instead of `overflow: hidden`. The fill is `inset: 0`, so it can
+   * never exceed the box and there is nothing to clip — and `overflow: hidden` on a flex item
+   * sets its automatic minimum size to zero, which silently squashed the vocabulary rows to
+   * half height the first time this shipped (2026-09-18).
+   */
+  &::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    border-radius: inherit;
+    background: var(--invert-bg);
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform var(--wipe);
   }
+  &:hover:not(:disabled)::after,
+  &:focus-visible:not(:disabled)::after {
+    transform: scaleX(1);
+  }
+}
+/*
+ * The colour half of the inversion lives outside the utility, with the class doubled. Tailwind
+ * puts `@utility` output in `@layer utilities`, and an unlayered rule — which every Vue scoped
+ * `<style>` is — beats *any* layered one whatever its specificity. So a component that sets
+ * `color: var(--color-ink)` on itself (the starter-pack chips did) stayed ink on the ink fill
+ * and its label vanished. `.hover-invert.hover-invert` is unlayered and specific enough to win
+ * without `!important` (2026-09-18).
+ */
+.hover-invert.hover-invert:hover:not(:disabled),
+.hover-invert.hover-invert:focus-visible:not(:disabled) {
+  color: var(--invert-fg);
+  border-color: var(--invert-bg);
+}
+.hover-invert.hover-invert:hover:not(:disabled)
+  :where(b, i, em, small, span, strong, svg, button, a) {
+  color: inherit;
+}
+/*
+ * Everything *inside* an inverted thing has to invert with it. A nested control that keeps its
+ * own ink colour simply disappears — found by screenshotting the mock's option 1, where the
+ * row's "+ important" button vanished into the fill.
+ */
+.hover-invert.hover-invert:hover:not(:disabled) :where(.mini, .btn-ghost) {
+  border-color: color-mix(in srgb, var(--invert-fg) 45%, transparent);
+}
+/* red still has to read as red once it is sitting on the fill */
+.hover-invert.hover-invert:hover:not(:disabled) :where(.purge, .text-danger) {
+  color: var(--invert-danger);
+}
+/*
+ * A control inside an already-inverted row inverts *back* when the pointer reaches it: the fill
+ * becomes the paper and its text the ink. Two nested inversions cancelling is the honest reading
+ * of the idea, and without it the child's own ink fill would be invisible on the parent's.
+ */
+.hover-invert:hover .hover-invert.hover-invert:hover:not(:disabled)::after {
+  background: var(--invert-fg);
+}
+.hover-invert:hover .hover-invert.hover-invert:hover:not(:disabled) {
+  color: var(--invert-bg);
+  border-color: var(--invert-fg);
 }
 @utility hover-lift {
   transition:
@@ -406,6 +482,10 @@ body {
     background: var(--hover-danger);
   }
 }
+/* A destructive control inside an inverted row keeps its own red wash, not the row's fill. */
+.hover-invert:hover .hover-danger:hover {
+  background: var(--hover-danger);
+}
 @utility btn-ink {
   background: var(--color-ink);
   color: var(--color-ground);
@@ -415,10 +495,12 @@ body {
   font-size: 0.875rem;
   transition:
     background-color var(--hover-ease),
-    transform var(--hover-ease);
-  /* a solid ink button cannot take a wash, so it warms towards the accent instead */
+    color var(--hover-ease);
+  /* already ink: it inverts the other way, becoming the paper with ink text */
   &:hover:not(:disabled) {
-    background: color-mix(in srgb, var(--color-ink) 86%, var(--color-accent));
+    background: var(--color-ground);
+    color: var(--color-ink);
+    box-shadow: inset 0 0 0 1px var(--color-ink);
   }
 }
 @utility btn-ghost {
@@ -427,12 +509,28 @@ body {
   border-radius: 12px;
   padding: 0.5rem 0.9rem;
   font-size: 0.875rem;
+  position: relative;
+  isolation: isolate;
   transition:
-    background-color var(--hover-ease),
+    color var(--hover-ease),
     border-color var(--hover-ease);
+  &::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    border-radius: inherit;
+    background: var(--invert-bg);
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform var(--wipe);
+  }
+  &:hover:not(:disabled)::after {
+    transform: scaleX(1);
+  }
   &:hover:not(:disabled) {
-    background: var(--hover-wash);
-    border-color: var(--hover-line);
+    color: var(--invert-fg);
+    border-color: var(--invert-bg);
   }
 }
 /* the silk button: a slowly drifting pastel gradient for the one action worth drawing the
@@ -560,10 +658,14 @@ body {
     color var(--hover-ease);
   /* this used to be `color: ink` over `muted`, which has done nothing since muted became ink */
   &:hover:not(:disabled):not([aria-pressed='true']) {
-    background: var(--hover-wash);
+    background: var(--invert-bg);
+    color: var(--invert-fg);
   }
+  /* the pressed option is already the inversion, so hovering it goes the other way */
   &[aria-pressed='true']:hover {
-    background: color-mix(in srgb, var(--color-ink) 86%, var(--color-accent));
+    background: var(--color-ground);
+    color: var(--color-ink);
+    box-shadow: inset 0 0 0 1px var(--color-ink);
   }
   &[aria-pressed='true'] {
     background: var(--color-ink);
@@ -609,8 +711,9 @@ body {
     border-color var(--hover-ease);
 }
 :is(button, a, [role='button']).glass-sm:hover:not(:disabled) {
-  background: color-mix(in srgb, var(--color-accent) 12%, var(--glass-sm-bg));
-  border-color: var(--hover-line);
+  background: var(--invert-bg);
+  color: var(--invert-fg);
+  border-color: var(--invert-bg);
 }
 :is(a, button):is(.underline, .text-accent) {
   text-underline-offset: 2px;
@@ -619,9 +722,11 @@ body {
     color var(--hover-ease);
 }
 :is(a, button):is(.underline, .text-accent):hover:not(:disabled) {
-  color: var(--color-accent);
-  text-decoration-color: var(--color-accent);
-  text-decoration-thickness: 2px;
+  color: var(--invert-fg);
+  background: var(--invert-bg);
+  border-radius: 4px;
+  box-shadow: 0 0 0 3px var(--invert-bg);
+  text-decoration-color: var(--invert-fg);
 }
 
 input:focus-visible,

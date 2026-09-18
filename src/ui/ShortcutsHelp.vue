@@ -27,7 +27,7 @@ onBeforeUnmount(() => {
   <div ref="root" class="relative inline-flex" @mouseenter="open = true" @mouseleave="open = false">
     <button
       type="button"
-      class="glass-sm hover-wash grid h-7 w-7 place-items-center font-mono text-[13px] font-bold"
+      class="glass-sm hover-invert grid h-7 w-7 place-items-center font-mono text-[13px] font-bold"
       :aria-expanded="open"
       :aria-label="t('shortcuts.title')"
       :title="t('shortcuts.title')"

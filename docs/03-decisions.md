@@ -760,3 +760,45 @@ no style at all, the _active_ library row was the one row that did not
 respond, and the sensitivity slider's thumb was inert. It is not in the suite
 loop (the `_` prefix): it is the check to run after touching a control, and
 the answer it should give is "all covered", in both themes.
+
+## ADR-33 — The hover is an inversion, wiped in (2026-09-18)
+
+**Context.** ADR-32 standardised the hovers but chose the accent violet as
+the wash, and Angel did not want it. Shown seven alternatives in
+`design/hover/inversion.html` — mostly inversions, since that was the
+technique he named — he picked straight inversion with the wipe from the
+sweeping option.
+
+**Decision.** `hover-invert` replaces `hover-wash`. The hovered thing swaps
+with the page: `--invert-bg` (ink) fills, `--invert-fg` (ground) is what sits
+on it, and the fill **wipes in from the left** over 220 ms. Night inverts
+twice as hard by itself, because ink there is near-white and ground is black.
+`hover-line` (fields) and `hover-lift` (cards, chips) are unchanged in shape
+but drop the accent: the border goes to ink, the shadow to a neutral dark.
+`hover-danger` stays a red wash — red on red would say nothing. Things that
+are _already_ ink — `btn-ink`, a pressed `seg-opt` — invert the other way,
+becoming paper with an ink hairline. An `<input>` has no pseudo-element, so
+`.time` inverts in place, without the sweep.
+
+Three details the mock and the screenshots forced:
+
+1. **Nested controls invert with their row**, or they vanish: ink text on the
+   ink fill. And a control the pointer reaches _inside_ an inverted row
+   inverts **back** — two inversions cancelling — which is both the honest
+   reading of the idea and the only way its own fill stays visible.
+2. **No `overflow: hidden`.** The fill is `inset: 0` and takes
+   `border-radius: inherit`, so there is nothing to clip — and `overflow`
+   other than visible sets a flex item's automatic minimum size to zero,
+   which squashed the vocabulary rows to half height the first time this
+   shipped.
+3. **The colour half is unlayered, with the class doubled.** Tailwind puts
+   `@utility` output in `@layer utilities`, and an unlayered rule — which
+   every Vue scoped `<style>` is — beats any layered one whatever its
+   specificity. The starter-pack chips set `color` on themselves, so they
+   stayed ink on the ink fill and went blank. `.hover-invert.hover-invert`
+   wins without `!important`.
+
+**Consequences.** The app's one hover is now made of the two colours it is
+already made of, which is why it cannot be grey and cannot fight the silk.
+`e2e/_hover.mjs` still reports "all covered" in both themes, and its grey
+check now has nothing to find: there is no tint left to check.

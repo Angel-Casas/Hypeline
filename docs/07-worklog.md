@@ -1426,3 +1426,21 @@ around. Both themes now report "all covered".
 
 114 tests, all 15 e2e suites, lint and build green. **Next:** Angel has 8
 commits to push.
+
+## 2026-09-18 (cont.) — The hover becomes an inversion
+
+**What changed.** Angel rejected the accent violet from ADR-32, so I mocked
+seven hovers on the real elements (`design/hover/inversion.html`) and he
+chose straight inversion with the wipe. ADR-33: `hover-invert` — ink fills,
+content becomes the paper, and the fill sweeps in from the left over 220 ms.
+The other tiers keep their shape and lose the accent.
+
+**Three traps, all caught by screenshots rather than by reading the CSS.**
+`overflow: hidden` on the fill zeroed the flex rows' automatic minimum size
+and squashed them to half height; nested buttons disappeared into their row's
+fill until they inverted with it (and invert _back_ when hovered themselves);
+and the pack chips went blank because Tailwind's `@utility` output is layered
+while Vue scoped styles are not, so the components' own `color` won.
+
+114 tests, all 15 e2e suites, lint and build green; `e2e/_hover.mjs` reports
+"all covered" in both themes. **Next:** Angel has 9 commits to push.

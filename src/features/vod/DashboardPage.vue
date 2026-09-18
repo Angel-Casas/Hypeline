@@ -578,7 +578,7 @@ watch(
             v-for="v in vods"
             :key="v.id"
             class="group flex items-center gap-2 rounded-xl px-2 py-1.5"
-            :class="[v.id === info?.id ? 'bg-lift/70' : '', 'hover-wash']"
+            :class="[v.id === info?.id ? 'bg-lift/70' : '', 'hover-invert']"
           >
             <button class="min-w-0 flex-1 text-left" @click="open(v.id)">
               <div class="truncate text-xs leading-tight font-semibold">{{ v.title || v.id }}</div>
@@ -811,7 +811,7 @@ watch(
             role="tab"
             :aria-selected="tab === tb.id"
             class="flex-1 rounded-full py-1.5 text-xs font-semibold transition-colors"
-            :class="tab === tb.id ? 'bg-ink text-ground' : 'text-muted hover-wash'"
+            :class="tab === tb.id ? 'bg-ink text-ground' : 'text-muted hover-invert'"
             @click="tab = tb.id"
           >
             {{ tb.label }}
@@ -883,7 +883,7 @@ watch(
                 <li
                   v-for="m in liveFeed.slice(0, 6)"
                   :key="m.id"
-                  class="flex items-center gap-2 rounded-lg px-1.5 py-1 hover-wash"
+                  class="flex items-center gap-2 rounded-lg px-1.5 py-1 hover-invert"
                 >
                   <button
                     class="font-mono text-[12px] font-semibold tabular-nums"
@@ -1282,13 +1282,14 @@ watch(
     box-shadow var(--hover-ease),
     background-color var(--hover-ease);
 }
+/* the thumb is ink on a pale ring; hovering swaps the two */
 .sens:hover::-webkit-slider-thumb {
-  background: color-mix(in srgb, var(--color-ink) 86%, var(--color-accent));
-  box-shadow: 0 0 0 4px var(--hover-wash);
+  background: var(--color-ground);
+  box-shadow: 0 0 0 2px var(--color-ink);
 }
 .sens:hover::-moz-range-thumb {
-  background: color-mix(in srgb, var(--color-ink) 86%, var(--color-accent));
-  box-shadow: 0 0 0 4px var(--hover-wash);
+  background: var(--color-ground);
+  box-shadow: 0 0 0 2px var(--color-ink);
 }
 .sens::-moz-range-thumb {
   width: 12px;

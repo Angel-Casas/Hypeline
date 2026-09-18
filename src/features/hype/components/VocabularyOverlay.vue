@@ -341,7 +341,7 @@ watch(() => settings.sensitivity, computeBaseline);
             </p>
             <p v-if="!col.rows.length" class="text-xs text-ink">{{ t('vocab.seen.empty') }}</p>
             <ul v-else class="seen">
-              <li v-for="s in col.rows" :key="s.token" class="seenrow">
+              <li v-for="s in col.rows" :key="s.token" class="seenrow hover-invert">
                 <span class="tok"
                   ><b>{{ s.token }}</b
                   ><em>{{ t(`vocab.kind.${s.kind}`) }}</em></span
@@ -358,7 +358,7 @@ watch(() => settings.sensitivity, computeBaseline);
                   <button
                     v-for="kind in KINDS"
                     :key="kind"
-                    class="mini"
+                    class="mini hover-invert"
                     :class="{ done: inList(kind, s.token) }"
                     :disabled="inList(kind, s.token)"
                     @click="vocab.add(scope, kind, s.token)"
@@ -376,7 +376,7 @@ watch(() => settings.sensitivity, computeBaseline);
           <div class="flex items-baseline justify-between gap-2">
             <h3 class="text-[13px] font-bold">{{ t('vocab.packs.name') }}</h3>
             <button
-              class="mini"
+              class="mini hover-invert"
               data-testid="vocab-detect"
               @click="vocab.setPacks(packsToEnable(counts))"
             >
@@ -388,7 +388,7 @@ watch(() => settings.sensitivity, computeBaseline);
           </p>
           <div class="flex flex-wrap gap-1.5">
             <button
-              class="pack silk-ring"
+              class="pack silk-ring hover-invert"
               :style="slice(0)"
               :aria-pressed="!vocab.state.enOff"
               data-testid="vocab-pack-en"
@@ -400,7 +400,7 @@ watch(() => settings.sensitivity, computeBaseline);
             <button
               v-for="(p, i) in packs"
               :key="p.id"
-              class="pack silk-ring"
+              class="pack silk-ring hover-invert"
               :style="slice(i + 1)"
               :aria-pressed="p.on"
               @click="vocab.togglePack(p.id)"
@@ -510,12 +510,7 @@ watch(() => settings.sensitivity, computeBaseline);
   --ring-g: var(--silk-warm);
   transition: background-color var(--hover-ease);
 }
-.pack:hover:not([aria-pressed='true']) {
-  background: var(--hover-wash);
-}
-.pack[aria-pressed='true']:hover {
-  background: var(--hover-wash-strong);
-}
+
 .vchip::before,
 .pack::before {
   animation-duration: 14s;
@@ -560,7 +555,6 @@ watch(() => settings.sensitivity, computeBaseline);
 }
 .vx:hover {
   opacity: 1;
-  background: var(--hover-wash-strong);
 }
 .seen {
   display: flex;
@@ -580,12 +574,7 @@ watch(() => settings.sensitivity, computeBaseline);
   padding: 3px 5px;
   border-radius: 9px;
 }
-.seenrow {
-  transition: background-color var(--hover-ease);
-}
-.seenrow:hover {
-  background: var(--hover-wash);
-}
+
 .tok {
   display: flex;
   align-items: baseline;
@@ -632,10 +621,7 @@ watch(() => settings.sensitivity, computeBaseline);
     background-color var(--hover-ease),
     border-color var(--hover-ease);
 }
-.mini:hover:not(:disabled) {
-  background: var(--hover-wash);
-  border-color: var(--hover-line);
-}
+
 .mini:disabled {
   border-color: var(--pick);
   background: var(--pick-soft);

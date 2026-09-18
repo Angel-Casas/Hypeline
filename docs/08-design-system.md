@@ -556,16 +556,32 @@ the panel alone: the grey was only visible _around_ the panel.
 
 ## Hover (2026-09-18)
 
-Four tiers, one wash, never grey — the full reasoning is ADR-32.
-`hover-wash` for a surface the pointer is over (accent 11 %, 16 % by night),
-`hover-lift` for something it could pick up (2 px + `--hover-shadow`),
-`hover-line` for something it can type into (the border warms), and
-`hover-danger` for anything that deletes. All on `--hover-ease`. The tiers
-are already inside `btn-ghost`, `btn-ink`, `seg-opt`, `field` and any
-`glass-sm` that is a button or a link, so a new component usually needs
-nothing; when it does, it picks a tier rather than inventing a hover. A solid
-surface warms towards the accent instead of taking a wash, and an underlined
-word thickens its underline rather than filling.
+Four tiers — ADR-32 for the shape of the system, ADR-33 for what a hover
+actually looks like. **`hover-invert`** is the one you will use: the hovered
+thing swaps with the page, ink filling and the content becoming the paper,
+and the fill **wipes in from the left** over 220 ms. Night inverts twice as
+hard on its own, since ink there is near-white. `hover-lift` for something
+the pointer could pick up (2 px + `--hover-shadow`), `hover-line` for
+something it can type into (the border goes to ink), `hover-danger` for
+anything that deletes — the one hover that is not an inversion, because red
+on red says nothing. All on `--hover-ease`; the sweep is `--wipe`.
+
+The tiers are already inside `btn-ghost`, `btn-ink`, `seg-opt`, `field` and
+any `glass-sm` that is a button or a link, so a new component usually needs
+nothing; when it does, it picks a tier rather than inventing a hover.
+Something already ink (`btn-ink`, a pressed `seg-opt`) inverts the other way,
+to paper with an ink hairline. An `<input>` has no pseudo-element and so
+inverts in place, without the sweep.
+
+Three things to know before using it. A control **inside** an inverted thing
+inverts with it — otherwise it is ink on ink and disappears — and inverts
+**back** when hovered itself. The fill is a `::after` at `inset: 0` with
+`border-radius: inherit` and **never `overflow: hidden`**, which on a flex
+item would zero its automatic minimum size. And the colour half of the rule
+is deliberately unlayered with its class doubled
+(`.hover-invert.hover-invert`), because Tailwind's `@utility` output is
+layered and a Vue scoped `<style>` is not, so a component's own `color` would
+otherwise win and blank the label.
 
 **Check it with `e2e/_hover.mjs`** after touching any control: it matches
 `:hover` rules against every visible button, link and field on five screens

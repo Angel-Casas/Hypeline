@@ -32,7 +32,7 @@ const { t } = useI18n();
       {{ t('install.action') }}
     </button>
     <button
-      class="text-muted grid h-6 w-6 shrink-0 place-items-center rounded-full text-[14px] leading-none hover-wash"
+      class="text-muted grid h-6 w-6 shrink-0 place-items-center rounded-full text-[14px] leading-none hover-invert"
       :aria-label="t('install.dismiss')"
       :title="t('install.dismiss')"
       data-testid="install-no"
