@@ -104,9 +104,7 @@
   },
   "landing": {
     "dashboard": "대시보드",
-    "tagline1": "Twitch VOD → 클립",
-    "tagline2": "브라우저 안에서",
-    "tagline3": "업로드 없음",
+    "tagline": "트위치 VOD를 클립하고 싶은 명장면으로",
     "chatters": "채팅 {n}명",
     "demoted": "강등됨",
     "card1Title": "진짜로 해냈다",

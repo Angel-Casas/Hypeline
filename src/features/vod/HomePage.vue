@@ -200,7 +200,7 @@ function live(channel: string) {
             Hypeline
           </h1>
           <div class="eyebrow max-w-[90vw] [text-wrap:balance]">
-            {{ t('landing.tagline1') }} · {{ t('landing.tagline2') }} · {{ t('landing.tagline3') }}
+            {{ t('landing.tagline') }}
           </div>
         </div>
         <!-- moment cards: a glass "tab" card (timestamp as an ink pill on its top edge) pinned to

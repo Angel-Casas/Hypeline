@@ -104,9 +104,7 @@
   },
   "landing": {
     "dashboard": "Dashboard",
-    "tagline1": "Twitch VOD → clips",
-    "tagline2": "in your browser",
-    "tagline3": "nothing uploaded",
+    "tagline": "Turn Twitch VODs into memorable moments ready to clip",
     "chatters": "{n} chatters",
     "demoted": "demoted",
     "card1Title": "He actually did it",

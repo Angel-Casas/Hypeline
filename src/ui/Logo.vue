@@ -5,6 +5,11 @@
  * the In and Out handles of a clip, the peak between them the moment. Ink follows
  * `currentColor`; the silk is the app's gradient. Sits in the rail where the wordmark was.
  *
+ * Two small revisions (Angel, 2026-09-18): the peak sits 2 units lower, and the ramp ends on
+ * **sky** rather than butter. The stems take `currentColor`, which is near-white by night, and
+ * a pale yellow arriving at a near-white stem simply disappeared — the ramp now lands on a
+ * saturated blue, which reads against either theme's ink.
+ *
  * `hover`: the "Handles" motion (chosen from five, 2026-09-17) — when the link around it is
  * hovered or focused, the stems nudge inward and the peak tightens, the clip range closing on
  * a moment; it settles back on leave. Off by default so the mark stays still elsewhere.
@@ -35,8 +40,7 @@ const gid = `silk-${useId()}`;
         <stop offset="0" stop-color="#ffa968" />
         <stop offset="0.3" stop-color="#ff77b5" />
         <stop offset="0.62" stop-color="#b39cff" />
-        <stop offset="0.85" stop-color="#8eb0ff" />
-        <stop offset="1" stop-color="#ffde68" />
+        <stop offset="1" stop-color="#7f9cff" />
       </linearGradient>
     </defs>
     <g class="stem-l">
@@ -59,7 +63,7 @@ const gid = `silk-${useId()}`;
     </g>
     <path
       class="peak"
-      d="M15 38 C 22 38, 25 20, 32 20 S 42 38, 49 38"
+      d="M15 38 C 22 38, 25 22, 32 22 S 42 38, 49 38"
       :stroke="`url(#${gid})`"
       stroke-width="5"
       stroke-linecap="round"

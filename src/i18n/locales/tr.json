@@ -104,9 +104,7 @@
   },
   "landing": {
     "dashboard": "Panel",
-    "tagline1": "Twitch VOD → klipler",
-    "tagline2": "tarayıcında",
-    "tagline3": "hiçbir şey yüklenmez",
+    "tagline": "Twitch VOD’larını klipleşmeye hazır unutulmaz anlara dönüştür",
     "chatters": "{n} sohbetçi",
     "demoted": "düşürüldü",
     "card1Title": "Gerçekten yaptı",

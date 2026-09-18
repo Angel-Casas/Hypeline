@@ -104,9 +104,7 @@
   },
   "landing": {
     "dashboard": "Painel",
-    "tagline1": "VOD da Twitch → clipes",
-    "tagline2": "no seu navegador",
-    "tagline3": "nada é enviado",
+    "tagline": "Transforme VODs da Twitch em momentos memoráveis prontos para clipar",
     "chatters": "{n} chatters",
     "demoted": "rebaixado",
     "card1Title": "Ele conseguiu mesmo",

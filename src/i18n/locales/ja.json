@@ -104,9 +104,7 @@
   },
   "landing": {
     "dashboard": "ダッシュボード",
-    "tagline1": "Twitch VOD → クリップ",
-    "tagline2": "ブラウザの中で",
-    "tagline3": "アップロードなし",
+    "tagline": "Twitch の VOD を、切り抜きたくなる名場面に変える",
     "chatters": "{n} 人がチャット",
     "demoted": "降格",
     "card1Title": "本当にやった",

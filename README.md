@@ -1,3 +1,10 @@
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="docs/assets/logo-dark.svg">
+    <img src="docs/assets/logo-light.svg" alt="Hypeline" width="96" height="96">
+  </picture>
+</p>
+
 # Hypeline
 
 ### → [**hypeline.live**](https://hypeline.live) — open the app

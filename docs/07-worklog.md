@@ -1558,3 +1558,35 @@ truncated word is useless — you cannot tell what you would be adding
 (Angel, 2026-09-18). Measured at 390 px: 8 truncated words before, 0 after.
 
 118 tests, 15 e2e suites, lint, build and the hover audit green.
+
+## 2026-09-18 (cont.) — The mark, revised, and handles that end
+
+**What changed.** Four small things Angel asked for, and one that followed
+from them.
+
+The mark: the peak sits 2 units lower, and the silk ramp ends on **sky**
+instead of butter. Yellow arriving at a stem drawn in `currentColor` — near
+white at night — had nowhere to land; blue reads on both grounds. The README
+now opens with the mark, as `docs/assets/logo-{light,dark}.svg` behind a
+`<picture>`; GitHub cannot render a Vue component and gives an embedded SVG
+no page CSS, so it is two files, one per ink, kept in step by hand.
+
+The landing subtitle is one string now: **"Turn Twitch VODs into memorable
+moments ready to clip"**. `landing.tagline1/2/3` are gone from all ten
+catalogs (537 strings each, parity green).
+
+Then Angel noticed what the mark was actually saying: the stems around the
+peak are a clip's In and Out. So the timeline's **In / Out handles now wear
+the same serif feet** — inset 4 px from the ribbon's edges, a 14 px foot at
+each end. A line running off the top and bottom read as a cut _through_ the
+ribbon; a capped stem reads as the clip's edge. The playhead deliberately
+keeps its full height, which is now what distinguishes a position from a
+boundary.
+
+Two traps worth remembering: duplicate SVG gradient `id`s in one document
+collide and the first wins (it cost a render that showed the "after" mark
+still ending in yellow — the exact trap `Logo.vue`'s own comment describes),
+and `vector-effect` is **not** an inherited property, so it belongs on every
+`<line>` rather than the wrapping `<g>`.
+
+118 tests, 15 e2e suites, lint, build and locale parity green.

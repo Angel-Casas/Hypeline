@@ -104,9 +104,7 @@
   },
   "landing": {
     "dashboard": "Panel",
-    "tagline1": "VOD de Twitch → clips",
-    "tagline2": "en tu navegador",
-    "tagline3": "sin subir nada",
+    "tagline": "Convierte VODs de Twitch en momentos memorables listos para clipear",
     "chatters": "{n} chatters",
     "demoted": "degradado",
     "card1Title": "Lo hizo de verdad",

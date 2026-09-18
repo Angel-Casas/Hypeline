@@ -225,6 +225,15 @@ redirects). Grid `260px | 1fr` (stacks under `lg`):
   gradient along x, a blurred copy behind at 50 % as a halo, a faint
   horizontal-thread pattern on top, the ink spine through the middle. In a
   zoom window the amplitude is normalised to the window's own peak.
+- The **In / Out handles wear the mark's serif feet** (2026-09-18): a 1.5 px
+  ink stem inset 4 px from the ribbon's top and bottom, with a 14 px foot at
+  each end (lengths in screen px via `sx` / `sy`, since the SVG is stretched
+  with `preserveAspectRatio="none"`; `vector-effect` is not inherited, so it
+  goes on every `<line>`, not the group). A capped stem reads as a clip's
+  edge — a deliberate end — where a full-height line read as a cut through
+  the ribbon, and it echoes the logo, where those stems are the same two
+  handles. The **playhead stays full height**: a position is not a boundary,
+  and the difference is now what tells them apart at a glance.
 - Moment markers are **pins**: a 1 px hairline from the spine up through
   the peak to a filled ink dot just above it (the white dot with a border is
   retired). Hovered / active pins grow (dot r 2.6 → 4.2).
@@ -675,8 +684,8 @@ or a key). The repo is `VITE_GITHUB_REPO`; the matching issue forms live in
 candidates and five variations: a Gloock-weight H with slab feet and heads
 whose crossbar is a hype-thread peak in silk. The stems are a clip's In and
 Out handles; the peak between them is the moment. Ink follows
-`currentColor`, the silk is the app gradient (peach → pink → lilac → sky →
-butter, `userSpaceOnUse` so it survives straight strokes). It replaces the
+`currentColor`, the silk is the app gradient (peach → pink → lilac → sky,
+`userSpaceOnUse` so it survives straight strokes). It replaces the
 wordmark in the dashboard rail (34 px) and the small-screen header (26 px)
 to give the rail's buttons room; the gallery keeps mark + wordmark; the
 landing page keeps its big Gloock masthead. Icons: `public/icons/mark.svg`
@@ -690,6 +699,16 @@ focus-visible, the stems nudge 4 units inward and the peak tightens
 then settle back: the clip's In/Out handles closing on a moment. The rail
 and gallery links use it; the favicon and icons stay still; reduced motion
 turns it off.
+
+**Two revisions (Angel, 2026-09-18).** The peak sits 2 units lower (control
+points at y 22, not 20), and the ramp **ends on sky** rather than butter: the
+stems take `currentColor`, which is near-white by night, and a pale yellow
+arriving at a near-white stem simply disappeared. Sky reads against either
+theme's ink. The README carries the mark at the top, as two committed files —
+`docs/assets/logo-light.svg` and `-dark.svg`, one per ink, swapped by a
+`<picture>` with `prefers-color-scheme` (GitHub cannot render the component,
+and an SVG embedded in a README gets no CSS from the page). Keep those two in
+step with `Logo.vue` by hand; nothing checks them.
 
 The PNGs were rendered from the tile SVG (mark on `#0c0a0f`, rx 16 of 64,
 silk ring 2.2) with headless Chromium; redo them the same way if the mark

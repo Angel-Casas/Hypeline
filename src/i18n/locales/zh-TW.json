@@ -104,9 +104,7 @@
   },
   "landing": {
     "dashboard": "儀表板",
-    "tagline1": "Twitch VOD → 剪輯",
-    "tagline2": "在你的瀏覽器裡",
-    "tagline3": "不上傳任何東西",
+    "tagline": "把 Twitch VOD 變成值得剪輯的精彩時刻",
     "chatters": "{n} 位聊天者",
     "demoted": "已降級",
     "card1Title": "他真的做到了",

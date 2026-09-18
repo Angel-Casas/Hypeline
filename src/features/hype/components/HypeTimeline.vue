@@ -1005,26 +1005,41 @@ function pulse(sec: number) {
             opacity="0.07"
             pointer-events="none"
           />
-          <line
-            :x1="x(inSec!)"
-            :x2="x(inSec!)"
-            y1="0"
-            :y2="H"
+          <!-- the handles wear the mark's serif feet (Angel, 2026-09-18): a capped stem reads
+               as a clip edge — a deliberate end — where a line running into the ribbon's top
+               and bottom read as a cut through it. Lengths are in screen px (× sx / sy) so the
+               feet stay square under the ribbon's non-uniform scaling. -->
+          <g
+            v-for="(s, i) in [inSec!, outSec!]"
+            :key="i"
             style="stroke: var(--color-ink)"
+            stroke-linecap="round"
             stroke-width="1.5"
-            vector-effect="non-scaling-stroke"
             pointer-events="none"
-          />
-          <line
-            :x1="x(outSec!)"
-            :x2="x(outSec!)"
-            y1="0"
-            :y2="H"
-            style="stroke: var(--color-ink)"
-            stroke-width="1.5"
-            vector-effect="non-scaling-stroke"
-            pointer-events="none"
-          />
+          >
+            <!-- vector-effect is not an inherited property: it goes on every line, not the g -->
+            <line
+              :x1="x(s)"
+              :x2="x(s)"
+              :y1="4 * sy"
+              :y2="H - 4 * sy"
+              vector-effect="non-scaling-stroke"
+            />
+            <line
+              :x1="x(s) - 7 * sx"
+              :x2="x(s) + 7 * sx"
+              :y1="4 * sy"
+              :y2="4 * sy"
+              vector-effect="non-scaling-stroke"
+            />
+            <line
+              :x1="x(s) - 7 * sx"
+              :x2="x(s) + 7 * sx"
+              :y1="H - 4 * sy"
+              :y2="H - 4 * sy"
+              vector-effect="non-scaling-stroke"
+            />
+          </g>
           <!-- grab zones (12 px each side on screen): only for the resize cursor — the press
                itself is resolved in onDown, which picks the nearer handle -->
           <rect

@@ -104,9 +104,7 @@
   },
   "landing": {
     "dashboard": "Tableau de bord",
-    "tagline1": "VOD Twitch → clips",
-    "tagline2": "dans votre navigateur",
-    "tagline3": "rien n'est envoyé",
+    "tagline": "Transformez les VOD Twitch en moments mémorables prêts à clipper",
     "chatters": "{n} chatteurs",
     "demoted": "rétrogradé",
     "card1Title": "Il l'a vraiment fait",
