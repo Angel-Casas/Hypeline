@@ -1,0 +1,164 @@
+<!doctype html>
+<html lang="en" data-theme="night">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Silk ring — four takes</title>
+<link href="https://fonts.googleapis.com/css2?family=Gloock&family=Manrope:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --color-ground:#fbf9fa; --color-ground-2:#f3eef2; --color-ink:#221c2a; --color-muted:#6f6779;
+  --color-line:rgba(34,28,42,.12); --color-accent:#7a4f8e;
+  --ghost-bg:rgba(255,255,255,.5); --glass-line:rgba(255,255,255,.85);
+  --font-mono:'JetBrains Mono',ui-monospace,monospace;
+}
+[data-theme="night"]{
+  --color-ground:#000; --color-ground-2:#0c0a0f; --color-ink:#f3edf6; --color-muted:#9b91a5;
+  --color-line:rgba(255,255,255,.14); --color-accent:#c9a3df;
+  --ghost-bg:rgba(255,255,255,.04); --glass-line:rgba(255,255,255,.12);
+}
+@property --silk-a { syntax:'<angle>'; inherits:false; initial-value:0deg }
+@keyframes silk-turn { to { --silk-a:360deg } }
+*{box-sizing:border-box}
+body{margin:0;background:var(--color-ground);color:var(--color-ink);
+  font-family:Manrope,system-ui,sans-serif;font-size:14px;padding:26px 20px 70px}
+.wrap{max-width:960px;margin:0 auto}
+h1{font-family:Gloock,serif;font-weight:400;font-size:28px;margin:0 0 6px}
+h2{font-family:Gloock,serif;font-weight:400;font-size:19px;margin:0}
+.eyebrow{font-family:var(--font-mono);font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--color-muted)}
+.lede{color:var(--color-muted);max-width:66ch;margin:0 0 4px}
+.topbar{display:flex;justify-content:space-between;gap:16px;align-items:flex-start;margin-bottom:22px;flex-wrap:wrap}
+.toggle{border:1px solid var(--color-line);background:var(--ghost-bg);color:var(--color-ink);
+  border-radius:999px;padding:7px 14px;font:inherit;font-size:12px;cursor:pointer}
+.card{border:1px solid var(--color-line);background:var(--color-ground-2);border-radius:18px;padding:16px 18px;margin:0 0 20px}
+.card>header{display:flex;justify-content:space-between;align-items:baseline;gap:12px;flex-wrap:wrap}
+.why{color:var(--color-muted);font-size:12.5px;margin:6px 0 14px;max-width:70ch}
+.row{display:flex;flex-wrap:wrap;align-items:center;gap:18px}
+
+/* the ring, exactly as the app builds it */
+.ring{position:relative;isolation:isolate}
+.ring::before{content:'';position:absolute;inset:0;border-radius:inherit;padding:var(--ring-w,1.5px);
+  pointer-events:none;background:var(--ring-bg),linear-gradient(var(--color-line) 0 0);
+  -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);
+  -webkit-mask-composite:xor;mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);
+  mask-composite:exclude;animation:silk-turn 8s linear infinite}
+
+.btn{border:0;background:var(--ghost-bg);color:var(--color-ink);border-radius:999px;
+  padding:9px 18px;font:inherit;font-size:14px;cursor:pointer}
+.chip{border-radius:12px;padding:8px 12px;background:var(--ghost-bg);font-family:var(--font-mono);font-size:12px}
+.frame{width:210px;height:118px;border-radius:16px;background:#000;--ring-w:3px;
+  display:grid;place-items:center;color:rgba(255,255,255,.45);font-family:var(--font-mono);font-size:10px;
+  letter-spacing:.1em}
+.swatch{height:34px;border-radius:999px;margin-top:12px}
+
+/* --- the four --- */
+.now{--ring-bg:conic-gradient(from var(--silk-a),
+  transparent 0deg,#ff77b5 30deg,#ffa968 65deg,#ffde68 90deg,transparent 120deg,transparent 160deg,
+  #8eb0ff 185deg,#ae81ff 225deg,transparent 260deg,transparent 290deg,#ff77b5 315deg,#ae81ff 340deg,
+  transparent 360deg)}
+.now-flat{background:linear-gradient(90deg,
+  transparent,#ff77b5,#ffa968,#ffde68,transparent,transparent,
+  #8eb0ff,#ae81ff,transparent,transparent,#ff77b5,#ae81ff,transparent)}
+
+/* A — continuous pastel: the gaps become pale tints of the palette instead of nothing */
+.a{--ring-bg:conic-gradient(from var(--silk-a),
+  #ffd0e4 0deg,#ff77b5 40deg,#ffa968 80deg,#ffde68 115deg,#fff0bd 150deg,
+  #cfdcff 190deg,#8eb0ff 225deg,#ae81ff 265deg,#ddd0ff 300deg,#ff9bd0 335deg,#ffd0e4 360deg)}
+.a-flat{background:linear-gradient(90deg,#ffd0e4,#ff77b5,#ffa968,#ffde68,#fff0bd,#cfdcff,#8eb0ff,#ae81ff,#ddd0ff,#ff9bd0,#ffd0e4)}
+
+/* B — two lights: keeps the current rhythm (two bright arcs, two quiet ones) but the quiet
+   arcs are pale pastel rather than the grey line showing through */
+.b{--ring-bg:conic-gradient(from var(--silk-a),
+  #ffe3ef 0deg,#ff77b5 35deg,#ffa968 70deg,#ffde68 100deg,#fff4d4 135deg,#eae2ff 165deg,
+  #8eb0ff 195deg,#ae81ff 235deg,#e7d9ff 275deg,#ffd9e9 305deg,#ff8fc0 335deg,#ffe3ef 360deg)}
+.b-flat{background:linear-gradient(90deg,#ffe3ef,#ff77b5,#ffa968,#ffde68,#fff4d4,#eae2ff,#8eb0ff,#ae81ff,#e7d9ff,#ffd9e9,#ff8fc0,#ffe3ef)}
+
+/* C — the tokens themselves: petal, apricot, butter, sky, lilac, evenly spaced and soft */
+.c{--ring-bg:conic-gradient(from var(--silk-a),
+  #ffd0e4 0deg,#ffdcc4 72deg,#fff0bd 144deg,#cfdcff 216deg,#ddd0ff 288deg,#ffd0e4 360deg)}
+.c-flat{background:linear-gradient(90deg,#ffd0e4,#ffdcc4,#fff0bd,#cfdcff,#ddd0ff,#ffd0e4)}
+
+.note{font-family:var(--font-mono);font-size:10.5px;color:var(--color-muted)}
+.foot{border-top:1px solid var(--color-line);margin-top:26px;padding-top:16px;color:var(--color-muted);font-size:13px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="topbar">
+    <div>
+      <p class="eyebrow">Hypeline · silk ring</p>
+      <h1>Where the grey comes from, and three ways out</h1>
+      <p class="lede">The ring is a conic gradient whose quiet arcs are <code>transparent</code>, so the grey
+        hairline underneath shows through — and a colour fading to transparent in sRGB loses its
+        saturation on the way, which greys the edges of the bright arcs too. Each option below is the
+        real ring CSS, turning at the real speed.</p>
+    </div>
+    <button class="toggle" id="theme">☀︎ Day</button>
+  </div>
+
+  <div class="card">
+    <header><div><span class="eyebrow">Today</span><h2>The ring now</h2></div><span class="note">4 transparent arcs</span></header>
+    <p class="why">Two bright arcs, two gaps. The gaps are the grey.</p>
+    <div class="row">
+      <button class="btn ring now">Chat vocabulary</button>
+      <span class="chip ring now">0:23:15 13.3×</span>
+      <div class="frame ring now">PLAYER</div>
+    </div>
+    <div class="swatch now-flat"></div>
+  </div>
+
+  <div class="card">
+    <header><div><span class="eyebrow">Option A</span><h2>Continuous pastel</h2></div><span class="note">no transparent at all</span></header>
+    <p class="why">The gaps become pale tints of the palette — petal, butter, sky — so the ring never
+      loses colour. Brightest at the pink and the lilac, softest in between. Closest in spirit to
+      what is there now, without the grey.</p>
+    <div class="row">
+      <button class="btn ring a">Chat vocabulary</button>
+      <span class="chip ring a">0:23:15 13.3×</span>
+      <div class="frame ring a">PLAYER</div>
+    </div>
+    <div class="swatch a-flat"></div>
+  </div>
+
+  <div class="card">
+    <header><div><span class="eyebrow">Option B</span><h2>Two lights</h2></div><span class="note">same rhythm, pastel valleys</span></header>
+    <p class="why">Keeps the current rhythm exactly — two saturated arcs with quiet stretches between —
+      but the quiet stretches are very pale pink and lilac rather than nothing. The movement is more
+      obvious than in A because the contrast between arcs is higher.</p>
+    <div class="row">
+      <button class="btn ring b">Chat vocabulary</button>
+      <span class="chip ring b">0:23:15 13.3×</span>
+      <div class="frame ring b">PLAYER</div>
+    </div>
+    <div class="swatch b-flat"></div>
+  </div>
+
+  <div class="card">
+    <header><div><span class="eyebrow">Option C</span><h2>The tokens themselves</h2></div><span class="note">petal · apricot · butter · sky · lilac</span></header>
+    <p class="why">The five palette pastels at their exact token values, evenly spaced. The quietest of
+      the three and the most obviously "ours" — but with no saturated arc, the turning is nearly
+      invisible and a 1.5 px ring reads almost as a plain light line.</p>
+    <div class="row">
+      <button class="btn ring c">Chat vocabulary</button>
+      <span class="chip ring c">0:23:15 13.3×</span>
+      <div class="frame ring c">PLAYER</div>
+    </div>
+    <div class="swatch c-flat"></div>
+  </div>
+
+  <div class="foot">
+    Whichever you pick changes one block in <code>src/style.css</code>, and every ring in the app
+    follows: the moment chips, the player frame, the pinned language, the install chip, the tour
+    hole, the rail cards.
+  </div>
+</div>
+<script>
+const root = document.documentElement, tb = document.getElementById('theme');
+tb.onclick = () => {
+  const night = root.dataset.theme === 'night';
+  root.dataset.theme = night ? 'day' : 'night';
+  tb.textContent = night ? '☾ Night' : '☀︎ Day';
+};
+</script>
+</body>
+</html>

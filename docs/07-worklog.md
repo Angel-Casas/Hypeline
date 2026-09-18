@@ -1347,3 +1347,17 @@ Turkish, so detection now uses only each pack's distinctive terms.
 Verified end to end on a flat-rate Spanish chat where only the words change
 at four points: the English lists surface 1 of the 4, the Spanish pack
 surfaces all 4. **Angel:** nothing to do; ships with the next push.
+
+## 2026-09-18 (cont.) — The silk ring, without the grey
+
+**What changed.** The ring's four `transparent` arcs are gone: it now turns
+petal → apricot → butter → sky → lilac and back through pale tints of the
+palette, with one gap left at the seam that fades to a transparent _petal_
+rather than plain transparent. Two causes of the grey, both now named in
+`docs/08-design-system.md`: the faint hairline underneath showed through
+every gap, and sRGB fades to `transparent` desaturate, so the bright arcs
+greyed at both ends as well. One block in `src/style.css`, so every ring
+follows — the button, the player frame, the moment chips, the tour hole.
+Checked in both themes on the real dashboard; 111 tests and the e2e suites
+that touch the ring are green. The four options Angel chose from are in
+`design/ring/silk-ring.html`.

@@ -277,11 +277,23 @@ redirects). Grid `260px | 1fr` (stacks under `lg`):
   `useShortcuts.ts`); Escape or a click outside closes it. Desktop only.
   Also: every pressable thing (`button`, `[role=button]`, `select`,
   `summary`, checkbox labels) has `cursor: pointer`; disabled buttons don't.
-- **Silk ring** (2026-09-15): `silk-ring` — a 1.5 px hairline of turning
-  pastel arcs (the landing pill's ribbon, quieter: one layer, 8 s, over the
-  faint `--color-line`) via a masked conic-gradient `::before`; the element
-  needs a border radius. Used on the rail's **In this browser** box and its
-  **Settings** button.
+- **Silk ring** (2026-09-15, recoloured 2026-09-18): `silk-ring` — a 1.5 px
+  hairline of turning pastel (the landing pill's ribbon, quieter: one layer,
+  8 s, over the faint `--color-line`) via a masked conic-gradient `::before`;
+  the element needs a border radius. Used on the rail's **In this browser**
+  box and its **Settings** button, the player frame (`--ring-w: 3px`), the
+  moment chips, the tour hole and anything pinned or active.
+
+  The turn runs petal → apricot → butter → sky → lilac and back, through pale
+  tints of the palette rather than through nothing. It used to have four
+  `transparent` arcs, which read as grey twice over: the faint hairline below
+  showed through the gaps, and a colour fading to `transparent` in sRGB loses
+  its saturation on the way out, so the bright arcs greyed at both ends too
+  (Angel, 2026-09-18). **A gap in a gradient is never really empty** — it is
+  whatever sits underneath, desaturated. One gap survives, at the seam, and
+  it fades to a _transparent petal_ (`rgb(255 208 228 / 0)`) so even the fade
+  keeps its hue.
+
 - **Settings overlay** (2026-09-15): Settings opens as a modal over the
   blurred page (`bg-ink/35 backdrop-blur-md`, teleported to body, z-70) with
   a near-solid glass panel (`max-w 560`, scrolls past 88 vh), a `×` top-right;
