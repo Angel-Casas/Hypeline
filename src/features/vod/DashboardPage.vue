@@ -18,6 +18,8 @@ import TwitchPlayer from './components/TwitchPlayer.vue';
 import SubOnlyNotice from './components/SubOnlyNotice.vue';
 import HypeTimeline from '@/features/hype/components/HypeTimeline.vue';
 import MomentList from '@/features/hype/components/MomentList.vue';
+import VocabularyOverlay from '@/features/hype/components/VocabularyOverlay.vue';
+import { useVocabStore } from '@/features/hype/vocabStore';
 import ClipPanel from '@/features/clips/components/ClipPanel.vue';
 import CropOverlay from '@/features/clips/components/CropOverlay.vue';
 import SplitOverlay from '@/features/clips/components/SplitOverlay.vue';
@@ -76,6 +78,9 @@ const clipStore = useClipStore();
 const { inSec, outSec } = storeToRefs(clipStore);
 const twitch = useTwitchStore();
 const settings = useSettingsStore();
+const vocab = useVocabStore();
+/** "What this chat means" (ADR-29) — a modal, so it can be reached from any tab. */
+const vocabOpen = ref(false);
 const quota = useQuotaStore();
 
 // --- library (VODs cached in this browser) ---
@@ -840,6 +845,17 @@ watch(
                 <span>{{ t('dashboard.more') }}</span>
               </label>
             </div>
+            <!-- what this chat means: the user's own words for the heatmap (ADR-29) -->
+            <button
+              v-if="allMoments.length || messages.length"
+              class="btn-ghost self-start px-2.5! py-1! text-[11px]"
+              :class="{ 'silk-ring': vocab.touched }"
+              :title="t('vocab.openTitle')"
+              data-testid="vocab-open"
+              @click="vocabOpen = true"
+            >
+              {{ t('vocab.open') }}
+            </button>
             <!-- live: new moments as they happen, and a notification for the ones you miss -->
             <div v-if="live" class="flex flex-col gap-1.5">
               <div class="flex flex-wrap items-center justify-between gap-2">
@@ -1155,6 +1171,7 @@ watch(
       </Transition>
     </Teleport>
   </main>
+  <VocabularyOverlay v-if="vocabOpen" @close="vocabOpen = false" />
 </template>
 
 <style scoped>

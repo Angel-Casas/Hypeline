@@ -14,3 +14,6 @@ design/landing/*.html
 _to_delete
 *.tgz
 *.tsbuildinfo
+
+# previews Claude sends into the chat; not part of the app
+Claude outputs/

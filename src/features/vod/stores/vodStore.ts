@@ -9,6 +9,7 @@ import { ChatImportError, infoFromImport, parseChatExport } from '@/lib/twitch/c
 import { analyse, sensitivityToOptions, type Bucket, type Moment } from '@/features/hype/scoring';
 import type { SpeechChunk } from '@/features/hype/speech';
 import { useSettingsStore } from '@/features/settings/settingsStore';
+import { useVocabStore } from '@/features/hype/vocabStore';
 import * as db from '@/lib/storage/db';
 import { isQuotaError } from '@/lib/storage/quota';
 import { useQuotaStore } from '@/features/settings/quotaStore';
@@ -85,6 +86,8 @@ export const useVodStore = defineStore('vod', () => {
   const lengthSeconds = computed(() => info.value?.lengthSeconds ?? 0);
 
   const settings = useSettingsStore();
+  /** The user's own chat vocabulary (ADR-29): changing it re-scores, it never re-fetches. */
+  const vocab = useVocabStore();
   /** Transcript chunks for the current VOD (set by the AI store); they lift or damp the scores. */
   const speech = shallowRef<SpeechChunk[]>([]);
   function setSpeech(chunks: SpeechChunk[]) {
@@ -101,6 +104,7 @@ export const useVodStore = defineStore('vod', () => {
       top,
       opts,
       speech.value,
+      vocab.vocabulary,
     );
     buckets.value = r.buckets;
     moments.value = r.moments;
@@ -109,6 +113,13 @@ export const useVodStore = defineStore('vod', () => {
   // the slider re-picks the peaks (the buckets' scores don't change, only how many surface)
   watch(
     () => settings.sensitivity,
+    () => {
+      if (phase.value === 'ready') rescore();
+    },
+  );
+  // the vocabulary changes what a bucket is worth: same messages, new scores, no refetch
+  watch(
+    () => vocab.vocabulary,
     () => {
       if (phase.value === 'ready') rescore();
     },

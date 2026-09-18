@@ -570,5 +570,67 @@
     "body": "Recharge quand tu en auras fini avec ce clip.",
     "action": "Recharger",
     "later": "Plus tard"
+  },
+  "vocab": {
+    "eyebrow": "Vocabulaire du chat",
+    "title": "Ce que dit ce chat",
+    "scope": "Portée",
+    "everywhere": "Partout",
+    "onlyChannel": "{channel} seulement",
+    "scopeGlobal": "Ces listes s’appliquent à chaque VOD que tu ouvres. Passe sur une chaîne pour n’ajouter des mots que pour elle — ils s’ajoutent à celles-ci.",
+    "scopeChannel": "Seulement pour {channel}. Ils s’ajoutent à ta liste générale, les valeurs par défaut restent donc actives.",
+    "words": "mots",
+    "add": "Ajouter",
+    "yours": "à toi",
+    "turnOn": "réactiver ce mot",
+    "turnOff": "désactiver ce mot",
+    "open": "Vocabulaire du chat",
+    "openTitle": "Apprends à Hypeline les mots de ce chat",
+    "export": "Exporter",
+    "import": "Importer",
+    "importFailed": "Ce fichier n’est pas un vocabulaire Hypeline.",
+    "reset": "Rétablir les valeurs par défaut",
+    "done": "Terminé",
+    "important": {
+      "name": "Mots importants",
+      "help": "Quand plusieurs personnes différentes en disent un dans les mêmes secondes, le moment est marqué fortement. C’est le plus gros levier de la heatmap — garde-le pour ce qui veut vraiment dire « il vient de se passer quelque chose ».",
+      "placeholder": "clippe ça, 切り抜き, PagMan …"
+    },
+    "reaction": {
+      "name": "Réactions",
+      "help": "Le bruit ordinaire d’un chat qui s’amuse. Seules, elles ne marquent rien : ce qui compte, c’est la part d’un moment animé qu’elles occupent. Les emotes vont ici.",
+      "placeholder": "kekw, mdr, ㅋㅋㅋ, 草 …"
+    },
+    "seen": {
+      "name": "Vu dans ce VOD",
+      "byPeople": "par personnes, pas par messages",
+      "help": "Chaque mot et emote utilisé par ce chat, classé par le nombre de personnes différentes l’ayant dit dans les mêmes secondes. Rien n’est téléchargé — c’est la rediffusion du chat que nous avons déjà.",
+      "empty": "Ouvre un VOD pour voir ce que dit son chat.",
+      "atOnce": "personnes à la fois",
+      "usersTotal": "{n} personnes au total"
+    },
+    "kind": {
+      "emote": "emote",
+      "word": "mot"
+    },
+    "addTo": {
+      "important": "+ important",
+      "reaction": "+ réaction"
+    },
+    "packs": {
+      "name": "Packs de départ",
+      "detect": "Détecter depuis ce VOD",
+      "help": "Chaque pack est un jeu de valeurs par défaut dans une langue. Les noms d’emotes sont neutres et toujours actifs.",
+      "always": "toujours actif",
+      "people": "{n} personnes"
+    },
+    "changes": {
+      "name": "Ce qui change",
+      "before": "avant",
+      "after": "après",
+      "none": "aucun changement",
+      "summary": "{n} segments relevés",
+      "moments": "{n} moments différents"
+    }
   }
 }

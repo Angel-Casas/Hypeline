@@ -570,5 +570,67 @@
     "body": "Reload when you are done with this clip.",
     "action": "Reload",
     "later": "Later"
+  },
+  "vocab": {
+    "eyebrow": "Chat vocabulary",
+    "title": "What this chat means",
+    "scope": "Scope",
+    "everywhere": "Everywhere",
+    "onlyChannel": "{channel} only",
+    "scopeGlobal": "These lists apply to every VOD you open. Switch to a channel to add words just for it — they stack on top of these.",
+    "scopeChannel": "Only for {channel}. These stack on top of your everywhere list, so the defaults still apply.",
+    "words": "words",
+    "add": "Add",
+    "yours": "yours",
+    "turnOn": "turn this word back on",
+    "turnOff": "turn this word off",
+    "open": "Chat vocabulary",
+    "openTitle": "Teach Hypeline the words this chat uses",
+    "export": "Export",
+    "import": "Import",
+    "importFailed": "That file is not a Hypeline vocabulary.",
+    "reset": "Reset to defaults",
+    "done": "Done",
+    "important": {
+      "name": "Important words",
+      "help": "When several different people say one of these in the same few seconds, the moment is marked strongly. This is the biggest lever in the heatmap — keep it to things that really mean “something just happened”.",
+      "placeholder": "clipea eso, 切り抜き, PagMan …"
+    },
+    "reaction": {
+      "name": "Reactions",
+      "help": "The ordinary noise of a chat enjoying itself. These don’t mark a moment on their own — what counts is what share of a busy moment is made of them. Emotes belong here.",
+      "placeholder": "kekw, jaja, ㅋㅋㅋ, 草 …"
+    },
+    "seen": {
+      "name": "Seen in this VOD",
+      "byPeople": "by people, not messages",
+      "help": "Every word and emote this chat used, ranked by how many different people said it within the same few seconds. Nothing is fetched — it is the chat replay we already have.",
+      "empty": "Open a VOD to see what its chat says.",
+      "atOnce": "people at once",
+      "usersTotal": "{n} people in all"
+    },
+    "kind": {
+      "emote": "emote",
+      "word": "word"
+    },
+    "addTo": {
+      "important": "+ important",
+      "reaction": "+ reaction"
+    },
+    "packs": {
+      "name": "Starter packs",
+      "detect": "Detect from this VOD",
+      "help": "Each pack is a set of defaults in one language. Emote names are language-neutral and always on.",
+      "always": "always on",
+      "people": "{n} people"
+    },
+    "changes": {
+      "name": "What changes",
+      "before": "before",
+      "after": "after",
+      "none": "no change yet",
+      "summary": "{n} buckets lifted",
+      "moments": "{n} different moments"
+    }
   }
 }

@@ -1324,3 +1324,26 @@ shows bright. Verified from screenshots in both themes: the heatmap ghosts
 through the night drawer, the player is a soft grey wash behind the day one,
 and the text stays crisp in both. `docs/08-design-system.md` records the
 trap. 101 unit tests, e2e green.
+
+## 2026-09-18 — Chat vocabulary
+
+**What changed.** ADR-29, a whole vertical slice. New
+`features/hype/vocabulary.ts` (pure model: two lists, nine language packs,
+merge, matching, `seenTokens`, `detectPacks`) and `vocabStore.ts`
+(persisted, global + per-channel). `scoring.ts` threads a `Vocabulary`
+through with a `NO_VOCAB` default, so nothing that existed behaves
+differently. New `VocabularyOverlay.vue` behind a button beside the
+sensitivity slider: two chip lists with shipped words removable rather than
+deleted, what this VOD actually said with one tap to add, starter packs
+with "Detect from this VOD", a live before/after strip, and export/import.
+534 strings per catalog, ten catalogs. 111 unit tests (10 new), new
+`e2e/vocab.mjs`, 15/15 e2e suites, lint and build clean.
+
+Two findings worth the note in `docs/05-research.md`: ranking a VOD's words
+by total users surfaces stopwords, so the list ranks by _people within one
+15 s window_ and drops anything spread across more than 60 % of the VOD;
+and `hahaha` in two packs made an English chat detect as German _and_
+Turkish, so detection now uses only each pack's distinctive terms.
+Verified end to end on a flat-rate Spanish chat where only the words change
+at four points: the English lists surface 1 of the 4, the Spanish pack
+surfaces all 4. **Angel:** nothing to do; ships with the next push.

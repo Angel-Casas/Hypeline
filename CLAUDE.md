@@ -33,7 +33,10 @@ Read `docs/00-vision.md` before touching product decisions.
   repo in `VITE_GITHUB_REPO` (`.env.example`, `.github/ISSUE_TEMPLATE/`).
 - Languages: `vue-i18n`, ten catalogs in `src/i18n/locales/` (ADR-20,
   `docs/09-languages.md`). Every user-visible string goes through `t()`;
-  `node scripts/check-locales.mjs` keeps the catalogs in step.
+  `node scripts/check-locales.mjs` keeps the catalogs in step. The scoring
+  has its own language problem, solved separately: the user's chat
+  vocabulary (ADR-29, `features/hype/vocabulary.ts`) — editable word lists,
+  per-language starter packs and detection from the VOD's own chat.
 - Installable PWA with an update toast, never a silent reload (ADR-22,
   `src/lib/pwa.ts`); NanoGPT referral = a 5 % discount for the user (ADR-23)
 - Deployed as static files (GitHub Pages / Cloudflare Pages);

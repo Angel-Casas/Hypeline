@@ -570,5 +570,67 @@
     "body": "Lade neu, wenn du mit diesem Clip fertig bist.",
     "action": "Neu laden",
     "later": "Später"
+  },
+  "vocab": {
+    "eyebrow": "Chat-Vokabular",
+    "title": "Was dieser Chat meint",
+    "scope": "Geltung",
+    "everywhere": "Überall",
+    "onlyChannel": "Nur {channel}",
+    "scopeGlobal": "Diese Listen gelten für jedes VOD, das du öffnest. Wechsle zu einem Kanal, um Wörter nur dort zu ergänzen — sie kommen zu diesen hinzu.",
+    "scopeChannel": "Nur für {channel}. Sie kommen zu deiner allgemeinen Liste hinzu, die Standards gelten also weiter.",
+    "words": "Wörter",
+    "add": "Hinzufügen",
+    "yours": "deins",
+    "turnOn": "dieses Wort wieder einschalten",
+    "turnOff": "dieses Wort ausschalten",
+    "open": "Chat-Vokabular",
+    "openTitle": "Bring Hypeline die Wörter dieses Chats bei",
+    "export": "Exportieren",
+    "import": "Importieren",
+    "importFailed": "Diese Datei ist kein Hypeline-Vokabular.",
+    "reset": "Auf Standard zurücksetzen",
+    "done": "Fertig",
+    "important": {
+      "name": "Wichtige Wörter",
+      "help": "Wenn mehrere verschiedene Leute eines davon in denselben Sekunden schreiben, wird der Moment stark markiert. Das ist der größte Hebel der Heatmap — nimm nur, was wirklich „gerade ist etwas passiert“ heißt.",
+      "placeholder": "clip das, 切り抜き, PagMan …"
+    },
+    "reaction": {
+      "name": "Reaktionen",
+      "help": "Der normale Lärm eines Chats, der Spaß hat. Allein markieren sie nichts — es zählt, welcher Anteil eines vollen Moments aus ihnen besteht. Emotes gehören hierher.",
+      "placeholder": "kekw, hahaha, ㅋㅋㅋ, 草 …"
+    },
+    "seen": {
+      "name": "In diesem VOD gesehen",
+      "byPeople": "nach Personen, nicht Nachrichten",
+      "help": "Jedes Wort und Emote dieses Chats, sortiert danach, wie viele verschiedene Leute es in denselben Sekunden geschrieben haben. Nichts wird geladen — es ist die Chat-Wiedergabe, die wir schon haben.",
+      "empty": "Öffne ein VOD, um zu sehen, was sein Chat sagt.",
+      "atOnce": "Leute gleichzeitig",
+      "usersTotal": "{n} Leute insgesamt"
+    },
+    "kind": {
+      "emote": "Emote",
+      "word": "Wort"
+    },
+    "addTo": {
+      "important": "+ wichtig",
+      "reaction": "+ Reaktion"
+    },
+    "packs": {
+      "name": "Startpakete",
+      "detect": "Aus diesem VOD erkennen",
+      "help": "Jedes Paket ist ein Satz Standards in einer Sprache. Emote-Namen sind sprachneutral und immer an.",
+      "always": "immer an",
+      "people": "{n} Personen"
+    },
+    "changes": {
+      "name": "Was sich ändert",
+      "before": "vorher",
+      "after": "nachher",
+      "none": "noch keine Änderung",
+      "summary": "{n} Abschnitte angehoben",
+      "moments": "{n} andere Momente"
+    }
   }
 }

@@ -570,5 +570,67 @@
     "body": "Recarga cuando termines con este clip.",
     "action": "Recargar",
     "later": "Más tarde"
+  },
+  "vocab": {
+    "eyebrow": "Vocabulario del chat",
+    "title": "Qué significa este chat",
+    "scope": "Alcance",
+    "everywhere": "En todo",
+    "onlyChannel": "Solo {channel}",
+    "scopeGlobal": "Estas listas se aplican a cada VOD que abras. Cambia a un canal para añadir palabras solo para él — se suman a estas.",
+    "scopeChannel": "Solo para {channel}. Se suman a tu lista general, así que los valores por defecto siguen aplicándose.",
+    "words": "palabras",
+    "add": "Añadir",
+    "yours": "tuya",
+    "turnOn": "volver a activar esta palabra",
+    "turnOff": "desactivar esta palabra",
+    "open": "Vocabulario del chat",
+    "openTitle": "Enséñale a Hypeline las palabras que usa este chat",
+    "export": "Exportar",
+    "import": "Importar",
+    "importFailed": "Ese archivo no es un vocabulario de Hypeline.",
+    "reset": "Restaurar valores por defecto",
+    "done": "Listo",
+    "important": {
+      "name": "Palabras importantes",
+      "help": "Cuando varias personas distintas dicen una de estas en los mismos segundos, el momento se marca con fuerza. Es la mayor palanca del mapa de calor — resérvala para lo que de verdad significa «acaba de pasar algo».",
+      "placeholder": "clipea eso, 切り抜き, PagMan …"
+    },
+    "reaction": {
+      "name": "Reacciones",
+      "help": "El ruido normal de un chat pasándoselo bien. No marcan un momento por sí solas: lo que cuenta es qué parte de un momento animado se compone de ellas. Los emotes van aquí.",
+      "placeholder": "kekw, jaja, ㅋㅋㅋ, 草 …"
+    },
+    "seen": {
+      "name": "Visto en este VOD",
+      "byPeople": "por personas, no por mensajes",
+      "help": "Cada palabra y emote que usó este chat, ordenados por cuántas personas distintas lo dijeron en los mismos segundos. No se descarga nada: es la repetición del chat que ya tenemos.",
+      "empty": "Abre un VOD para ver lo que dice su chat.",
+      "atOnce": "personas a la vez",
+      "usersTotal": "{n} personas en total"
+    },
+    "kind": {
+      "emote": "emote",
+      "word": "palabra"
+    },
+    "addTo": {
+      "important": "+ importante",
+      "reaction": "+ reacción"
+    },
+    "packs": {
+      "name": "Paquetes iniciales",
+      "detect": "Detectar desde este VOD",
+      "help": "Cada paquete es un conjunto de valores por defecto en un idioma. Los nombres de emotes son neutrales y están siempre activos.",
+      "always": "siempre activo",
+      "people": "{n} personas"
+    },
+    "changes": {
+      "name": "Qué cambia",
+      "before": "antes",
+      "after": "después",
+      "none": "aún sin cambios",
+      "summary": "{n} tramos elevados",
+      "moments": "{n} momentos distintos"
+    }
   }
 }

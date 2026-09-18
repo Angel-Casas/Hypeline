@@ -356,6 +356,20 @@ compares streamed bytes against `Content-Length` — `@ffmpeg/util`'s
 ADR-25; `vite dev` and `vite preview` serve it uncompressed, which is why
 this only ever appeared in production.
 
+### What a chat's own words look like (2026-09-18)
+
+Ranking a VOD's tokens by total users puts stopwords on top — an English
+test chat gave "that", "good", "song" before any emote. Ranking by **the
+most users inside one 15 s bucket** puts POGGERS, LUL, OMEGALUL, KEKW
+first, which is also what the scoring reacts to. Dropping tokens that
+appear in more than 60 % of buckets removes the rest of the filler; on a
+synthetic Spanish chat it leaves exactly `clipea`, `crack`, `eso`.
+
+Pack detection has the same trap in reverse: `hahaha` sits in both the
+German and Turkish starter packs, so an English chat that laughs lit up
+**both**. Detection now ignores any term that appears in more than one pack
+and a small pan-Twitch set (lol, gg, wtf, omg, ez, xd, ww, haha).
+
 ### Scoring v0.3 — walls, moods, copypasta, sensitivity (2026-09-15)
 
 Per 15 s bucket, on top of v0.2: **wall** = the emote (from `m.e`, not words)

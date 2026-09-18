@@ -570,5 +570,67 @@
     "body": "處理完這個剪輯後再重新整理。",
     "action": "重新整理",
     "later": "稍後"
+  },
+  "vocab": {
+    "eyebrow": "聊天室詞彙",
+    "title": "這個聊天室在說什麼",
+    "scope": "套用範圍",
+    "everywhere": "全部",
+    "onlyChannel": "只有 {channel}",
+    "scopeGlobal": "這些清單套用到你開的每個 VOD。切換到某個頻道，就能只為它加字，並疊加在這些之上。",
+    "scopeChannel": "只用於 {channel}。它疊加在你的全域清單上，預設值仍然有效。",
+    "words": "個字",
+    "add": "新增",
+    "yours": "你的",
+    "turnOn": "重新啟用這個字",
+    "turnOff": "停用這個字",
+    "open": "聊天室詞彙",
+    "openTitle": "教 Hypeline 這個聊天室在用的字",
+    "export": "匯出",
+    "import": "匯入",
+    "importFailed": "這不是 Hypeline 的詞彙檔。",
+    "reset": "回復預設",
+    "done": "完成",
+    "important": {
+      "name": "重要的字",
+      "help": "當好幾個不同的人在同樣幾秒內說出其中一個，那個片刻就會被重重標記。這是熱度圖最大的槓桿——只留真正代表「剛剛發生了什麼」的字。",
+      "placeholder": "剪片, 切り抜き, PagMan …"
+    },
+    "reaction": {
+      "name": "反應",
+      "help": "聊天室玩得開心時的日常噪音。它們本身不標記任何片刻，重點是熱鬧片刻裡有多少比例由它們組成。表情符號放這裡。",
+      "placeholder": "哈哈, kekw, ㅋㅋㅋ, 草 …"
+    },
+    "seen": {
+      "name": "這個 VOD 出現過的",
+      "byPeople": "算人數，不算訊息數",
+      "help": "這個聊天室用過的每個字與表情，依照同樣幾秒內有多少不同的人說過排序。不會另外抓取——就是我們已經有的聊天重播。",
+      "empty": "開一個 VOD 就能看到它的聊天室在說什麼。",
+      "atOnce": "同時說的人數",
+      "usersTotal": "總共 {n} 人"
+    },
+    "kind": {
+      "emote": "表情",
+      "word": "字"
+    },
+    "addTo": {
+      "important": "+ 重要",
+      "reaction": "+ 反應"
+    },
+    "packs": {
+      "name": "起始包",
+      "detect": "從這個 VOD 偵測",
+      "help": "每個包是一種語言的預設字。表情名稱與語言無關，永遠開啟。",
+      "always": "永遠開啟",
+      "people": "{n} 人"
+    },
+    "changes": {
+      "name": "會有什麼變化",
+      "before": "之前",
+      "after": "之後",
+      "none": "還沒有變化",
+      "summary": "{n} 段被提高",
+      "moments": "{n} 個精彩片刻不同"
+    }
   }
 }

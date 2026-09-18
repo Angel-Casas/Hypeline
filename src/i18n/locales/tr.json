@@ -570,5 +570,67 @@
     "body": "Bu klibi bitirince sayfayı yenile.",
     "action": "Yenile",
     "later": "Sonra"
+  },
+  "vocab": {
+    "eyebrow": "Sohbet sözlüğü",
+    "title": "Bu sohbet ne demek istiyor",
+    "scope": "Kapsam",
+    "everywhere": "Her yerde",
+    "onlyChannel": "Sadece {channel}",
+    "scopeChannel": "Sadece {channel} için. Genel listenin üstüne eklenir, yani varsayılanlar da geçerli kalır.",
+    "scopeGlobal": "Bu listeler açtığın her VOD için geçerli. Bir kanala geçersen sadece ona kelime ekleyebilirsin — bunların üstüne eklenir.",
+    "words": "kelime",
+    "add": "Ekle",
+    "yours": "senin",
+    "turnOn": "bu kelimeyi yeniden aç",
+    "turnOff": "bu kelimeyi kapat",
+    "open": "Sohbet sözlüğü",
+    "openTitle": "Bu sohbetin kullandığı kelimeleri Hypeline’a öğret",
+    "export": "Dışa aktar",
+    "import": "İçe aktar",
+    "importFailed": "Bu dosya bir Hypeline sözlüğü değil.",
+    "reset": "Varsayılanlara dön",
+    "done": "Tamam",
+    "important": {
+      "name": "Önemli kelimeler",
+      "help": "Birbirinden farklı birkaç kişi aynı birkaç saniye içinde bunlardan birini yazarsa, o an güçlü şekilde işaretlenir. Isı haritasındaki en büyük kaldıraç bu — gerçekten “az önce bir şey oldu” demek olan kelimelerle sınırlı tut.",
+      "placeholder": "kliple, 切り抜き, PagMan …"
+    },
+    "reaction": {
+      "name": "Tepkiler",
+      "help": "Eğlenen bir sohbetin sıradan gürültüsü. Tek başlarına bir anı işaretlemezler; hareketli bir anın ne kadarını oluşturdukları önemlidir. Emoteler buraya.",
+      "placeholder": "kekw, hahaha, ㅋㅋㅋ, 草 …"
+    },
+    "seen": {
+      "name": "Bu VOD’da geçenler",
+      "byPeople": "mesaj değil, kişi sayısı",
+      "help": "Bu sohbetin kullandığı her kelime ve emote, aynı birkaç saniye içinde kaç farklı kişinin yazdığına göre sıralı. Hiçbir şey indirilmiyor — zaten elimizdeki sohbet tekrarı.",
+      "empty": "Sohbetinin ne dediğini görmek için bir VOD aç.",
+      "atOnce": "aynı anda kişi",
+      "usersTotal": "toplam {n} kişi"
+    },
+    "kind": {
+      "emote": "emote",
+      "word": "kelime"
+    },
+    "addTo": {
+      "important": "+ önemli",
+      "reaction": "+ tepki"
+    },
+    "packs": {
+      "name": "Başlangıç paketleri",
+      "detect": "Bu VOD’dan algıla",
+      "help": "Her paket bir dildeki varsayılan kelimelerdir. Emote adları dilden bağımsızdır ve hep açıktır.",
+      "always": "hep açık",
+      "people": "{n} kişi"
+    },
+    "changes": {
+      "name": "Ne değişiyor",
+      "before": "önce",
+      "after": "sonra",
+      "none": "henüz değişiklik yok",
+      "summary": "{n} aralık yükseldi",
+      "moments": "{n} farklı an"
+    }
   }
 }

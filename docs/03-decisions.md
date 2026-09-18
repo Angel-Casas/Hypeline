@@ -588,3 +588,55 @@ before ADR-27 and what the column is for. The scroll-the-selection-into-view
 behaviour from ADR-27 stays and still matters when the column is short.
 `grid-auto-rows: max-content` is the load-bearing line; without it any
 future height constraint brings the overlap straight back.
+
+## ADR-29 — The user teaches the heatmap their chat's words (2026-09-18)
+
+**Context.** The clip-request pattern is the biggest single lever in the
+scoring — up to +3.6 for one bucket — and it only knows English: `clip`,
+`clip it`, `clipped`. A Spanish chat saying `clipea eso` contributes
+nothing to it, and the 37 shipped reaction words are English too. Since we
+ship the UI in ten languages, most of the audience was being scored by
+rules written for someone else's chat. Angel asked for the word lists to be
+editable (2026-09-17) and chose: add words _and_ remove shipped ones;
+global lists with per-channel overrides; no per-word weights, because a
+user typing 50 would flatten their own heatmap; one overlay behind one
+button; and "important words" rather than "words that mean clip this",
+since a word can mark a moment without being about clipping.
+
+**Decision.** `features/hype/vocabulary.ts` holds a pure model: two lists
+(`important`, `reaction`), nine language packs, a merge of packs + shipped
+defaults − disabled + global + channel into a `Vocabulary`, and the two
+read-only views the UI needs. `scoring.ts` takes a `Vocabulary` through
+`analyse`/`scoreBuckets`/`isReaction`/`isClipRequest`, defaulting to
+`NO_VOCAB` so every existing caller and test is untouched. A term matches
+by word when it is plain ASCII and by substring otherwise, because `\b` is
+meaningless in Japanese, Korean and Chinese; emote names are matched
+against the message's own emote list, so casing never matters.
+
+Three things carry the language problem:
+
+1. **Emote names already cross languages** and always have. They feed the
+   reaction share only, never the strong lever — which is exactly the gap.
+2. **A starter pack per language** for the words that are not emotes.
+   English is always on, because Twitch chat code-switches constantly.
+3. **Detection, not assumption.** The UI language is a poor guess at the
+   chat's, so `detectPacks` counts how many distinct people used each
+   pack's _distinctive_ terms and `packsToEnable` switches on those past
+   five people.
+
+`seenTokens` ranks a VOD's own vocabulary by **how many people said it
+inside one 15-second window**, not by how often it appears, and drops
+anything present in more than 60 % of the VOD's buckets. It needs no API
+and no sign-in: every stored message already carries its emote names, and
+third-party emotes (BTTV, 7TV) arrive as plain words.
+
+**Consequences.** Changing a list re-scores the same messages in memory —
+no refetch — which is what makes the live before/after strip in the overlay
+affordable. Both rows of that strip share one scale; normalising each by
+its own maximum hid a uniform lift, which is the thing it exists to show.
+The moment _count_ barely moves, because the sensitivity slider fixes how
+many peaks surface, so the overlay reports how many are _different_
+instead. State lives in `localStorage` under `hypeline.vocab.v1` and
+exports as a small JSON a streamer can hand to their editors. The packs are
+a starting point, not a dictionary — the honest fix for a chat we do not
+speak is the list of what it actually said.
