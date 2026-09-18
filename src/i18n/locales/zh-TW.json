@@ -264,7 +264,6 @@
   },
   "gallery": {
     "eyebrow": "剪輯",
-    "dashboard": "儀表板",
     "clipCount": "{n} 支剪輯 | {n} 支剪輯",
     "mbInBrowser": "這個瀏覽器中有 {n} MB",
     "all": "全部",

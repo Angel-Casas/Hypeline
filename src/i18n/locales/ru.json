@@ -264,7 +264,6 @@
   },
   "gallery": {
     "eyebrow": "Клипы",
-    "dashboard": "Панель",
     "clipCount": "{n} клип | {n} клипов",
     "mbInBrowser": "{n} MB в этом браузере",
     "all": "все",

@@ -5,7 +5,7 @@
  * offers it), download, open the VOD, or remove. Filter by tag.
  */
 import { computed, onBeforeUnmount, onMounted, ref } from 'vue';
-import { RouterLink } from 'vue-router';
+import { RouterLink, useRouter } from 'vue-router';
 import { useI18n } from 'vue-i18n';
 import {
   deleteClip,
@@ -16,16 +16,24 @@ import {
 } from '@/lib/storage/db';
 import { formatHms } from '@/lib/twitch/vodUrl';
 import type { VodInfo } from '@/lib/twitch/types';
-import ThemeToggle from '@/ui/ThemeToggle.vue';
-import LanguageMenu from '@/ui/LanguageMenu.vue';
-import SupportButton from '@/ui/SupportButton.vue';
-import Logo from '@/ui/Logo.vue';
+import LibraryRail from '@/ui/LibraryRail.vue';
 
 interface Row extends StoredClip {
   url: string;
   vod?: VodInfo;
 }
 const { t } = useI18n();
+const router = useRouter();
+/**
+ * The gallery is reached from the rail, so it keeps the rail (ADR-41): this page used to drop
+ * it and read as a different app. Picking a VOD here means going to the desk with it open.
+ */
+function openVod(id: string) {
+  void router.push({ name: 'dashboard', params: { id } });
+}
+function openChannel(channel: string) {
+  void router.push({ name: 'live', params: { channel } });
+}
 const rows = ref<Row[]>([]);
 const loading = ref(true);
 const filter = ref<string | null>(null);
@@ -111,135 +119,123 @@ async function remove(r: Row) {
 </script>
 
 <template>
-  <main class="mx-auto flex min-h-screen max-w-[1240px] flex-col gap-4 p-3 lg:p-6">
-    <header class="flex flex-wrap items-center justify-between gap-3">
-      <div class="flex items-baseline gap-3">
-        <RouterLink
-          to="/"
-          class="text-ink inline-flex items-center gap-2.5"
-          title="Hypeline"
-          aria-label="Hypeline"
-        >
-          <Logo :size="30" hover />
-          <span class="font-display text-[26px] leading-none">Hypeline</span>
-        </RouterLink>
+  <main
+    class="grid min-h-screen content-start gap-4 p-3 pt-0 lg:grid-cols-[260px_minmax(0,1fr)] lg:p-4"
+  >
+    <LibraryRail @open="openVod" @live="openChannel" @home="router.push({ name: 'dashboard' })" />
+
+    <section class="flex min-w-0 flex-col gap-4">
+      <div class="flex flex-wrap items-baseline gap-3">
         <span class="eyebrow">{{ t('gallery.eyebrow') }}</span>
       </div>
-      <div class="flex items-center gap-2">
-        <SupportButton />
-        <LanguageMenu />
-        <ThemeToggle />
-        <RouterLink to="/dashboard" class="glass-sm px-3 py-1.5 text-xs">{{
-          t('gallery.dashboard')
-        }}</RouterLink>
-      </div>
-    </header>
 
-    <div class="flex flex-wrap items-baseline justify-between gap-2">
-      <h1 class="font-display text-[28px] leading-none">
-        {{ t('gallery.clipCount', rows.length) }}
-        <span class="text-muted font-mono text-[12px]">{{
-          t('gallery.mbInBrowser', { n: (totalBytes / 1048576).toFixed(0) })
-        }}</span>
-      </h1>
-      <div v-if="tags.length" class="flex flex-wrap items-center gap-1.5">
-        <button class="chip" :class="{ on: filter === null }" @click="filter = null">
-          {{ t('gallery.all') }}
-        </button>
-        <button
-          v-for="tag in tags"
-          :key="tag.t"
-          class="chip"
-          :class="{ on: filter === tag.t }"
-          @click="filter = filter === tag.t ? null : tag.t"
-        >
-          #{{ tag.t }} <span class="opacity-60">{{ tag.n }}</span>
-        </button>
-      </div>
-    </div>
-
-    <p v-if="loading" class="text-muted text-sm">{{ t('gallery.loading') }}</p>
-    <div v-else-if="!rows.length" class="glass flex flex-col gap-2 p-6">
-      <div class="eyebrow">{{ t('gallery.nothingYet') }}</div>
-      <i18n-t keypath="gallery.emptyHint" tag="p" class="text-muted max-w-[52ch] text-sm">
-        <template #dashboard>
-          <RouterLink to="/dashboard" class="text-accent underline">{{
-            t('gallery.dashboardLink')
-          }}</RouterLink>
-        </template>
-      </i18n-t>
-    </div>
-    <ul v-else class="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
-      <li v-for="r in shown" :key="r.id" class="glass flex flex-col gap-2 p-3">
-        <video
-          :src="r.url"
-          controls
-          preload="metadata"
-          class="w-full rounded-xl bg-black"
-          :class="
-            r.aspect === '9:16' || r.aspect === 'split'
-              ? 'aspect-[9/16] max-h-80 self-center'
-              : r.aspect === '1:1'
-                ? 'aspect-square'
-                : 'aspect-video'
-          "
-        ></video>
-        <input
-          :value="r.title ?? ''"
-          :placeholder="t('gallery.untitledClip')"
-          class="title font-display w-full bg-transparent text-[18px] leading-tight outline-none"
-          :aria-label="t('gallery.clipTitle')"
-          maxlength="120"
-          @change="rename(r, $event)"
-        />
-        <div class="text-muted font-mono text-[10.5px]">
-          <RouterLink
-            :to="`/dashboard/${r.vodId}`"
-            class="hover:decoration-solid underline decoration-dotted"
+      <div class="flex flex-wrap items-baseline justify-between gap-2">
+        <h1 class="font-display text-[28px] leading-none">
+          {{ t('gallery.clipCount', rows.length) }}
+          <span class="text-muted font-mono text-[12px]">{{
+            t('gallery.mbInBrowser', { n: (totalBytes / 1048576).toFixed(0) })
+          }}</span>
+        </h1>
+        <div v-if="tags.length" class="flex flex-wrap items-center gap-1.5">
+          <button class="chip" :class="{ on: filter === null }" @click="filter = null">
+            {{ t('gallery.all') }}
+          </button>
+          <button
+            v-for="tag in tags"
+            :key="tag.t"
+            class="chip"
+            :class="{ on: filter === tag.t }"
+            @click="filter = filter === tag.t ? null : tag.t"
           >
-            {{ r.vod?.ownerDisplayName ?? r.vodId }}</RouterLink
-          >
-          · {{ formatHms(r.inSec) }} → {{ formatHms(r.outSec) }} · {{ r.aspect }} · {{ r.variant }}
-          <template v-if="r.captions"> · {{ t('gallery.captionsTag') }}</template> ·
-          {{ t('gallery.mb', { n: (r.bytes / 1048576).toFixed(1) }) }}
+            #{{ tag.t }} <span class="opacity-60">{{ tag.n }}</span>
+          </button>
         </div>
-        <div class="flex flex-wrap items-center gap-1">
-          <span v-for="tag in r.tags ?? []" :key="tag" class="chip on">
-            #{{ tag }}
+      </div>
+
+      <p v-if="loading" class="text-muted text-sm">{{ t('gallery.loading') }}</p>
+      <div v-else-if="!rows.length" class="glass flex flex-col gap-2 p-6">
+        <div class="eyebrow">{{ t('gallery.nothingYet') }}</div>
+        <i18n-t keypath="gallery.emptyHint" tag="p" class="text-muted max-w-[52ch] text-sm">
+          <template #dashboard>
+            <RouterLink to="/dashboard" class="text-accent underline">{{
+              t('gallery.dashboardLink')
+            }}</RouterLink>
+          </template>
+        </i18n-t>
+      </div>
+      <ul v-else class="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
+        <li v-for="r in shown" :key="r.id" class="glass flex flex-col gap-2 p-3">
+          <video
+            :src="r.url"
+            controls
+            preload="metadata"
+            class="w-full rounded-xl bg-black"
+            :class="
+              r.aspect === '9:16' || r.aspect === 'split'
+                ? 'aspect-[9/16] max-h-80 self-center'
+                : r.aspect === '1:1'
+                  ? 'aspect-square'
+                  : 'aspect-video'
+            "
+          ></video>
+          <input
+            :value="r.title ?? ''"
+            :placeholder="t('gallery.untitledClip')"
+            class="title font-display w-full bg-transparent text-[18px] leading-tight outline-none"
+            :aria-label="t('gallery.clipTitle')"
+            maxlength="120"
+            @change="rename(r, $event)"
+          />
+          <div class="text-muted font-mono text-[10.5px]">
+            <RouterLink
+              :to="`/dashboard/${r.vodId}`"
+              class="hover:decoration-solid underline decoration-dotted"
+            >
+              {{ r.vod?.ownerDisplayName ?? r.vodId }}</RouterLink
+            >
+            · {{ formatHms(r.inSec) }} → {{ formatHms(r.outSec) }} · {{ r.aspect }} ·
+            {{ r.variant }}
+            <template v-if="r.captions"> · {{ t('gallery.captionsTag') }}</template> ·
+            {{ t('gallery.mb', { n: (r.bytes / 1048576).toFixed(1) }) }}
+          </div>
+          <div class="flex flex-wrap items-center gap-1">
+            <span v-for="tag in r.tags ?? []" :key="tag" class="chip on">
+              #{{ tag }}
+              <button
+                class="hover-danger ml-1 rounded px-1 opacity-70"
+                :aria-label="t('gallery.removeTag', { tag })"
+                @click="dropTag(r, tag)"
+              >
+                ×
+              </button>
+            </span>
+            <input
+              class="tagin text-muted min-w-16 flex-1 bg-transparent font-mono text-[11px] outline-none"
+              :placeholder="t('gallery.addTagPlaceholder')"
+              :aria-label="t('gallery.addTag')"
+              @keydown.enter.prevent="addTag(r, $event)"
+              @blur="addTag(r, $event)"
+            />
+          </div>
+          <div class="mt-auto flex flex-wrap items-center gap-3 pt-1 text-xs">
+            <button class="btn-silk px-3! py-1! text-xs" @click="share(r)">
+              {{ canShareFiles ? t('gallery.share') : t('common.download') }}
+            </button>
+            <button v-if="canShareFiles" class="text-accent underline" @click="download(r)">
+              {{ t('gallery.downloadLower') }}
+            </button>
             <button
-              class="hover-danger ml-1 rounded px-1 opacity-70"
-              :aria-label="t('gallery.removeTag', { tag })"
-              @click="dropTag(r, tag)"
+              class="purge ml-auto grid h-6 w-6 place-items-center rounded-full text-[15px] leading-none"
+              :title="t('gallery.removeFromBrowser')"
+              :aria-label="t('gallery.removeClip')"
+              @click="remove(r)"
             >
               ×
             </button>
-          </span>
-          <input
-            class="tagin text-muted min-w-16 flex-1 bg-transparent font-mono text-[11px] outline-none"
-            :placeholder="t('gallery.addTagPlaceholder')"
-            :aria-label="t('gallery.addTag')"
-            @keydown.enter.prevent="addTag(r, $event)"
-            @blur="addTag(r, $event)"
-          />
-        </div>
-        <div class="mt-auto flex flex-wrap items-center gap-3 pt-1 text-xs">
-          <button class="btn-silk px-3! py-1! text-xs" @click="share(r)">
-            {{ canShareFiles ? t('gallery.share') : t('common.download') }}
-          </button>
-          <button v-if="canShareFiles" class="text-accent underline" @click="download(r)">
-            {{ t('gallery.downloadLower') }}
-          </button>
-          <button
-            class="purge ml-auto grid h-6 w-6 place-items-center rounded-full text-[15px] leading-none"
-            :title="t('gallery.removeFromBrowser')"
-            :aria-label="t('gallery.removeClip')"
-            @click="remove(r)"
-          >
-            ×
-          </button>
-        </div>
-      </li>
-    </ul>
+          </div>
+        </li>
+      </ul>
+    </section>
   </main>
 </template>
 

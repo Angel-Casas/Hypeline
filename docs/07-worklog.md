@@ -1632,3 +1632,22 @@ link. 558 strings each. `quota.mjs` (which already opens Settings) checks the th
 the API link.
 
 131 tests, 15 e2e suites, lint, build and locale parity green.
+
+## 2026-09-18 (cont.) — The rail follows you to the gallery
+
+**What changed.** ADR-41: the library rail is `src/ui/LibraryRail.vue` now, and the clips
+gallery wears it. Opening a clip from the rail used to drop you on a page with no rail, no
+library and no settings — reached from the rail, and then nothing to go back to but a button
+(Angel, 2026-09-18).
+
+The component owns the top bar, the drawer, the library, storage and the settings overlay,
+and emits rather than acts: the dashboard loads a VOD in place, the gallery routes to it. Four
+methods are exposed for the two things the page really does drive — the tour opening the drawer
+to point at it, and the AI card opening Settings. The dashboard shed ~120 lines of template and
+eight imports in the move, and both pages share one grid.
+
+`cut.mjs` now walks the loop that was broken: export clips, follow the rail's Clips link, find
+the VOD still listed in the rail there, click it, and land back on the desk with it open.
+
+131 tests, 15 e2e suites, lint, build and locale parity (557 strings, `gallery.dashboard`
+retired) green.

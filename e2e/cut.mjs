@@ -267,6 +267,26 @@ await p.waitForFunction(() => document.querySelectorAll('video').length === 3, n
 });
 console.log('clips persisted across reload: 3');
 
+/*
+ * The gallery wears the same rail as the desk (ADR-41): it is reached from that rail, and
+ * before this it dropped it and read as a different app. The library there lists this VOD, and
+ * picking it comes back to the desk with it open.
+ */
+await p.getByRole('link', { name: /Clips/ }).first().click();
+await p.waitForURL(/\/clips$/, { timeout: 10000 });
+await p.waitForSelector('[data-tour="rail"]', { timeout: 10000 });
+const railVods = await p.locator('[data-tour="rail"] li button').first().innerText();
+console.log('gallery keeps the rail; library shows:', railVods.replace(/\s+/g, ' ').slice(0, 60));
+await p.locator('[data-tour="rail"] li button').first().click();
+await p.waitForURL(/\/dashboard\//, { timeout: 10000 });
+await p.waitForFunction(() => /\d+ moments/.test(document.body.innerText), null, {
+  timeout: 60000,
+});
+console.log('picking a VOD in the gallery rail lands on the desk');
+await p.waitForFunction(() => document.querySelectorAll('video').length === 3, null, {
+  timeout: 15000,
+});
+
 // Timeline handles: "clip this" on a moment shows the zoomed strip; dragging the In handle moves the In field.
 await p.locator('ol li').nth(1).click(); // 0:34:15 → clip mode, range 0:33:50–0:34:35 (10 s chat lag)
 await p.waitForFunction(() => document.querySelectorAll('svg.hl-timeline').length === 2, null, {

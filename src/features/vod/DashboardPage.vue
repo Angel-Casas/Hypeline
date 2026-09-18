@@ -8,7 +8,7 @@
  *           moments | player + zoom + clip | AI + search
  */
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue';
-import { RouterLink, useRoute, useRouter } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
 import { storeToRefs } from 'pinia';
 import { useI18n } from 'vue-i18n';
 import { useVodStore } from './stores/vodStore';
@@ -28,25 +28,17 @@ import CaptionPreview from '@/features/clips/components/CaptionPreview.vue';
 import { useAiStore } from '@/features/ai/stores/aiStore';
 import { useShortcuts } from '@/features/clips/useShortcuts';
 import ShortcutsHelp from '@/ui/ShortcutsHelp.vue';
-import SettingsPanel from '@/features/settings/SettingsPanel.vue';
 import TourOverlay, { type TourStep } from '@/features/tour/TourOverlay.vue';
 import { useTourStore } from '@/features/tour/tourStore';
 import { EXAMPLE_ID } from './example';
 import { chosen as localeChosen } from '@/i18n';
 import QuotaBanner from '@/features/settings/QuotaBanner.vue';
 import { clipAnchor, useClipStore } from '@/features/clips/stores/clipStore';
-import { useQuotaStore } from '@/features/settings/quotaStore';
 import { useSettingsStore } from '@/features/settings/settingsStore';
-import { deleteVodData, listClips, listVods } from '@/lib/storage/db';
-import { formatBytes } from '@/lib/storage/quota';
 import type { VodInfo } from '@/lib/twitch/types';
 import { formatHms } from '@/lib/twitch/vodUrl';
 import { fetchLiveInfo } from '@/lib/twitch/gql';
-import ThemeToggle from '@/ui/ThemeToggle.vue';
-import LanguageMenu from '@/ui/LanguageMenu.vue';
-import SupportButton from '@/ui/SupportButton.vue';
-import Logo from '@/ui/Logo.vue';
-import InstallChip from '@/ui/InstallChip.vue';
+import LibraryRail from '@/ui/LibraryRail.vue';
 import { loadStoryboard, StoryboardError, type Storyboard } from '@/lib/twitch/storyboard';
 import { viaShim } from '@/lib/twitch/hls';
 import type { Moment } from '@/features/hype/scoring';
@@ -81,41 +73,20 @@ const settings = useSettingsStore();
 const vocab = useVocabStore();
 /** "What this chat means" (ADR-29) — a modal, so it can be reached from any tab. */
 const vocabOpen = ref(false);
-const quota = useQuotaStore();
 
-// --- library (VODs cached in this browser) ---
-const vods = ref<(VodInfo & { fetchedAt?: number; clips: number })[]>([]);
-const clipTotal = computed(() => vods.value.reduce((n, v) => n + v.clips, 0));
-async function loadLibrary() {
-  const all = await listVods();
-  const rows = await Promise.all(
-    all.map(async (v) => ({ ...v, clips: (await listClips(v.id)).length })),
-  );
-  vods.value = rows.sort((a, b) => (b.fetchedAt ?? 0) - (a.fetchedAt ?? 0));
-}
-onMounted(() => {
-  void loadLibrary();
-  void quota.refresh();
-});
-async function purge(id: string) {
-  await deleteVodData(id);
-  await loadLibrary();
-  // the open VOD was forgotten (the example, usually): back to the home
+/**
+ * The rail (library, storage, settings) is a shared component — the gallery wears it too
+ * (ADR-41). The desk only says which VOD is open and what to do when one is picked: here that
+ * is "load it in place", not "route to it", which is why the rail asks rather than acts.
+ */
+const rail = ref<InstanceType<typeof LibraryRail> | null>(null);
+/** A VOD was removed from this browser; if it was the open one, go home (the example, usually). */
+function onPurged(id: string) {
   if (info.value?.id === id) goHome();
 }
-const showSettings = ref(false);
-// Settings → Storage can clear the library: re-read it when the overlay closes
-watch(showSettings, (open) => {
-  if (!open) void loadLibrary();
-});
-function onKey(e: KeyboardEvent) {
-  if (e.key === 'Escape' && showSettings.value) showSettings.value = false;
-}
-onMounted(() => window.addEventListener('keydown', onKey));
-onBeforeUnmount(() => window.removeEventListener('keydown', onKey));
 /** Open the settings overlay (from the AI card's link). */
 function openSettings() {
-  showSettings.value = true;
+  rail.value?.openSettings();
 }
 
 /**
@@ -123,7 +94,6 @@ function openSettings() {
  * below `xl` the three desk columns become tabs under a player that stays pinned while the
  * page scrolls. Tapping a moment switches to the Clip tab there.
  */
-const railOpen = ref(false);
 type Tab = 'moments' | 'clip' | 'ai';
 const tab = ref<Tab>('moments');
 const TABS = computed<{ id: Tab; label: string }[]>(() => [
@@ -134,9 +104,6 @@ const TABS = computed<{ id: Tab; label: string }[]>(() => [
 const tabbedMq = typeof matchMedia === 'function' ? matchMedia('(max-width: 79.99rem)') : null;
 const tabbed = ref(tabbedMq?.matches ?? false);
 tabbedMq?.addEventListener('change', () => (tabbed.value = tabbedMq.matches));
-const drawerMq = typeof matchMedia === 'function' ? matchMedia('(max-width: 63.99rem)') : null;
-const drawer = ref(drawerMq?.matches ?? false);
-drawerMq?.addEventListener('change', () => (drawer.value = drawerMq.matches));
 
 /** Visible window of the timeline (null = whole VOD). Wheel/pinch and the minimap change it. */
 const view = ref<{ start: number; end: number } | null>(null);
@@ -255,7 +222,7 @@ const transcriptTrack = computed(() =>
 );
 store.setOnReady((id) => {
   void aiStore.loadBulk(id);
-  void loadLibrary();
+  rail.value?.refresh();
   // arriving from live mode (`?t=sec`): land on that second, ready to clip — after the clip
   // list has loaded, since loading it for a new VOD clears the range
   const t = Number(route.query.t);
@@ -365,7 +332,7 @@ async function openChannel(channel: string, attempt = 0) {
 }
 function open(vodId: string, force = false) {
   view.value = null;
-  railOpen.value = false;
+  rail.value?.closeDrawer();
   void router.push({ name: 'dashboard', params: { id: vodId } });
   void store.load(vodId, { force });
 }
@@ -378,7 +345,7 @@ async function importChatFile(e: Event) {
   input.value = '';
   if (!file) return;
   view.value = null;
-  railOpen.value = false;
+  rail.value?.closeDrawer();
   const id = await store.importChat(await file.text());
   if (id && route.params.id !== id) void router.push({ name: 'dashboard', params: { id } });
 }
@@ -402,7 +369,7 @@ onMounted(async () => {
 });
 function goHome() {
   view.value = null;
-  railOpen.value = false;
+  rail.value?.closeDrawer();
   void router.push({ name: 'dashboard' });
 }
 const avatarOf = (id: string) => twitch.followed.find((c) => c.id === id)?.avatar;
@@ -433,10 +400,11 @@ const tour = useTourStore();
  * started from Settings, which on a phone lives *inside* the open drawer, and the drawer then
  * stayed over the step it was pointing at (Angel, 2026-09-17).
  */
-function desk(t: Tab, rail = false) {
+function desk(t: Tab, railDrawer = false) {
   return () => {
     tab.value = t;
-    railOpen.value = rail && drawer.value;
+    if (railDrawer) rail.value?.openDrawer();
+    else rail.value?.closeDrawer();
   };
 }
 const TOUR_STEPS: TourStep[] = [
@@ -471,12 +439,11 @@ watch(
   },
   { immediate: true },
 );
-// Settings → "show the tour again"
+// Settings → "show the tour again" (the rail closes its own overlay)
 watch(
   () => tour.requested,
   (r) => {
     if (!r) return;
-    showSettings.value = false;
     if (!info.value || phase.value !== 'ready') open(EXAMPLE_ID);
     startTourWhenReady();
   },
@@ -485,7 +452,7 @@ watch(
   () => tour.active,
   (a) => {
     if (!a) {
-      if (drawer.value) railOpen.value = false;
+      rail.value?.closeDrawer();
       tab.value = 'moments';
     }
   },
@@ -496,144 +463,17 @@ watch(
   <main
     class="grid min-h-screen content-start gap-4 p-3 pt-0 lg:grid-cols-[260px_minmax(0,1fr)] lg:p-4"
   >
-    <!-- small screens: a top bar with the brand and the rail's button -->
-    <header
-      class="glass-sm sticky top-0 z-30 mt-3 flex items-center justify-between px-3 py-2 [background:color-mix(in_srgb,var(--color-ground)_88%,transparent)] lg:hidden"
-    >
-      <RouterLink
-        to="/"
-        class="text-ink inline-flex items-center"
-        title="Hypeline"
-        aria-label="Hypeline"
-      >
-        <Logo :size="26" hover />
-      </RouterLink>
-      <div class="flex items-center gap-2">
-        <SupportButton />
-        <LanguageMenu />
-        <ThemeToggle />
-        <button class="btn-ghost text-xs" @click="railOpen = true">
-          {{ t('dashboard.library') }}
-        </button>
-      </div>
-    </header>
-    <div
-      v-if="railOpen"
-      class="scrim-soft fixed inset-0 z-40 backdrop-blur-[6px] lg:hidden"
-      @click="railOpen = false"
-    ></div>
-    <!-- rail: brand, VOD input, library, storage, settings. Below lg it is a drawer. -->
-    <aside
-      data-tour="rail"
-      class="glass rail-drawer fixed inset-y-3 left-3 z-50 flex w-[min(320px,86vw)] flex-col gap-4 overflow-y-auto p-4 transition-transform duration-300 ease-[cubic-bezier(0.2,0.7,0.2,1)] lg:sticky lg:inset-auto lg:top-4 lg:z-auto lg:w-auto lg:translate-x-0 lg:self-start lg:overflow-visible"
-      :class="railOpen ? 'translate-x-0' : '-translate-x-[calc(100%+16px)]'"
-      :inert="drawer && !railOpen"
-    >
-      <div class="flex items-center justify-between">
-        <RouterLink
-          to="/"
-          class="text-ink inline-flex items-center"
-          title="Hypeline"
-          aria-label="Hypeline"
-        >
-          <Logo :size="34" hover />
-        </RouterLink>
-        <div class="flex items-center gap-2">
-          <button
-            v-if="info || phase !== 'idle'"
-            class="glass-sm grid h-9 w-9 place-items-center"
-            :title="t('dashboard.home')"
-            :aria-label="t('dashboard.home')"
-            @click="goHome"
-          >
-            <svg
-              viewBox="0 0 20 20"
-              class="h-4 w-4"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="1.6"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              aria-hidden="true"
-            >
-              <path d="M3 9.5 10 4l7 5.5" />
-              <path d="M5 8.5V16h10V8.5" />
-              <path d="M8.5 16v-4h3v4" />
-            </svg>
-          </button>
-          <SupportButton class="max-lg:hidden" />
-          <LanguageMenu class="max-lg:hidden" />
-          <ThemeToggle class="max-lg:hidden" />
-          <button class="btn-ghost text-xs lg:hidden" @click="railOpen = false">
-            {{ t('common.close') }}
-          </button>
-        </div>
-      </div>
-      <VodInput :busy="busy" compact @submit="open" @live="openChannel" />
-      <div class="silk-ring rounded-2xl p-3">
-        <div class="eyebrow mb-2">{{ t('dashboard.inThisBrowser') }}</div>
-        <p v-if="!vods.length" class="text-muted text-xs">{{ t('dashboard.noVodsCached') }}</p>
-        <ul v-else class="flex flex-col gap-1">
-          <li
-            v-for="v in vods"
-            :key="v.id"
-            class="group flex items-center gap-2 rounded-xl px-2 py-1.5"
-            :class="[v.id === info?.id ? 'bg-lift/70' : '', 'hover-frost']"
-          >
-            <button class="min-w-0 flex-1 text-left" @click="open(v.id)">
-              <div class="truncate text-xs leading-tight font-semibold">{{ v.title || v.id }}</div>
-              <div class="text-muted font-mono text-[10.5px]">
-                {{ v.ownerDisplayName }} · {{ formatHms(v.lengthSeconds) }} ·
-                {{ t('dashboard.clipCount', v.clips) }}
-              </div>
-            </button>
-            <button
-              class="purge grid h-6 w-6 shrink-0 place-items-center rounded-full text-[15px] leading-none"
-              :title="t('dashboard.removeFromBrowser')"
-              :aria-label="t('dashboard.removeFromBrowser')"
-              @click="purge(v.id)"
-            >
-              ×
-            </button>
-          </li>
-        </ul>
-      </div>
-      <RouterLink
-        to="/clips"
-        class="glass-sm silk-ring flex items-center justify-between px-3 py-2 text-xs"
-      >
-        <span class="font-semibold">{{ t('dashboard.clips') }}</span>
-        <span class="text-muted font-mono">{{
-          t('dashboard.clipsInBrowser', { n: clipTotal })
-        }}</span>
-      </RouterLink>
-      <div class="mt-auto flex flex-col gap-2 border-t border-line pt-3 text-[11.5px]">
-        <div class="grid grid-cols-[auto_1fr] gap-x-3 gap-y-1">
-          <b class="font-semibold">{{ t('dashboard.storage') }}</b>
-          <span class="text-muted">{{
-            quota.info.unknown
-              ? '—'
-              : `${formatBytes(quota.info.usage)} / ${formatBytes(quota.info.quota)}`
-          }}</span>
-          <b class="font-semibold">{{ t('dashboard.video') }}</b>
-          <span class="text-muted">{{
-            settings.relayUrl
-              ? settings.shimUrl
-                ? t('dashboard.customRelay')
-                : t('dashboard.relayReady')
-              : t('dashboard.noRelay')
-          }}</span>
-          <b class="font-semibold">NanoGPT</b>
-          <span class="text-muted">{{
-            settings.aiApiKey ? t('dashboard.keySet') : t('dashboard.noKey')
-          }}</span>
-        </div>
-        <InstallChip />
-        <button class="btn-ghost silk-ring text-xs" @click="showSettings = true">
-          {{ t('common.settings') }}
-        </button>
-      </div>
-    </aside>
+    <!-- the shared shell: top bar, drawer, library, settings (ADR-41) -->
+    <LibraryRail
+      ref="rail"
+      :active-vod-id="info?.id ?? null"
+      :busy="busy"
+      :show-home="!!info || phase !== 'idle'"
+      @open="open"
+      @live="openChannel"
+      @home="goHome"
+      @purged="onPurged"
+    />
 
     <!-- main: the desk -->
     <section class="flex min-w-0 flex-col gap-4">
@@ -1143,58 +983,11 @@ watch(
     </section>
 
     <TourOverlay :steps="TOUR_STEPS" />
-
-    <!-- settings: an overlay over a blurred page; the ×, the backdrop or Escape close it -->
-    <Teleport to="body">
-      <Transition name="modal">
-        <div
-          v-if="showSettings"
-          class="scrim fixed inset-0 z-[70] grid place-items-center overflow-y-auto p-4 backdrop-blur-md"
-          @click.self="showSettings = false"
-        >
-          <div
-            class="modal relative w-full max-w-[560px]"
-            role="dialog"
-            aria-modal="true"
-            :aria-label="t('common.settings')"
-          >
-            <button
-              class="glass-sm absolute top-3 right-3 z-10 grid h-8 w-8 place-items-center text-[18px] leading-none"
-              :aria-label="t('dashboard.closeSettings')"
-              @click="showSettings = false"
-            >
-              ×
-            </button>
-            <SettingsPanel />
-          </div>
-        </div>
-      </Transition>
-    </Teleport>
   </main>
   <VocabularyOverlay v-if="vocabOpen" @close="vocabOpen = false" />
 </template>
 
 <style scoped>
-/* Below lg the rail floats over the page, so it must be a surface you can read rather than a
-   window onto the dashboard behind it (Angel, 2026-09-17). At lg it is a column on the page's
-   own background, where the glass is right. */
-@media (max-width: 1023.98px) {
-  .rail-drawer {
-    background: var(--sheet-bg);
-    backdrop-filter: blur(24px) saturate(1.2);
-    -webkit-backdrop-filter: blur(24px) saturate(1.2);
-  }
-}
-/* overlay scrims: a real dim in both themes (see --scrim in style.css) */
-.scrim {
-  background: var(--scrim);
-}
-/* The drawer's scrim is the lighter one: it sits *between* the page and the drawer, so a
-   full-strength dim there is counted twice and the drawer reads as flat black however
-   transparent its own background is (Angel, 2026-09-17). */
-.scrim-soft {
-  background: var(--sheet-scrim);
-}
 /* the example VOD has no video: a black card with a whisper, where the player would be */
 .example-video {
   display: grid;
@@ -1314,36 +1107,5 @@ watch(
 .purge:hover {
   opacity: 1;
   background: var(--hover-danger);
-}
-/* the settings panel sits on a blurred page, so its glass is nearly solid to stay legible */
-.modal :deep(section) {
-  background: color-mix(in srgb, var(--color-ground) 94%, transparent);
-}
-.modal-enter-active,
-.modal-leave-active {
-  transition: opacity 0.2s;
-}
-.modal-enter-active .modal,
-.modal-leave-active .modal {
-  transition:
-    transform 0.25s cubic-bezier(0.2, 0.7, 0.2, 1),
-    opacity 0.2s;
-}
-.modal-enter-from,
-.modal-leave-to {
-  opacity: 0;
-}
-.modal-enter-from .modal,
-.modal-leave-to .modal {
-  transform: translateY(10px) scale(0.98);
-  opacity: 0;
-}
-@media (prefers-reduced-motion: reduce) {
-  .modal-enter-active,
-  .modal-leave-active,
-  .modal-enter-active .modal,
-  .modal-leave-active .modal {
-    transition: none;
-  }
 }
 </style>

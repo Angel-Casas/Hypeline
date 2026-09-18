@@ -1059,3 +1059,30 @@ The list is plain DOM — six hundred rows built per query — which is fast eno
 want a virtual scroller if the catalogue tripled; that is written on the component. `e2e/ai.mjs`
 serves five models across four families and drives the whole panel: search, both price sorts,
 the family filter, a click, and a keyboard pick.
+
+## ADR-41 — The rail is a shared shell, not a part of the dashboard (2026-09-18)
+
+**Context.** The library rail — brand, VOD input, the VODs cached in this browser, the clips
+link, storage, settings — was written inside `DashboardPage.vue` and existed only there. The
+gallery is reached _from that rail_, and then lost it: no library, no settings, no VOD input,
+a different header, a "Dashboard" button standing in for the way back. Angel: "it looks like a
+completely different page not in syntony with the rest."
+
+**Decision.** `src/ui/LibraryRail.vue`. It owns everything that travels with the rail: the
+small-screen top bar, the drawer and its scrim, the library it lists (IndexedDB), the storage
+figures, and the settings overlay — the three move together, so they live together. The page
+above it says only which VOD is open (`activeVodId`), whether to offer the home button, and
+what to do when something is picked: the dashboard loads a VOD in place, every other page
+routes to it, so the rail **emits** `open` / `live` / `home` / `purged` rather than acting. It
+exposes `openDrawer`, `closeDrawer`, `openSettings` and `refresh` for the two cases the page
+does drive — the tour pointing at the rail on a phone, and the AI card's link to Settings.
+
+Both pages now use the same `lg:grid-cols-[260px_minmax(0,1fr)]` shell, so the gallery is the
+desk with a different right-hand column.
+
+**Consequences.** `DashboardPage.vue` lost ~120 lines of template, eight imports and the
+library/settings/drawer state. `gallery.dashboard` is gone from the ten catalogs: the rail's
+home button is the way back. `cut.mjs` walks from the desk to the gallery through the rail's
+Clips link and back through the rail's library, which is the loop Angel described. The tour
+still targets `data-tour="rail"`, which now lives in the component — anything else that wants
+the rail gets it by mounting one, and should not copy it.

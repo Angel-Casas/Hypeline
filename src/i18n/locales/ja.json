@@ -264,7 +264,6 @@
   },
   "gallery": {
     "eyebrow": "クリップ",
-    "dashboard": "ダッシュボード",
     "clipCount": "{n} クリップ | {n} クリップ",
     "mbInBrowser": "このブラウザに {n} MB",
     "all": "すべて",

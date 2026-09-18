@@ -718,6 +718,14 @@ The PNGs were rendered from the tile SVG (mark on `#0c0a0f`, rx 16 of 64,
 silk ring 2.2) with headless Chromium; redo them the same way if the mark
 changes.
 
+## The shell (2026-09-18)
+
+Every page _inside_ Hypeline is the same two-column grid — `lg:grid-cols-[260px_minmax(0,1fr)]`,
+`gap-4`, the rail sticky at `lg:top-4` — and wears `LibraryRail` (ADR-41) in the left column.
+Below `lg` that rail is a drawer behind a top bar carrying the mark and a "Library" button; the
+page's own header, if it has one, starts with an `eyebrow` naming it. The landing page is the
+exception: it is the front door, not a room.
+
 ## The model picker (2026-09-18)
 
 A sheet, not a dropdown (ADR-40). Rows are 6/8 px padded flex lines — glyph, name over a mono

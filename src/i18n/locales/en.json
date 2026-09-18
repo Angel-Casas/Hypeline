@@ -264,7 +264,6 @@
   },
   "gallery": {
     "eyebrow": "Clips",
-    "dashboard": "Dashboard",
     "clipCount": "{n} clip | {n} clips",
     "mbInBrowser": "{n} MB in this browser",
     "all": "all",

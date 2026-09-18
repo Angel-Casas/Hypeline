@@ -264,7 +264,6 @@
   },
   "gallery": {
     "eyebrow": "Klipler",
-    "dashboard": "Panel",
     "clipCount": "{n} klip | {n} klip",
     "mbInBrowser": "bu tarayıcıda {n} MB",
     "all": "tümü",

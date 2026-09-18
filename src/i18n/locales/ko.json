@@ -264,7 +264,6 @@
   },
   "gallery": {
     "eyebrow": "클립",
-    "dashboard": "대시보드",
     "clipCount": "클립 {n}개 | 클립 {n}개",
     "mbInBrowser": "이 브라우저에 {n} MB",
     "all": "전체",
