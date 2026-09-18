@@ -554,14 +554,21 @@ grey page, and grey is the one thing this palette must not produce (Angel,
 2026-09-18). Judge a veil from a screenshot of the whole screen, never from
 the panel alone: the grey was only visible _around_ the panel.
 
+## Fields (2026-09-18)
+
+`--field-line` is an ink hairline (22 % day, 28 % night), not the white 95 %
+it was. White read as an inset highlight while fields sat on tinted glass;
+on the near-white sheet, and on ADR-30's whitened page, it disappeared and an
+input was recognisable only by its placeholder.
+
 ## No grey text (2026-09-18)
 
 Nothing is a grey in between. `--color-muted` is now ink itself (near-black
 by day, `#f3edf6` by night), so every existing `text-muted` follows without
 being rewritten. Secondary text earns its place another way: smaller, mono,
-tracked (the `eyebrow`), lighter in weight, or — when it must actually
-recede — `opacity` on ink, which stays the ground's own hue instead of
-drifting towards grey. `--color-ink-2` remains for body copy that wants a
+tracked (the `eyebrow`), lighter in weight, — but not `opacity` on ink, which over paper _is_
+a grey and is the same mistake one layer down. A 9.5 px uppercase tracked
+mono label recedes on shape alone at full ink. `--color-ink-2` remains for body copy that wants a
 touch less weight than a heading.
 
 ## A box inside a sheet (2026-09-18)
@@ -572,6 +579,14 @@ the scrim mistake again, one step smaller. `--pick` / `--pick-soft` is the
 "you chose this" mark (`#0f8f7e` day, `#6fe0c8` night): **mint, not the
 accent violet**, because violet is what the silk ring is made of and the
 two were competing wherever a ringed chip could also be selected.
+
+**Two half-silks (2026-09-18).** `--silk-warm` (butter → apricot) and
+`--silk-cool` (sky → lilac) are the main ramp's construction kept inside one
+half of the palette each, for places where the ring has to _say_ something:
+in the vocabulary panel warm is what Hypeline shipped and cool is what the
+user added. `silk-ring` reads `--ring-g`, so a variant is one custom property
+on the element, never a second utility with a second copy of the gradient —
+that duplication is what let the player's frame drift for two rounds.
 
 **Theme-varying tokens belong in `style.css`, not in a scoped block.**
 `:global([data-theme='dark']) .vocab { … }` compiles to `[data-theme=dark]`

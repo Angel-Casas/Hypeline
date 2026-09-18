@@ -53,6 +53,10 @@ const most = computed(() => topTokens(clean.value));
 function slice(i: number): Record<string, string> {
   return { '--silk-a': ((i * 47) % 360) + 'deg' };
 }
+/** A shipped English word reads as off when its own × is off, or when English itself is. */
+function shippedOff(kind: ListKind, word: string): boolean {
+  return vocab.state.enOff || vocab.isOff(kind, word);
+}
 function inList(kind: ListKind, token: string): boolean {
   return mine(kind).some((w) => w.toLowerCase() === token.toLowerCase());
 }
@@ -88,7 +92,7 @@ function mine(kind: ListKind): string[] {
 function liveCount(kind: ListKind): number {
   const off = (w: string) => vocab.isOff(kind, w);
   return (
-    DEFAULT_WORDS[kind].filter((w) => !off(w)).length +
+    DEFAULT_WORDS[kind].filter((w) => !shippedOff(kind, w)).length +
     packWords(kind).filter((p) => !off(p.word)).length +
     vocab.state.global[kind].length +
     (channel.value ? (vocab.state.byChannel[channel.value]?.[kind]?.length ?? 0) : 0)
@@ -264,7 +268,7 @@ watch(() => settings.sensitivity, computeBaseline);
                 v-for="(w, i) in DEFAULT_WORDS[kind]"
                 :key="'d' + w"
                 class="vchip silk-ring"
-                :class="{ off: vocab.isOff(kind, w) }"
+                :class="{ off: shippedOff(kind, w) }"
                 :style="slice(i)"
               >
                 <span>{{ w }}</span>
@@ -293,7 +297,12 @@ watch(() => settings.sensitivity, computeBaseline);
                   {{ vocab.isOff(kind, p.word) ? '+' : '×' }}
                 </button>
               </span>
-              <span v-for="w in mine(kind)" :key="'m' + w" class="vchip mine">
+              <span
+                v-for="(w, i) in mine(kind)"
+                :key="'m' + w"
+                class="vchip mine silk-ring"
+                :style="slice(i + 3)"
+              >
                 <span>{{ w }}</span>
                 <em class="who">{{ t('vocab.yours') }}</em>
                 <button
@@ -378,9 +387,16 @@ watch(() => settings.sensitivity, computeBaseline);
             {{ t('vocab.packs.help') }}
           </p>
           <div class="flex flex-wrap gap-1.5">
-            <span class="pack silk-ring" :style="slice(0)" aria-pressed="true">
-              English <small>{{ t('vocab.packs.always') }}</small>
-            </span>
+            <button
+              class="pack silk-ring"
+              :style="slice(0)"
+              :aria-pressed="!vocab.state.enOff"
+              data-testid="vocab-pack-en"
+              :title="t('vocab.packs.enHelp')"
+              @click="vocab.toggleEn()"
+            >
+              English <small>{{ t('vocab.packs.enNote') }}</small>
+            </button>
             <button
               v-for="(p, i) in packs"
               :key="p.id"
@@ -477,15 +493,28 @@ watch(() => settings.sensitivity, computeBaseline);
   backdrop-filter: blur(6px);
   -webkit-backdrop-filter: blur(6px);
 }
-/* every deletable word wears a slice of the one silk gradient, still rather than turning:
-   forty animated conic gradients on one screen is not worth the cost */
+/*
+ * The rings carry the meaning here (Angel, 2026-09-18). **Warm** — butter through apricot —
+ * is everything Hypeline shipped: the default words, the pack words, the packs themselves.
+ * **Cool** — sky through lilac — is what this user typed in, and it changes nothing but the
+ * edge: same surface, same weight, so a list of their own words does not shout.
+ *
+ * They turn, like every other ring in the app. Each chip starts at its own angle so a row
+ * reads as a set rather than a set of clones, and they turn slowly (14 s against the app's
+ * 8 s) because forty of them on one screen at the usual speed is a lot of motion for a panel
+ * you read. Reduced motion stops them all — `silk-ring` handles that globally.
+ */
 .vchip,
 .pack {
   --ring-w: 1.5px;
+  --ring-g: var(--silk-warm);
 }
 .vchip::before,
 .pack::before {
-  animation: none;
+  animation-duration: 14s;
+}
+.vchip.mine {
+  --ring-g: var(--silk-cool);
 }
 .vchip {
   display: inline-flex;
@@ -503,17 +532,14 @@ watch(() => settings.sensitivity, computeBaseline);
   opacity: 0.42;
   text-decoration: line-through;
 }
-.vchip.mine {
-  border: 1.5px solid var(--pick);
-  background: var(--pick-soft);
-}
 .who {
   font-style: normal;
   font-size: 9.5px;
   letter-spacing: 0.06em;
   text-transform: uppercase;
+  /* full ink: an opacity on ink over paper *is* a grey, which is the thing we removed. At
+     9.5 px, uppercase and tracked, it recedes on shape alone (Angel, 2026-09-18). */
   color: var(--color-ink);
-  opacity: 0.75;
 }
 .vx {
   opacity: 0.65;
@@ -566,7 +592,6 @@ watch(() => settings.sensitivity, computeBaseline);
   letter-spacing: 0.06em;
   text-transform: uppercase;
   color: var(--color-ink);
-  opacity: 0.7;
 }
 .bar {
   height: 5px;
@@ -606,8 +631,9 @@ watch(() => settings.sensitivity, computeBaseline);
   color: var(--color-ink);
   background: var(--box-film);
 }
+/* A pack that is on keeps its warm ring and fills; off is the same ring over the plain film,
+   so the row reads as one family with some of it lit. */
 .pack[aria-pressed='true'] {
-  border: 1.5px solid var(--pick);
   background: var(--pick-soft);
   font-weight: 600;
 }
@@ -615,7 +641,6 @@ watch(() => settings.sensitivity, computeBaseline);
   font-family: var(--font-mono);
   font-size: 10px;
   color: var(--color-ink);
-  opacity: 0.7;
 }
 .strip {
   display: grid;

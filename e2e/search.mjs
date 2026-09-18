@@ -51,7 +51,10 @@ const variant720 = readFileSync(join(SEG_DIR, 'variant.m3u8'), 'utf8');
 const b = await chromium.launch(EXEC ? { executablePath: EXEC } : {});
 const ctx = await b.newContext({ viewport: { width: 1280, height: 1000 } });
 // the language is chosen already: the first-visit sheet must not cover the page
-await ctx.addInitScript(() => { localStorage.setItem('hypeline.locale', 'en'); localStorage.setItem('hypeline.tour.v1', 'done'); });
+await ctx.addInitScript(() => {
+  localStorage.setItem('hypeline.locale', 'en');
+  localStorage.setItem('hypeline.tour.v1', 'done');
+});
 await ctx.addInitScript((shim) => {
   localStorage.setItem(
     'hypeline.settings.v1',
@@ -197,8 +200,14 @@ console.log('bulk estimate:', (await bulkBtn.innerText()).replace(/\s+/g, ' ').t
 await bulkBtn.click();
 // while it runs: the scanning light over the chunk and the breathing band segment
 await p.locator('svg.hl-timeline rect.scan').waitFor({ timeout: 20000 });
-console.log('transcription scan shown over the chunk:', await p.locator('svg.hl-timeline rect.scan-band').count() === 1);
-await p.screenshot({ path: 'e2e/last-transcribing.png', clip: { x: 290, y: 10, width: 980, height: 340 } });
+console.log(
+  'transcription scan shown over the chunk:',
+  (await p.locator('svg.hl-timeline rect.scan-band').count()) === 1,
+);
+await p.screenshot({
+  path: 'e2e/last-transcribing.png',
+  clip: { x: 290, y: 10, width: 980, height: 340 },
+});
 try {
   await p.waitForFunction(() => /0:00:42 \/ /.test(document.body.innerText), null, {
     timeout: 60000,
@@ -209,7 +218,12 @@ try {
   throw e;
 }
 const bands = await p.locator('svg.hl-timeline rect[opacity="0.85"]').count();
-console.log('transcribed band segments after:', bands, '· scan gone:', (await p.locator('svg.hl-timeline rect.scan').count()) === 0);
+console.log(
+  'transcribed band segments after:',
+  bands,
+  '· scan gone:',
+  (await p.locator('svg.hl-timeline rect.scan').count()) === 0,
+);
 if (bands < 1) throw new Error('no transcript coverage band on the timeline');
 console.log(
   'bulk done: STT calls =',

@@ -32,7 +32,9 @@ function streamed(bytes: Uint8Array, headers: Record<string, string>): Response 
       }),
     },
     arrayBuffer: async () => {
-      throw new TypeError("Failed to execute 'arrayBuffer' on 'Response': body stream already read");
+      throw new TypeError(
+        "Failed to execute 'arrayBuffer' on 'Response': body stream already read",
+      );
     },
   } as unknown as Response;
 }

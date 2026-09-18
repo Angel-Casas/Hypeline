@@ -10,7 +10,10 @@ const EXEC = process.env.CHROMIUM;
 
 const b = await chromium.launch(EXEC ? { executablePath: EXEC } : {});
 const ctx = await b.newContext({ viewport: { width: 1280, height: 900 } });
-await ctx.addInitScript(() => { localStorage.setItem('hypeline.locale', 'en'); localStorage.setItem('hypeline.tour.v1', 'done'); });
+await ctx.addInitScript(() => {
+  localStorage.setItem('hypeline.locale', 'en');
+  localStorage.setItem('hypeline.tour.v1', 'done');
+});
 const p = await ctx.newPage();
 const errors = [];
 p.on('pageerror', (e) => errors.push(String(e)));

@@ -146,6 +146,33 @@ console.log('bursts surfaced · before:', beforeFound.length, '· after:', found
 if (found.length <= beforeFound.length)
   throw new Error(`the Spanish clip requests did not surface: ${beforeFound} → ${found}`);
 
+// English is a choice now, not a law (ADR-31). Turning it off must reach the scoring — and it
+// must leave the other packs alone, which is the whole point of them being separate switches.
+await p.locator('[data-testid="vocab-open"]').click();
+const en = p.locator('[data-testid="vocab-pack-en"]');
+await en.click();
+await p.waitForTimeout(500);
+if ((await en.getAttribute('aria-pressed')) !== 'false')
+  throw new Error('English did not switch off');
+const struck = await p
+  .locator('[data-testid="vocab-overlay"] [data-list="important"] .vchip.off')
+  .count();
+if (struck < 5) throw new Error(`the English words should read as off, got ${struck}`);
+await p.locator('[data-testid="vocab-close"]').click();
+await p.waitForTimeout(700);
+const withoutEn = await momentTimes();
+const keptBursts = AT.filter((t) => withoutEn.includes(t));
+console.log('with English off · bursts still surfaced:', keptBursts.length);
+if (keptBursts.length !== found.length)
+  throw new Error(`switching English off disturbed Español: ${found} → ${keptBursts}`);
+await p.locator('[data-testid="vocab-open"]').click();
+await en.click();
+await p.waitForTimeout(400);
+if ((await en.getAttribute('aria-pressed')) !== 'true')
+  throw new Error('English did not come back');
+await p.locator('[data-testid="vocab-close"]').click();
+await p.waitForTimeout(400);
+
 // a word of one's own, and it survives a reload
 await p.locator('[data-testid="vocab-open"]').click();
 await p.locator('[data-testid="vocab-add-important"]').fill('tranquilo');

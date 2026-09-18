@@ -428,7 +428,8 @@ function download(url: string, name: string) {
               </button>
             </span>
             <label class="flex items-center gap-2"
-              ><input v-model="captionsUppercase" type="checkbox" /> {{ t('clip.uppercase') }}</label
+              ><input v-model="captionsUppercase" type="checkbox" />
+              {{ t('clip.uppercase') }}</label
             >
             <p class="text-muted">{{ t('clip.timingNote') }}</p>
           </template>

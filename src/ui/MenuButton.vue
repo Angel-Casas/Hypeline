@@ -84,7 +84,9 @@ function onKey(e: KeyboardEvent) {
     return;
   }
   if (e.key !== 'ArrowDown' && e.key !== 'ArrowUp') return;
-  const items = Array.from(menu.value?.querySelectorAll<HTMLElement>('[role="menuitemradio"]') ?? []);
+  const items = Array.from(
+    menu.value?.querySelectorAll<HTMLElement>('[role="menuitemradio"]') ?? [],
+  );
   if (!items.length) return;
   e.preventDefault();
   const i = items.indexOf(document.activeElement as HTMLElement);

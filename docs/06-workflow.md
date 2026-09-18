@@ -7,12 +7,14 @@ better state than it found it.
 ## Session ritual
 
 **Start**
+
 1. Read `CLAUDE.md` (short), then `docs/02-roadmap.md` for the current
    milestone, then the last 2–3 entries of `docs/07-worklog.md`.
 2. Say what the session will do in one sentence. If it's not on the roadmap,
    decide whether to add it or park it.
 
 **During**
+
 - Spike before building on an assumption. Spikes are throwaway; results are
   not — write them to `05-research.md`.
 - Non-trivial choice → ADR in `03-decisions.md` before the code lands.
@@ -22,6 +24,7 @@ better state than it found it.
   ones that will bite us if untested.
 
 **End**
+
 1. `pnpm lint && pnpm test` green (or say why not).
 2. Worklog entry: date · what changed · what's blocked · next step.
 3. Tick roadmap boxes. Add new discoveries to research. Commit.

@@ -18,6 +18,7 @@ function load(): VocabState {
     const d = JSON.parse(raw) as Partial<VocabState>;
     return {
       packs: Array.isArray(d.packs) ? d.packs : [],
+      enOff: d.enOff === true,
       off: Array.isArray(d.off) ? d.off : [],
       global: { ...EMPTY_LISTS, ...(d.global ?? {}) },
       byChannel: d.byChannel ?? {},
@@ -54,6 +55,7 @@ export const useVocabStore = defineStore('vocab', () => {
   const touched = computed(
     () =>
       state.value.packs.length > 0 ||
+      state.value.enOff ||
       state.value.off.length > 0 ||
       state.value.global.important.length > 0 ||
       state.value.global.reaction.length > 0 ||
@@ -105,6 +107,10 @@ export const useVocabStore = defineStore('vocab', () => {
     );
   }
 
+  function toggleEn() {
+    state.value.enOff = !state.value.enOff;
+  }
+
   function reset() {
     state.value = emptyState();
   }
@@ -119,6 +125,7 @@ export const useVocabStore = defineStore('vocab', () => {
       if (!d || typeof d !== 'object' || !d.global) return false;
       state.value = {
         packs: Array.isArray(d.packs) ? d.packs : [],
+        enOff: d.enOff === true,
         off: Array.isArray(d.off) ? d.off : [],
         global: {
           important: Array.isArray(d.global.important) ? d.global.important : [],
@@ -143,6 +150,7 @@ export const useVocabStore = defineStore('vocab', () => {
     isOff,
     setPacks,
     togglePack,
+    toggleEn,
     reset,
     exportJson,
     importJson,

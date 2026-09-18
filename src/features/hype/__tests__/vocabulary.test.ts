@@ -10,6 +10,7 @@ import {
   seenTokens,
   toTerm,
 } from '../vocabulary';
+import { isClipRequest, isReaction } from '../scoring';
 import { analyse, isClipRequest, isReaction, NO_VOCAB } from '../scoring';
 
 const msg = (m: string, extra: Partial<ChatMessage> = {}): ChatMessage => ({
@@ -146,5 +147,34 @@ describe('detecting a language', () => {
   it('is not fooled by words every chat uses', () => {
     // hahaha / lol / gg belong to no language: they used to light up Deutsch and Türkçe
     expect(packsToEnable(detectPacks(english))).toEqual([]);
+  });
+});
+
+describe('turning English off', () => {
+  const msg = (m: string): ChatMessage => ({ t: 0, u: 'a', m, e: [], b: [] });
+
+  it('stops the shipped English words counting', () => {
+    const on = buildVocabulary(emptyState());
+    expect(isClipRequest(msg('CLIP IT'), on)).toBe(true);
+    expect(isReaction(msg('lol'), on)).toBe(true);
+
+    const off = buildVocabulary({ ...emptyState(), enOff: true });
+    expect(isClipRequest(msg('CLIP IT'), off)).toBe(false);
+    // "lol" is three letters, so only the English list could have made it a reaction
+    expect(isReaction(msg('lol'), off)).toBe(false);
+  });
+
+  it('leaves emotes alone, which is the language-neutral baseline', () => {
+    const off = buildVocabulary({ ...emptyState(), enOff: true });
+    expect(isReaction({ t: 0, u: 'a', m: 'KEKW', e: ['KEKW'], b: [] }, off)).toBe(true);
+  });
+
+  it('lets one shipped word be switched off on its own', () => {
+    // the × on a default chip has to reach scoring's regex and word set, not just the UI
+    const v = buildVocabulary({ ...emptyState(), off: ['important:clip it', 'reaction:lol'] });
+    expect(isClipRequest(msg('clip it'), v)).toBe(false);
+    expect(isClipRequest(msg('someone clip that'), v)).toBe(true);
+    expect(isReaction(msg('lol'), v)).toBe(false);
+    expect(isReaction(msg('kekw'), v)).toBe(true);
   });
 });

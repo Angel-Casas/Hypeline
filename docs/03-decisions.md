@@ -677,3 +677,43 @@ written in a component's scoped block does not work, because
 `:global([data-theme='dark']) .x` compiles to `[data-theme=dark]` with the
 `.x` dropped, which is how the vocabulary panel spent a build running day
 colours at night.
+
+## ADR-31 — Two silks, and English becomes a switch (2026-09-18)
+
+**Context.** Every ringed thing in the vocabulary panel wore the same silk,
+and selection was marked with a flat colour on top of it — first violet
+(which the ring already owns), then mint (which Angel didn't want). A ring
+that means nothing is decoration; a ring that means something can replace
+the flat mark entirely. Separately, the English starter pack was labelled
+"always on" and the × on each shipped English word did nothing at all,
+because those words are not data: they are `CLIP_RE` and `REACT_WORDS`
+inside `scoring.ts`.
+
+**Decision — two half-silks.** `--silk-warm` (butter → apricot) is what
+Hypeline shipped: the default words, the pack words, the packs. `--silk-cool`
+(sky → lilac) is what this user typed in. Both are built like the main ramp —
+mirrored, no transparency, no pale tints — so they are recognisably the same
+material; each stays inside one half of the palette so a 1.5 px edge still
+tells them apart. A user's word changes **only** its edge: same surface, same
+weight. `silk-ring` reads `--ring-g`, so a variant costs one custom property
+and no second utility. They turn, at 14 s rather than the app's 8 s, because
+forty of them on one screen is a lot of motion for a panel you read.
+
+**Decision — English is a pack you can switch off.** `VocabState.enOff`, a
+negative flag so everyone who never opens this screen keeps English: Twitch
+chat code-switches into it constantly whatever the stream speaks. But it is
+now a choice, because a chat that never types a Latin word pays for `clip`,
+`lol` and `wtf` in false positives, and telling that user "always on" was us
+deciding for them. `Vocabulary` gained `en` and `offWords`, and `scoring.ts`
+consults both, which also makes the per-word × on the shipped chips real for
+the first time — `CLIP_PHRASE_RE` is tried before `CLIP_RE` so that turning
+off "clip it" is not silently swallowed by the bare "clip" inside it.
+
+**Consequences.** The packs are now genuinely symmetrical: nine data packs
+and one built into the scoring, all switchable, none privileged in the UI.
+Emotes stay language-neutral and unaffected — with English off, `KEKW` is
+still a reaction and the mood bonus still fires through emote names, which
+is the baseline that made this feature possible. Fields also got a real
+hairline (`--field-line` was white at 95 %, an inset highlight from when
+fields sat on tinted glass; on the whitened page of ADR-30 an input was
+recognisable only by its placeholder).

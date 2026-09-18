@@ -94,8 +94,15 @@ export const PACKS: Pack[] = [
 
 /** What the user has changed. Persisted as-is; `off` holds `"<kind>:<term>"` keys. */
 export interface VocabState {
-  /** Enabled language packs by id. English lives in `scoring.ts` and is always on. */
+  /** Enabled language packs by id. English is not one of them — see `enOff`. */
   packs: string[];
+  /**
+   * English off. It is a negative flag on purpose: English is on for everyone who never
+   * touches this screen, because Twitch chat code-switches into it constantly whatever the
+   * stream's language. But it is a choice now, not a law — a chat that never types a Latin
+   * word pays for `clip`, `lol` and `wtf` in false positives (Angel asked, 2026-09-18).
+   */
+  enOff: boolean;
   off: string[];
   global: VocabLists;
   /** Channel login → the words that channel adds on top of `global`. */
@@ -104,7 +111,13 @@ export interface VocabState {
 
 export const EMPTY_LISTS: VocabLists = { important: [], reaction: [] };
 export function emptyState(): VocabState {
-  return { packs: [], off: [], global: { important: [], reaction: [] }, byChannel: {} };
+  return {
+    packs: [],
+    enOff: false,
+    off: [],
+    global: { important: [], reaction: [] },
+    byChannel: {},
+  };
 }
 
 /** One term, ready to match. */
@@ -122,6 +135,14 @@ export interface Vocabulary {
   reaction: Term[];
   /** Reaction terms that are single words, for the fast path in `isReaction`. */
   reactionWords: Set<string>;
+  /** Whether the English words built into `scoring.ts` apply at all. */
+  en: boolean;
+  /**
+   * Shipped words the user switched off, per list. The packs are filtered before they get
+   * here; this set is what lets the same × work on the English words, which are not data but
+   * a regex and a `Set` inside `scoring.ts`.
+   */
+  offWords: Record<ListKind, Set<string>>;
 }
 
 const ASCII_WORD = /^[a-z0-9']+$/;
@@ -142,6 +163,12 @@ function dedupe(terms: Term[]): Term[] {
  */
 export function buildVocabulary(state: VocabState, channel?: string | null): Vocabulary {
   const off = new Set(state.off);
+  const offWords = (kind: ListKind) =>
+    new Set(
+      state.off
+        .filter((k) => k.startsWith(kind + ':'))
+        .map((k) => k.slice(kind.length + 1).toLowerCase()),
+    );
   const packs = new Set(state.packs);
   const out: Record<ListKind, Term[]> = { important: [], reaction: [] };
   for (const p of PACKS) {
@@ -158,6 +185,11 @@ export function buildVocabulary(state: VocabState, channel?: string | null): Voc
     important: dedupe(out.important),
     reaction,
     reactionWords: new Set(reaction.filter((t) => t.word).map((t) => t.key)),
+    en: !state.enOff,
+    offWords: {
+      important: offWords('important'),
+      reaction: offWords('reaction'),
+    },
   };
 }
 

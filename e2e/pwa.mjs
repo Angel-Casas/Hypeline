@@ -102,11 +102,7 @@ p2.on('pageerror', (e) => errors.push(String(e)));
 await p2.goto(BASE + '/dashboard');
 // the first visit installs the worker but is not controlled by it (no clientsClaim: the
 // page that loaded before the worker existed keeps the network it started with)
-await p2.waitForFunction(
-  () => window.__swReady === true,
-  null,
-  { timeout: 20000 },
-);
+await p2.waitForFunction(() => window.__swReady === true, null, { timeout: 20000 });
 await p2.reload();
 await p2.waitForFunction(() => navigator.serviceWorker.controller !== null, null, {
   timeout: 20000,
@@ -118,7 +114,10 @@ try {
   appendFileSync(SW, `\n// deploy ${Date.now()}\n`); // a new build on the server
   await p2.evaluate(() => window.dispatchEvent(new Event('online')));
   await toast2.waitFor({ state: 'visible', timeout: 20000 });
-  console.log('the open tab noticed the deploy by itself:', (await toast2.innerText()).replace(/\s+/g, ' '));
+  console.log(
+    'the open tab noticed the deploy by itself:',
+    (await toast2.innerText()).replace(/\s+/g, ' '),
+  );
   if (!(await p2.evaluate(() => window.__stamp !== undefined)))
     throw new Error('the page reloaded instead of asking');
 } finally {

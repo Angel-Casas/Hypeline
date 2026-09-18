@@ -625,8 +625,9 @@
       "name": "Starter packs",
       "detect": "Detect from this VOD",
       "help": "Each pack is a set of defaults in one language. Emote names are language-neutral and always on.",
-      "always": "always on",
-      "people": "{n} people"
+      "people": "{n} people",
+      "enNote": "on by default",
+      "enHelp": "Twitch chat code-switches into English constantly, whatever the stream speaks, so this is on unless you turn it off. Turn it off for a chat that never types a Latin word — then clip, lol and wtf stop counting."
     },
     "changes": {
       "name": "What changes",

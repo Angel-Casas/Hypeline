@@ -12,11 +12,11 @@ The clipping market (Opus Clip, Eklipse, Vizard, Powder, Twitch's own editor)
 all sell the same loop: upload a VOD, get a batch of captioned verticals, pay a
 monthly fee. Three things they share, and we invert:
 
-| Everyone else | Hypeline |
-|---|---|
-| Treats a VOD as a generic video; only the transcript matters | Uses the **chat replay** as a free, real-time crowd signal for where the moments are |
-| Uploads multi-GB VODs to their servers (slow, expensive, the reason they charge) | **Never uploads.** Fetches only the seconds it needs, in the browser |
-| Closed, $20–40/month | **Free, MIT, runs locally** (PWA), BYOK AI via NanoGPT |
+| Everyone else                                                                    | Hypeline                                                                             |
+| -------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------ |
+| Treats a VOD as a generic video; only the transcript matters                     | Uses the **chat replay** as a free, real-time crowd signal for where the moments are |
+| Uploads multi-GB VODs to their servers (slow, expensive, the reason they charge) | **Never uploads.** Fetches only the seconds it needs, in the browser                 |
+| Closed, $20–40/month                                                             | **Free, MIT, runs locally** (PWA), BYOK AI via NanoGPT                               |
 
 The analogy we're aiming for is OBS: became the default by being free, open,
 and better at the specific thing streamers needed.

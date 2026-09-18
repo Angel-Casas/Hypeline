@@ -38,7 +38,10 @@ let subOnly = true;
 const b = await chromium.launch(EXEC ? { executablePath: EXEC } : {});
 const ctx = await b.newContext({ viewport: { width: 1400, height: 900 } });
 // the language is chosen already: the first-visit sheet must not cover the page
-await ctx.addInitScript(() => { localStorage.setItem('hypeline.locale', 'en'); localStorage.setItem('hypeline.tour.v1', 'done'); });
+await ctx.addInitScript(() => {
+  localStorage.setItem('hypeline.locale', 'en');
+  localStorage.setItem('hypeline.tour.v1', 'done');
+});
 const p = await ctx.newPage();
 const errors = [];
 p.on('pageerror', (e) => errors.push(String(e)));
@@ -107,7 +110,8 @@ const notice = (await p.locator('[data-testid="sub-only"]:visible').first().inne
   ' ',
 );
 console.log('notice:', notice);
-if (!/兔兔喵 keeps this past broadcast for subscribers/.test(notice)) throw new Error('notice text');
+if (!/兔兔喵 keeps this past broadcast for subscribers/.test(notice))
+  throw new Error('notice text');
 const href = await p.locator('[data-testid="sub-only"]:visible a').first().getAttribute('href');
 if (href !== `https://www.twitch.tv/videos/${VOD}`) throw new Error('bad Twitch link: ' + href);
 const line = (await p.locator('.font-mono.text-\\[11px\\]').first().innerText()).replace(

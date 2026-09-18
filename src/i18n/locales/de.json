@@ -625,8 +625,9 @@
       "name": "Startpakete",
       "detect": "Aus diesem VOD erkennen",
       "help": "Jedes Paket ist ein Satz Standards in einer Sprache. Emote-Namen sind sprachneutral und immer an.",
-      "always": "immer an",
-      "people": "{n} Personen"
+      "people": "{n} Personen",
+      "enNote": "standardmäßig an",
+      "enHelp": "Twitch-Chats wechseln ständig ins Englische, egal welche Sprache der Stream spricht — deshalb ist das an, bis du es ausschaltest. Schalte es aus für einen Chat, der nie lateinisch schreibt: dann zählen clip, lol und wtf nicht mehr."
     },
     "changes": {
       "name": "Was sich ändert",

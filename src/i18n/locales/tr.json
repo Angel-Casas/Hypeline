@@ -625,8 +625,9 @@
       "name": "Başlangıç paketleri",
       "detect": "Bu VOD’dan algıla",
       "help": "Her paket bir dildeki varsayılan kelimelerdir. Emote adları dilden bağımsızdır ve hep açıktır.",
-      "always": "hep açık",
-      "people": "{n} kişi"
+      "people": "{n} kişi",
+      "enNote": "varsayılan açık",
+      "enHelp": "Yayın hangi dilde olursa olsun Twitch sohbeti sürekli İngilizceye geçer; bu yüzden siz kapatana kadar açıktır. Hiç Latin harfi yazmayan bir sohbet için kapatın: o zaman clip, lol ve wtf sayılmaz."
     },
     "changes": {
       "name": "Ne değişiyor",

@@ -42,7 +42,10 @@ function chunkAt(offset) {
 const b = await chromium.launch(EXEC ? { executablePath: EXEC } : {});
 const ctx = await b.newContext({ viewport: { width: 1280, height: 900 } });
 // the language is chosen already: the first-visit sheet must not cover the page
-await ctx.addInitScript(() => { localStorage.setItem('hypeline.locale', 'en'); localStorage.setItem('hypeline.tour.v1', 'done'); });
+await ctx.addInitScript(() => {
+  localStorage.setItem('hypeline.locale', 'en');
+  localStorage.setItem('hypeline.tour.v1', 'done');
+});
 await ctx.addInitScript(() => {
   localStorage.setItem('hypeline.live.notify', '1');
   window.__notes = [];
@@ -83,9 +86,25 @@ await p.route('https://gql.twitch.tv/gql', async (route) => {
             login: 'fixture',
             displayName: 'Fixture',
             stream: streaming
-              ? { id: 's', createdAt: new Date(STARTED).toISOString(), viewersCount: 1234, title: 'Mock stream', game: { name: 'Just Chatting' } }
+              ? {
+                  id: 's',
+                  createdAt: new Date(STARTED).toISOString(),
+                  viewersCount: 1234,
+                  title: 'Mock stream',
+                  game: { name: 'Just Chatting' },
+                }
               : null,
-            videos: { edges: [{ node: { id: VOD, createdAt: new Date(VOD_START).toISOString(), status: streaming ? 'RECORDING' : 'RECORDED' } }] },
+            videos: {
+              edges: [
+                {
+                  node: {
+                    id: VOD,
+                    createdAt: new Date(VOD_START).toISOString(),
+                    status: streaming ? 'RECORDING' : 'RECORDED',
+                  },
+                },
+              ],
+            },
           },
         },
       },
@@ -137,14 +156,20 @@ function burst(n, at, text = 'hello chat', emotes = '') {
 // a channel resolves to the VOD that is recording it
 await p.goto(BASE + '/dashboard?channel=fixture');
 await p.waitForURL(new RegExp(`/dashboard/${VOD}$`), { timeout: 20000 });
-await p.waitForFunction(() => /chat connected/.test(document.body.innerText), null, { timeout: 60000 });
+await p.waitForFunction(() => /chat connected/.test(document.body.innerText), null, {
+  timeout: 60000,
+});
 await p.waitForTimeout(200);
 console.log('resolved to', new URL(p.url()).pathname, '· joined:', joined);
 if (!joined.includes('JOIN #fixture')) throw new Error('did not join the channel chat');
-const line = (await p.locator('.font-mono.text-\\[11px\\]').first().innerText()).replace(/\s+/g, ' ');
+const line = (await p.locator('.font-mono.text-\\[11px\\]').first().innerText()).replace(
+  /\s+/g,
+  ' ',
+);
 console.log('VOD line:', line);
 if (!/\blive\b/.test(line)) throw new Error('VOD not marked live');
-if ((await p.locator('svg.hl-timeline .live-edge').count()) !== 1) throw new Error('no live edge on the ribbon');
+if ((await p.locator('svg.hl-timeline .live-edge').count()) !== 1)
+  throw new Error('no live edge on the ribbon');
 
 // hide the tab; a wall of LUL arrives just past the live edge
 await p.evaluate(() => {
@@ -165,7 +190,10 @@ await p.clock.runFor(4000);
 await p.waitForTimeout(150);
 
 const feed = await p.locator('ol li:has(button.tabular-nums)').allInnerTexts();
-console.log('new while live:', feed.map((t) => t.replace(/\s+/g, ' ')));
+console.log(
+  'new while live:',
+  feed.map((t) => t.replace(/\s+/g, ' ')),
+);
 if (!feed.length) throw new Error('the burst did not become a live moment');
 const notes = await p.evaluate(() => window.__notes);
 console.log('notifications:', notes);
@@ -191,9 +219,13 @@ await p.clock.runFor(600);
 await p.waitForTimeout(200);
 const players = await p.evaluate(() => window.__players.map((pl) => pl.o.time ?? '-'));
 console.log('embed loads:', players);
-if (players.length < 2 || !/^0h9m50s$/.test(players[players.length - 1])) throw new Error('embed was not reloaded at the live edge');
+if (players.length < 2 || !/^0h9m50s$/.test(players[players.length - 1]))
+  throw new Error('embed was not reloaded at the live edge');
 // and a seek straight past the loaded end reloads there too
-await p.locator('svg.hl-timeline').first().click({ position: { x: 900, y: 60 } });
+await p
+  .locator('svg.hl-timeline')
+  .first()
+  .click({ position: { x: 900, y: 60 } });
 await p.waitForTimeout(200);
 const last = await p.evaluate(() => window.__players[window.__players.length - 1].o.time);
 console.log('seek past the end → embed at', last);
@@ -207,9 +239,19 @@ await p.evaluate(() => {
   window.__hidden = false;
   document.dispatchEvent(new Event('visibilitychange'));
 });
-await p.waitForFunction(() => !/chat connected/.test(document.body.innerText), null, { timeout: 10000 });
-const after = (await p.locator('.font-mono.text-\\[11px\\]').first().innerText()).replace(/\s+/g, ' ');
-console.log('after the stream ended:', after, '· live edge gone:', (await p.locator('svg.hl-timeline .live-edge').count()) === 0);
+await p.waitForFunction(() => !/chat connected/.test(document.body.innerText), null, {
+  timeout: 10000,
+});
+const after = (await p.locator('.font-mono.text-\\[11px\\]').first().innerText()).replace(
+  /\s+/g,
+  ' ',
+);
+console.log(
+  'after the stream ended:',
+  after,
+  '· live edge gone:',
+  (await p.locator('svg.hl-timeline .live-edge').count()) === 0,
+);
 if (/\blive\b/.test(after)) throw new Error('still marked live after the stream ended');
 const real = errors.filter((e) => !/ResizeObserver/.test(e));
 console.log('page errors:', real.length ? real : 'none');

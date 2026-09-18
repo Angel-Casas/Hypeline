@@ -53,7 +53,8 @@ async function blobUrl(
   const res = await fetch(url);
   if (!res.ok) throw new Error(`${url} → HTTP ${res.status}`);
   const declared = Number(res.headers.get('content-length') || 0);
-  const total = (res.headers.get('content-encoding') ? expected : declared || expected) || undefined;
+  const total =
+    (res.headers.get('content-encoding') ? expected : declared || expected) || undefined;
   const reader = res.body?.getReader();
   if (!reader) {
     // no streaming body (old browsers, some test doubles): one read, still only one
@@ -84,11 +85,15 @@ export function getFfmpeg(onProgress?: (p: FfmpegLoadProgress) => void): Promise
       const base = `${import.meta.env.BASE_URL.replace(/\/$/, '')}/ffmpeg`;
       const [coreURL, wasmURL] = await Promise.all([
         blobUrl(`${base}/ffmpeg-core.js`, 'text/javascript'),
-        blobUrl(`${base}/ffmpeg-core.wasm`, 'application/wasm', CORE_WASM_BYTES, (received, total) =>
-          onProgress?.({
-            stage: 'downloading-core',
-            ratio: total ? Math.min(1, received / total) : undefined,
-          }),
+        blobUrl(
+          `${base}/ffmpeg-core.wasm`,
+          'application/wasm',
+          CORE_WASM_BYTES,
+          (received, total) =>
+            onProgress?.({
+              stage: 'downloading-core',
+              ratio: total ? Math.min(1, received / total) : undefined,
+            }),
         ),
       ]);
       urls = { coreURL, wasmURL };

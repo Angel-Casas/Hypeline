@@ -625,8 +625,9 @@
       "name": "Paquetes iniciales",
       "detect": "Detectar desde este VOD",
       "help": "Cada paquete es un conjunto de valores por defecto en un idioma. Los nombres de emotes son neutrales y están siempre activos.",
-      "always": "siempre activo",
-      "people": "{n} personas"
+      "people": "{n} personas",
+      "enNote": "activo por defecto",
+      "enHelp": "El chat de Twitch cambia al inglés constantemente, hable lo que hable el stream, así que está activo salvo que lo desactives. Desactívalo para un chat que nunca escribe en alfabeto latino: entonces clip, lol y wtf dejan de contar."
     },
     "changes": {
       "name": "Qué cambia",

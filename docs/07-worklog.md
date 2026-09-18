@@ -1389,3 +1389,22 @@ screenshot said so and the CSS looked innocent. Theme-varying tokens go in
 strings × 10), lint and build green; both themes reviewed from screenshots
 of the dashboard, the settings sheet and the panel, including its selected
 state. **Next:** Angel has 5 local commits to push.
+
+## 2026-09-18 (cont.) — Warm silk, cool silk, and English gets a switch
+
+**What changed.** The vocabulary panel's rings now carry meaning (ADR-31):
+warm for everything Hypeline shipped, cool for the words this user added,
+which change nothing but their edge. Both animate. The mint selection colour
+is gone; `--pick` is the warm silk's own hue, kept for the plain controls
+that have no ring.
+
+Inputs have a visible border again — `--field-line` was white at 95 %, which
+was an inset highlight back when fields sat on tinted glass and is invisible
+on the whitened page from ADR-30.
+
+English is no longer "always on". It is a switch like the other nine packs,
+on by default, and turning it off actually reaches `scoring.ts` — as does
+the × on each shipped English word, which until today was a picture. 114
+unit tests (3 new), all 15 e2e suites green, both themes checked from
+screenshots including the English-off state. **Next:** Angel has 7 commits
+to push.

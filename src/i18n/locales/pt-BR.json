@@ -625,8 +625,9 @@
       "name": "Pacotes iniciais",
       "detect": "Detectar deste VOD",
       "help": "Cada pacote é um conjunto de padrões em um idioma. Nomes de emotes são neutros e ficam sempre ligados.",
-      "always": "sempre ligado",
-      "people": "{n} pessoas"
+      "people": "{n} pessoas",
+      "enNote": "ativo por padrão",
+      "enHelp": "O chat da Twitch troca para o inglês o tempo todo, seja qual for a língua da live, então isto fica ativo a menos que você desligue. Desligue para um chat que nunca escreve em alfabeto latino: aí clip, lol e wtf param de contar."
     },
     "changes": {
       "name": "O que muda",

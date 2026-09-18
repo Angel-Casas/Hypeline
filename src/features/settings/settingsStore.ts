@@ -107,22 +107,23 @@ export const useSettingsStore = defineStore('settings', () => {
   watch(
     [shimUrl, preferredHeight, aiApiKey, aiBaseUrl, chatModel, sttModel, theme, sensitivity],
     () => {
-    try {
-      const p: Persisted = {
-        shimUrl: shimUrl.value,
-        preferredHeight: preferredHeight.value,
-        aiApiKey: aiApiKey.value,
-        aiBaseUrl: aiBaseUrl.value,
-        chatModel: chatModel.value,
-        sttModel: sttModel.value,
-        theme: theme.value,
-        sensitivity: sensitivity.value,
-      };
-      localStorage.setItem(KEY, JSON.stringify(p));
-    } catch {
-      /* ignore */
-    }
-  });
+      try {
+        const p: Persisted = {
+          shimUrl: shimUrl.value,
+          preferredHeight: preferredHeight.value,
+          aiApiKey: aiApiKey.value,
+          aiBaseUrl: aiBaseUrl.value,
+          chatModel: chatModel.value,
+          sttModel: sttModel.value,
+          theme: theme.value,
+          sensitivity: sensitivity.value,
+        };
+        localStorage.setItem(KEY, JSON.stringify(p));
+      } catch {
+        /* ignore */
+      }
+    },
+  );
 
   return {
     shimUrl,

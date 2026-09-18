@@ -625,8 +625,9 @@
       "name": "Packs de départ",
       "detect": "Détecter depuis ce VOD",
       "help": "Chaque pack est un jeu de valeurs par défaut dans une langue. Les noms d’emotes sont neutres et toujours actifs.",
-      "always": "toujours actif",
-      "people": "{n} personnes"
+      "people": "{n} personnes",
+      "enNote": "activé par défaut",
+      "enHelp": "Le chat Twitch bascule sans arrêt vers l’anglais, quelle que soit la langue du stream : c’est donc activé tant que vous ne le désactivez pas. Désactivez-le pour un chat qui n’écrit jamais en alphabet latin — clip, lol et wtf cessent alors de compter."
     },
     "changes": {
       "name": "Ce qui change",

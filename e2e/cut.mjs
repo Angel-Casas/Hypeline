@@ -66,7 +66,10 @@ const variant720 = readFileSync(join(SEG_DIR, 'variant.m3u8'), 'utf8');
 const b = await chromium.launch(EXEC ? { executablePath: EXEC } : {});
 const ctx = await b.newContext({ viewport: { width: 1280, height: 1000 } });
 // the language is chosen already: the first-visit sheet must not cover the page
-await ctx.addInitScript(() => { localStorage.setItem('hypeline.locale', 'en'); localStorage.setItem('hypeline.tour.v1', 'done'); });
+await ctx.addInitScript(() => {
+  localStorage.setItem('hypeline.locale', 'en');
+  localStorage.setItem('hypeline.tour.v1', 'done');
+});
 await ctx.addInitScript((shim) => {
   localStorage.setItem(
     'hypeline.settings.v1',
