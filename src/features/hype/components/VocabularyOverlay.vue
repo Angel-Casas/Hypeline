@@ -304,7 +304,6 @@ watch(() => settings.sensitivity, computeBaseline);
                 :style="slice(i + 3)"
               >
                 <span>{{ w }}</span>
-                <em class="who">{{ t('vocab.yours') }}</em>
                 <button
                   class="vx"
                   :title="t('common.remove')"
@@ -603,6 +602,13 @@ watch(() => settings.sensitivity, computeBaseline);
   letter-spacing: 0.06em;
   text-transform: uppercase;
   color: var(--color-ink);
+}
+/* the kind is an aside, not part of the word: a dash and a little air keep "POGGERS" and
+   "EMOTE" from reading as one string (Angel, 2026-09-18) */
+.tok em::before {
+  content: '–';
+  margin-right: 5px;
+  letter-spacing: normal;
 }
 .bar {
   height: 5px;

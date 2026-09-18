@@ -934,3 +934,39 @@ diffed. Before, the maximum channel difference across the ring was **0**;
 after, **151**, for the resting rings and the hover rings, in both themes.
 `e2e/_hover.mjs` cannot see this — it reads rules, not pixels — so any future
 change to the ramp should be checked the same way.
+
+## ADR-37 — The suggestion lists drop function words (2026-09-18)
+
+**Context.** "Seen in this VOD" and "Most used words" were offering `is`,
+`that`, `it`, `did`, `de`, `la` — grammar, not vocabulary. Angel: they
+"contaminate the utility of this section without providing any value".
+
+**Decision.** One `STOPWORDS` set covering all ten languages, applied to the
+two suggestion lists only. It holds **articles, pronouns, possessives,
+demonstratives, copulas and auxiliaries, prepositions and conjunctions**, and
+bare numbers are dropped with it (a timestamp or a count is never a word to
+score on).
+
+What is deliberately **not** in it: negations and interjections (`no`, `nope`,
+`нет`, `不`), question words (`what`, `why`, `qué`) and intensifiers (`very`,
+`muy`, `很`). On Twitch those carry real feeling, and several are already in
+the scoring's own reaction and mood lists — filtering them here would have the
+suggestion list disagree with the scoring.
+
+Three properties worth stating:
+
+- **Emotes are never filtered**, whatever they are spelled like. A channel
+  emote named `THE` stays.
+- **Scoring is untouched.** This is a suggestion filter. A user who types a
+  stopword in on purpose still gets it, and it still counts.
+- **No language detection.** The whole list applies at once, because a chat
+  code-switches constantly. A false positive costs one suggestion.
+
+**Consequences.** On the example VOD the two lists went from `is / that / it /
+did` near the top to `good / song / what / nice / first / time / chat /
+brazil`. Japanese, Korean and Chinese benefit least — `TOKEN_RE` cannot split
+`私は` into a pronoun and a particle — which is a known limit of tokenising
+without a dictionary, not a reason to skip the other seven. Also cosmetic: the
+kind label is now separated by a dash (`POGGERS – EMOTE`), and the `YOURS`
+tag is gone from the words a user adds, since the cool silk ring already says
+it.

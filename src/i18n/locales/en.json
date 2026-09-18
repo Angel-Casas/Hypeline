@@ -580,7 +580,6 @@
     "scopeChannel": "Only for {channel}. These stack on top of your everywhere list, so the defaults still apply.",
     "words": "words",
     "add": "Add",
-    "yours": "yours",
     "turnOn": "turn this word back on",
     "turnOff": "turn this word off",
     "open": "Chat vocabulary",

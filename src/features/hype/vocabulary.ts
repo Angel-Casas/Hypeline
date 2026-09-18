@@ -239,6 +239,65 @@ export interface SeenToken {
 }
 
 /** Words shorter than this are noise ("a", "no"); "lol" and "草" still make it. */
+/**
+ * Function words, in the ten languages the app speaks. These are filtered out of the two
+ * suggestion lists — never out of the scoring, and never out of what a user may type in: a
+ * stopword the user adds on purpose still counts (Angel, 2026-09-18).
+ *
+ * The list holds **articles, pronouns, possessives, demonstratives, copulas and auxiliaries,
+ * prepositions and conjunctions** and nothing else. What is deliberately *not* here: negations
+ * and interjections ("no", "nope", "нет", "不"), question words ("what", "why", "qué"), and
+ * intensifiers ("very", "muy", "很"), because on Twitch those carry real feeling and several
+ * of them are already in the scoring's own reaction and mood lists. Emotes are never filtered,
+ * whatever they are spelled like.
+ *
+ * Nothing here is language-detected: a chat code-switches constantly, so the whole list applies
+ * at once. A false positive costs one suggestion; a Japanese chat is barely affected either
+ * way, since `TOKEN_RE` cannot split 私は into a pronoun and a particle.
+ */
+const STOPWORDS = new Set<string>(
+  // English
+  (
+    'a an the i you he she it we they me him her us them my your his its our their this that ' +
+    'these those is am are was were be been being do does did have has had will would can could ' +
+    'should of in on at to for with from by and or but if so as than then there here about ' +
+    // Español
+    'el la los las un una unos unas lo yo tu tú él ella nosotros vosotros ellos ellas te se nos ' +
+    'os mi mis su sus este esta esto ese esa eso aquel es son era eran ser estar está están ha ' +
+    'han hay de del en al con por para sin sobre y o pero que si como ' +
+    // Português (Brasil)
+    'o os as um uma eu você vc ele ela nós eles elas meu minha seu sua esse essa isso isto é ' +
+    'são ser estar está tem do da dos das no na nas com pra sem e mas ' +
+    // Deutsch
+    'der die das ein eine einen einem eines ich du er sie es wir ihr mich dich sich uns euch ' +
+    'mein dein sein ihre dieser diese dieses ist sind war waren hat haben hatte wird werden von ' +
+    'auf an zu für mit aus bei und oder aber dass wenn wie ' +
+    // Français
+    'le les une des du je il elle on nous vous ils elles ce cette ces est sont était être ont ' +
+    'avoir dans sur à au aux pour avec sans par et ou mais qui ' +
+    // Русский
+    'и в на с по из к у за о от для я ты он она оно мы вы они меня тебя его ее её нас вас их ' +
+    'это этот эта то как но а же ли был была были быть есть ' +
+    // 日本語
+    'の は を に が で と も から まで より です ます した する これ それ あれ この その あの 私 僕 俺 君 彼 彼女 ' +
+    // 한국어
+    '이 그 저 은 는 을 를 의 에 에서 와 과 도 만 나 너 우리 내가 그것 이것 있다 하다 했다 ' +
+    // 繁體中文
+    '的 了 是 在 我 你 他 她 它 我們 你們 他們 這 那 和 與 就 都 也 有 把 被 ' +
+    // Türkçe
+    'bir bu şu ben sen biz siz onlar benim senin onun bizim sizin ve ile ama için gibi ki da ' +
+    'mi mı mu mü var olan oldu'
+  ).split(/\s+/),
+);
+
+/** A suggestion worth offering: an emote always, a word only if it carries meaning. */
+function worthSuggesting(key: string, emote: boolean): boolean {
+  if (emote) return true;
+  if (STOPWORDS.has(key)) return false;
+  // a bare number is a timestamp, a count or somebody's age — never a word to score on
+  return !/^[\p{N}']+$/u.test(key);
+}
+
 const MIN_LEN = 2;
 const SEEN_BUCKET_SEC = 15;
 
@@ -277,7 +336,8 @@ export function seenTokens(msgs: ChatMessage[], limit = 60): SeenToken[] {
     };
     for (const e of new Set(m.e)) add(e, true);
     const low = m.m.toLowerCase();
-    for (const w of new Set(low.match(TOKEN_RE) ?? [])) if (w.length >= MIN_LEN) add(w, false);
+    for (const w of new Set(low.match(TOKEN_RE) ?? []))
+      if (w.length >= MIN_LEN && worthSuggesting(w, false)) add(w, false);
   }
   // a token that turns up in most of the VOD is filler, however many people say it: it cannot
   // mark a moment if it marks every moment ("de", "that", a channel's wallpaper emote)
@@ -329,7 +389,8 @@ export function topTokens(msgs: ChatMessage[], limit = 60): SeenToken[] {
     };
     for (const e of new Set(m.e)) add(e, true);
     const low = m.m.toLowerCase();
-    for (const w of new Set(low.match(TOKEN_RE) ?? [])) if (w.length >= MIN_LEN) add(w, false);
+    for (const w of new Set(low.match(TOKEN_RE) ?? []))
+      if (w.length >= MIN_LEN && worthSuggesting(w, false)) add(w, false);
   }
   return [...uses.entries()]
     .map(([key, n]) => ({

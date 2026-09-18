@@ -9,6 +9,7 @@ import {
   ready,
   seenTokens,
   toTerm,
+  topTokens,
 } from '../vocabulary';
 import { isClipRequest, isReaction } from '../scoring';
 import { analyse, isClipRequest, isReaction, NO_VOCAB } from '../scoring';
@@ -176,5 +177,53 @@ describe('turning English off', () => {
     expect(isClipRequest(msg('someone clip that'), v)).toBe(true);
     expect(isReaction(msg('lol'), v)).toBe(false);
     expect(isReaction(msg('kekw'), v)).toBe(true);
+  });
+});
+
+describe('the suggestion lists drop function words', () => {
+  /** A chat where the articles and pronouns outnumber everything that matters. */
+  const msgs: ChatMessage[] = [];
+  for (let i = 0; i < 12; i++) {
+    msgs.push({ t: i, u: 'u' + i, m: 'the clip is on the stream and it was insane', e: [], b: [] });
+    msgs.push({ t: 300 + i, u: 'v' + i, m: 'el clipazo de la stream es una locura', e: [], b: [] });
+  }
+
+  it('offers the words that carry meaning and not the ones that carry grammar', () => {
+    const tokens = topTokens(msgs).map((s) => s.token);
+    expect(tokens).toContain('clip');
+    expect(tokens).toContain('insane');
+    expect(tokens).toContain('clipazo');
+    expect(tokens).toContain('locura');
+    for (const dull of ['the', 'is', 'it', 'was', 'and', 'on', 'el', 'de', 'la', 'es', 'una'])
+      expect(tokens).not.toContain(dull);
+  });
+
+  it('never filters an emote, whatever it is spelled like', () => {
+    const withEmote = msgs.concat([
+      { t: 5, u: 'a', m: 'THE', e: ['THE'], b: [] },
+      { t: 6, u: 'b', m: 'THE', e: ['THE'], b: [] },
+      { t: 7, u: 'c', m: 'THE', e: ['THE'], b: [] },
+    ]);
+    const emote = topTokens(withEmote).find((s) => s.kind === 'emote');
+    expect(emote?.token).toBe('THE');
+  });
+
+  it('drops bare numbers, which are timestamps and counts', () => {
+    const counted = Array.from({ length: 10 }, (_, i) => ({
+      t: i,
+      u: 'u' + i,
+      m: 'clipea eso 2024 300',
+      e: [],
+      b: [],
+    }));
+    const tokens = topTokens(counted).map((s) => s.token);
+    expect(tokens).toContain('clipea');
+    expect(tokens).not.toContain('2024');
+    expect(tokens).not.toContain('300');
+  });
+
+  it('still lets a user add a stopword on purpose — this filters suggestions only', () => {
+    const v = buildVocabulary({ ...emptyState(), global: { important: ['the'], reaction: [] } });
+    expect(v.important.map((t) => t.key)).toContain('the');
   });
 });

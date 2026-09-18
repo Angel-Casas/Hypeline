@@ -1513,3 +1513,19 @@ rules rather than pixels and could never have caught this.
 
 114 tests, 15 e2e suites, lint and build green. **Next:** Angel has 12 commits
 to push.
+
+## 2026-09-18 (cont.) — The suggestion lists stop suggesting grammar
+
+**What changed.** ADR-37: a ten-language `STOPWORDS` set filters articles,
+pronouns, copulas, prepositions and conjunctions — plus bare numbers — out of
+"Seen in this VOD" and "Most used words". Not out of the scoring, and not out
+of what a user may type: it is a suggestion filter. Emotes are never touched.
+Negations, question words and intensifiers stay, because Twitch means them.
+
+On the example VOD the lists went from `is / that / it / did` to `good / song
+/ what / nice / first / time / chat / brazil`.
+
+Also: the kind label is separated from the word by a dash now, and the
+`YOURS` tag is gone from user-added chips — the cool ring already said it.
+
+118 tests (4 new), 15 e2e suites, lint and build green.
