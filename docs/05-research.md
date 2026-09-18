@@ -7,6 +7,9 @@ with the answer and link the spike script.
 ## NanoGPT (verified 2026-09-12 from docs.nano-gpt.com)
 
 - Base URL `https://nano-gpt.com/api/v1`, Bearer auth with the API key.
+- Keys are created at **`https://nano-gpt.com/api`** (checked 2026-09-18) — the "API Keys"
+  section of that page, up to 20 per account. An account is optional for using NanoGPT itself;
+  a key is not. Wallets top up by card, Apple / Google Pay or crypto (Angel, 2026-09-18).
   OpenAI-compatible for chat completions (streaming, structured output),
   images, and `POST /v1/audio/transcriptions` (STT, sync and async, multiple
   languages, diarization). Also an Anthropic-compatible Messages endpoint.

@@ -123,6 +123,13 @@ if (await p.locator('video').count())
 await p.goto(BASE + '/dashboard');
 await p.getByRole('button', { name: 'Settings', exact: true }).click();
 await p.waitForSelector('section:has-text("Settings")', { timeout: 20000 });
+// the key's three steps live here too, with the two links a first-timer needs
+const steps = await p.locator('.steps li').allInnerTexts();
+if (steps.length !== 3) throw new Error('the NanoGPT key steps are missing: ' + steps.length);
+const apiHref = await p.locator('.steps a').nth(1).getAttribute('href');
+if (apiHref !== 'https://nano-gpt.com/api') throw new Error('wrong API-keys link: ' + apiHref);
+console.log('key steps:', steps.map((x) => x.split(' ').slice(0, 4).join(' ')).join(' / '));
+
 const settings = await p.locator('[data-testid="storage"]').first().innerText();
 if (!/(10\.0|9\.9) GB of 10\.0 GB used/.test(settings.replace(/\s+/g, ' ')))
   throw new Error('quota line missing: ' + settings);

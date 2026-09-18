@@ -19,6 +19,8 @@ export const NANOGPT_BASE = 'https://nano-gpt.com/api';
  * Always shown as a discount, never as a tracker, and the app works with any NanoGPT key.
  */
 export const REFERRAL_URL = 'https://nano-gpt.com/r/BnfJfghE';
+/** Where a key is created (verified 2026-09-18): the "API Keys" section, up to 20 per account. */
+export const API_KEYS_URL = 'https://nano-gpt.com/api';
 
 export class NanoGptError extends Error {
   constructor(

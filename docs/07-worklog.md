@@ -1615,3 +1615,20 @@ keyboard cursor sitting on row one of an untouched list reads as a selection, so
 starts nowhere and appears when you type or press a key.
 
 131 tests (13 new), 15 e2e suites, lint, build and locale parity (555 strings) green.
+
+## 2026-09-18 (cont.) — Getting a key, in three steps
+
+**What changed.** Settings told people to "create an account, add a few dollars, copy an API
+key" in one run-on sentence with a single link. Most users have never done any of those things,
+so it is a numbered list now: open nano-gpt.com and create an account — or skip it, NanoGPT
+works without one — top up the wallet with a card, Apple or Google Pay or crypto, then open the
+API page, create a key, and paste it below. The two links sit in the two steps that need them;
+`API_KEYS_URL` is `https://nano-gpt.com/api`, checked against the page itself and written down
+in `docs/05-research.md` with the date, since that is exactly the kind of URL that moves.
+
+`settings.createAccount` and `settings.keyOutro` are gone from all ten catalogs, replaced by
+`keyStep1..3` and the two link labels; `keyIntro` lost the clause that used to run into the old
+link. 558 strings each. `quota.mjs` (which already opens Settings) checks the three steps and
+the API link.
+
+131 tests, 15 e2e suites, lint, build and locale parity green.

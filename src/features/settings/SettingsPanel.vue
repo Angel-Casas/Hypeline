@@ -2,7 +2,7 @@
 import { onMounted, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useTourStore } from '@/features/tour/tourStore';
-import { REFERRAL_URL } from '@/lib/nanogpt/client';
+import { API_KEYS_URL, REFERRAL_URL } from '@/lib/nanogpt/client';
 import { DEFAULT_RELAY_URL, useSettingsStore } from './settingsStore';
 import { useRouter } from 'vue-router';
 import { useQuotaStore } from './quotaStore';
@@ -86,13 +86,38 @@ const KINDS: { id: 'vods' | 'clips' | 'ai' | 'cache'; key: 'vods' | 'clips' | 'a
     <h2 class="font-semibold">{{ t('common.settings') }}</h2>
     <div class="border-line flex flex-col gap-1 border-t pt-2 text-xs">
       <div class="font-semibold">{{ t('settings.nanogptKey') }}</div>
-      <p class="text-muted">
-        {{ t('settings.keyIntro') }}
-        <a :href="REFERRAL_URL" target="_blank" rel="noopener" class="text-accent underline">{{
-          t('settings.createAccount')
-        }}</a>
-        {{ t('settings.keyOutro') }}
-      </p>
+      <p class="text-muted">{{ t('settings.keyIntro') }}</p>
+      <!-- Getting a key is three steps and most people have never done any of them (Angel,
+           2026-09-18). Numbered, with the two links they need in the steps that need them. -->
+      <ol class="steps text-muted">
+        <li>
+          <i18n-t keypath="settings.keyStep1" tag="span">
+            <template #link>
+              <a
+                :href="REFERRAL_URL"
+                target="_blank"
+                rel="noopener"
+                class="text-accent underline"
+                >{{ t('settings.keyLinkSite') }}</a
+              >
+            </template>
+          </i18n-t>
+        </li>
+        <li>{{ t('settings.keyStep2') }}</li>
+        <li>
+          <i18n-t keypath="settings.keyStep3" tag="span">
+            <template #link>
+              <a
+                :href="API_KEYS_URL"
+                target="_blank"
+                rel="noopener"
+                class="text-accent underline"
+                >{{ t('settings.keyLinkApi') }}</a
+              >
+            </template>
+          </i18n-t>
+        </li>
+      </ol>
       <div class="flex items-center gap-2">
         <input
           v-model.trim="settings.aiApiKey"
@@ -254,6 +279,37 @@ const KINDS: { id: 'vods' | 'clips' | 'ai' | 'cache'; key: 'vods' | 'clips' | 'a
 </template>
 
 <style scoped>
+/* the three steps: counters in mono so they line up with the rest of the panel's numbers */
+.steps {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  margin: 2px 0 4px;
+  padding: 0;
+  list-style: none;
+  counter-reset: step;
+}
+.steps li {
+  display: flex;
+  gap: 7px;
+  line-height: 1.45;
+}
+.steps li::before {
+  counter-increment: step;
+  content: counter(step);
+  flex: none;
+  width: 15px;
+  height: 15px;
+  margin-top: 1px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--color-ink) 8%, transparent);
+  color: var(--color-ink);
+  font-family: var(--font-mono);
+  font-size: 9.5px;
+  line-height: 15px;
+  text-align: center;
+}
+
 /* the red ×, as in the Library rail */
 .purge {
   color: var(--color-danger);
