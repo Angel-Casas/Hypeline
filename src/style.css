@@ -312,9 +312,9 @@ body {
     transform: none;
   }
   /* the inversion still happens too — it simply arrives rather than sweeping */
-  .hover-invert::after,
-  .btn-ghost::after {
-    transition: none;
+  .hover-invert,
+  .btn-ghost {
+    transition-duration: 0s;
   }
 }
 
@@ -348,7 +348,7 @@ body {
 }
 
 @utility glass-sm {
-  background: var(--glass-sm-bg);
+  background-color: var(--glass-sm-bg);
   border: 1px solid var(--glass-sm-line);
   backdrop-filter: blur(12px) saturate(1.4);
   -webkit-backdrop-filter: blur(12px) saturate(1.4);
@@ -379,80 +379,109 @@ body {
  * All four are `:not(:disabled)` and all four transition on `--hover-ease`. `hover-lift` is
  * flattened under reduced motion, further down.
  */
-@utility hover-invert {
-  position: relative;
-  isolation: isolate;
-  transition:
-    color var(--hover-ease),
-    border-color var(--hover-ease);
-  /*
-   * The fill is a pseudo-element rather than a background, so it can *move*. `isolation`
-   * makes this element a stacking context, and inside one a negative z-index child paints
-   * above the element's own background but below its content — which is exactly the layer a
-   * wipe needs, and is why this works on glass and on a translucent ghost button alike.
+/* `hover-invert` is a plain class, not an `@utility`: all of it lives unlayered below. */
+/*
+   * The fill is the element's **own background-image**, grown from 0 % to 100 % width, not a
+   * pseudo-element. Three bugs came from the pseudo-element version (Angel, 2026-09-18):
+   *
+   *  - it was revealed with `transform: scaleX()`, and scaling a rounded box squashes its
+   *    corners, so the fill started square and rounded off as it arrived;
+   *  - an absolutely positioned child is laid out against the *padding* box, so `inset: 0`
+   *    plus `border-radius: inherit` (the *border* box's radius) bulged past the border's
+   *    inner curve — the fill showed outside the element's own edge;
+   *  - and a negative-z-index child paints above the element's border, hiding it.
+   *
+   * A background layer has none of those problems: it is clipped by the element's own box and
+   * radius, it sits under the border, and `background-size` interpolates without distortion.
+   * It also works on an `<input>`, which cannot have a pseudo-element at all.
+   *
+   * The declarations themselves are in the unlayered block below, because `background:` as a
+   * shorthand — which `glass-sm` uses, and which the pack chips used — resets `background-image`
+   * and would erase the fill.
    */
-  /*
-   * `border-radius: inherit` instead of `overflow: hidden`. The fill is `inset: 0`, so it can
-   * never exceed the box and there is nothing to clip — and `overflow: hidden` on a flex item
-   * sets its automatic minimum size to zero, which silently squashed the vocabulary rows to
-   * half height the first time this shipped (2026-09-18).
-   */
-  &::after {
-    content: '';
-    position: absolute;
-    inset: 0;
-    z-index: -1;
-    border-radius: inherit;
-    background: var(--invert-bg);
-    transform: scaleX(0);
-    transform-origin: left;
-    transition: transform var(--wipe);
-  }
-  &:hover:not(:disabled)::after,
-  &:focus-visible:not(:disabled)::after {
-    transform: scaleX(1);
-  }
-}
 /*
  * The colour half of the inversion lives outside the utility, with the class doubled. Tailwind
  * puts `@utility` output in `@layer utilities`, and an unlayered rule — which every Vue scoped
- * `<style>` is — beats *any* layered one whatever its specificity. So a component that sets
- * `color: var(--color-ink)` on itself (the starter-pack chips did) stayed ink on the ink fill
- * and its label vanished. `.hover-invert.hover-invert` is unlayered and specific enough to win
- * without `!important` (2026-09-18).
+ * `<style>` is, and which beats *any* layered rule whatever its specificity — is the only way
+ * to win against a component that colours itself. The starter-pack chips did, and their labels
+ * vanished into the fill (2026-09-18).
  */
-.hover-invert.hover-invert:hover:not(:disabled),
-.hover-invert.hover-invert:focus-visible:not(:disabled) {
-  color: var(--invert-fg);
-  border-color: var(--invert-bg);
+/*
+ * Everything that inverts, in one list. `glass-sm` buttons and `btn-ghost` used to carry their
+ * own copies of these rules and drifted: the rail's Clips card inverted its background but not
+ * the text inside it, so half the card vanished (Angel, 2026-09-18).
+ */
+.hover-invert.hover-invert,
+:is(button, a, [role='button']).glass-sm,
+.btn-ghost.btn-ghost {
+  background-image: linear-gradient(var(--invert-bg), var(--invert-bg));
+  background-repeat: no-repeat;
+  background-position: left center;
+  background-size: 0% 100%;
+  /*
+   * The text flips *while the fill is under it*, not before. The fill grows from the left and
+   * shrinks back to the left, so on the way in the label is covered early (flip at ~100 ms of
+   * the 220 ms sweep) and on the way out it is the last thing uncovered (flip at ~160 ms).
+   * Without the two delays the label spends a moment as paper on paper and disappears — which
+   * is what the mid-sweep screenshot showed (2026-09-18).
+   */
+  transition:
+    background-size var(--wipe),
+    color 0.05s linear 0.16s,
+    border-color 0.05s linear 0.16s;
 }
-.hover-invert.hover-invert:hover:not(:disabled)
-  :where(b, i, em, small, span, strong, svg, button, a) {
-  color: inherit;
+.hover-invert.hover-invert:hover:not(:disabled),
+.hover-invert.hover-invert:focus-visible:not(:disabled),
+:is(button, a, [role='button']).glass-sm:hover:not(:disabled),
+.btn-ghost.btn-ghost:hover:not(:disabled) {
+  background-size: 100% 100%;
+  color: var(--invert-fg);
+  border-color: var(--invert-fg);
+  transition:
+    background-size var(--wipe),
+    color 0.05s linear 0.1s,
+    border-color 0.05s linear 0.1s;
 }
 /*
- * Everything *inside* an inverted thing has to invert with it. A nested control that keeps its
- * own ink colour simply disappears — found by screenshotting the mock's option 1, where the
- * row's "+ important" button vanished into the fill.
+ * *Everything* inside inverts, not just the tags we thought of. A `text-muted` or `text-ink-2`
+ * class sets its own colour, so the rail's library cards kept ink text on the ink fill and the
+ * lines below each title disappeared (Angel, 2026-09-18). `*` is right here: the exceptions
+ * are listed below it, and a Tailwind colour utility is layered, so this unlayered rule wins.
  */
-.hover-invert.hover-invert:hover:not(:disabled) :where(.mini, .btn-ghost) {
+.hover-invert.hover-invert:hover:not(:disabled) *,
+:is(button, a, [role='button']).glass-sm:hover:not(:disabled) *,
+.btn-ghost.btn-ghost:hover:not(:disabled) * {
+  color: inherit;
+}
+.hover-invert.hover-invert:hover:not(:disabled) :where(.mini, .btn-ghost, .vchip, .pack),
+:is(button, a, [role='button']).glass-sm:hover:not(:disabled) :where(.mini, .vchip, .pack) {
   border-color: color-mix(in srgb, var(--invert-fg) 45%, transparent);
 }
 /* red still has to read as red once it is sitting on the fill */
-.hover-invert.hover-invert:hover:not(:disabled) :where(.purge, .text-danger) {
+.hover-invert.hover-invert:hover:not(:disabled) :where(.purge, .text-danger),
+.hover-invert.hover-invert:hover:not(:disabled) :where(.purge, .text-danger) *,
+:is(button, a, [role='button']).glass-sm:hover:not(:disabled) :where(.purge, .text-danger) {
   color: var(--invert-danger);
 }
 /*
- * A control inside an already-inverted row inverts *back* when the pointer reaches it: the fill
- * becomes the paper and its text the ink. Two nested inversions cancelling is the honest reading
- * of the idea, and without it the child's own ink fill would be invisible on the parent's.
+ * A control inside an already-inverted row inverts *back* when the pointer reaches it: its fill
+ * becomes the paper and its text the ink. Two nested inversions cancelling is the honest
+ * reading of the idea, and without it the child's own ink fill would be invisible on its
+ * parent's.
  */
-.hover-invert:hover .hover-invert.hover-invert:hover:not(:disabled)::after {
-  background: var(--invert-fg);
-}
 .hover-invert:hover .hover-invert.hover-invert:hover:not(:disabled) {
+  background-image: linear-gradient(var(--invert-fg), var(--invert-fg));
   color: var(--invert-bg);
-  border-color: var(--invert-fg);
+  border-color: var(--invert-bg);
+}
+.hover-invert:hover .hover-invert.hover-invert:hover:not(:disabled) *,
+:is(button, a, [role='button']).glass-sm:hover:not(:disabled) *,
+.btn-ghost.btn-ghost:hover:not(:disabled) * {
+  color: inherit;
+}
+/* A destructive control inside an inverted row keeps its own red wash, not the row's fill. */
+.hover-invert:hover .hover-danger:hover {
+  background: var(--hover-danger);
 }
 @utility hover-lift {
   transition:
@@ -505,32 +534,14 @@ body {
 }
 @utility btn-ghost {
   border: 1px solid var(--color-line);
-  background: var(--ghost-bg);
+  background-color: var(--ghost-bg);
   border-radius: 12px;
   padding: 0.5rem 0.9rem;
   font-size: 0.875rem;
-  position: relative;
-  isolation: isolate;
-  transition:
-    color var(--hover-ease),
-    border-color var(--hover-ease);
-  &::after {
-    content: '';
-    position: absolute;
-    inset: 0;
-    z-index: -1;
-    border-radius: inherit;
-    background: var(--invert-bg);
-    transform: scaleX(0);
-    transform-origin: left;
-    transition: transform var(--wipe);
-  }
-  &:hover:not(:disabled)::after {
-    transform: scaleX(1);
-  }
+  /* the fill and its timing are in the shared block below, with every other inverting thing */
   &:hover:not(:disabled) {
     color: var(--invert-fg);
-    border-color: var(--invert-bg);
+    border-color: var(--invert-fg);
   }
 }
 /* the silk button: a slowly drifting pastel gradient for the one action worth drawing the
@@ -543,6 +554,11 @@ body {
   font-size: 0.875rem;
   font-weight: 600;
   color: #221c2a;
+  /* The ramp has to *end where it starts* or the loop jumps: `silk-drift` shifts the
+     background by exactly one gradient width, so the colour at 0 % and at 100 % must be the
+     same one (Angel spotted the jump, 2026-09-18). Mirrored, for the same reason the ring is:
+     butter → sky in sRGB goes through a drab khaki, and going back the way it came has no
+     jump to hide. */
   background: linear-gradient(
     110deg,
     #cfdcff,
@@ -550,8 +566,10 @@ body {
     #ffd0e4,
     #ffdcc4,
     #fff0bd,
-    #cfdcff,
-    #ddd0ff
+    #ffdcc4,
+    #ffd0e4,
+    #ddd0ff,
+    #cfdcff
   );
   background-size: 300% 100%;
   animation: silk-drift 7s linear infinite;
@@ -705,15 +723,9 @@ body {
  * 2. An underlined word *is* the control — a fill would look like a highlighter — so its
  *    underline thickens and takes the accent instead.
  */
-:is(button, a, [role='button']).glass-sm {
-  transition:
-    background-color var(--hover-ease),
-    border-color var(--hover-ease);
-}
 :is(button, a, [role='button']).glass-sm:hover:not(:disabled) {
-  background: var(--invert-bg);
   color: var(--invert-fg);
-  border-color: var(--invert-bg);
+  border-color: var(--invert-fg);
 }
 :is(a, button):is(.underline, .text-accent) {
   text-underline-offset: 2px;

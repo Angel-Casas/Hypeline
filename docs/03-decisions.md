@@ -802,3 +802,52 @@ Three details the mock and the screenshots forced:
 already made of, which is why it cannot be grey and cannot fight the silk.
 `e2e/_hover.mjs` still reports "all covered" in both themes, and its grey
 check now has nothing to find: there is no tint left to check.
+
+## ADR-34 — The wipe is a background, not a pseudo-element (2026-09-18)
+
+**Context.** ADR-33's inversion shipped as an absolutely positioned `::after`
+revealed with `transform: scaleX()`. Angel found three faults in one look:
+the corners started square and rounded off as the fill arrived, the fill
+showed _outside_ the element's own border, and its radius did not match the
+border's. All three are properties of that mechanism, not bugs on top of it —
+scaling a rounded box squashes its radii; an absolutely positioned child is
+laid out against the **padding** box while `border-radius: inherit` gives it
+the **border** box's radius; and a negative-z-index child paints above the
+element's border.
+
+**Decision.** The fill is the element's own `background-image` — a solid
+linear-gradient in `--invert-bg` — grown from `0% 100%` to `100% 100%`. A
+background layer is clipped by the element's own box and radius, sits under
+the border, interpolates without distortion, and works on an `<input>`, which
+cannot have a pseudo-element at all. Consequences that follow from it:
+
+- **No component on this path may use the `background` shorthand**, which
+  resets `background-image` and erases the fill. `glass-sm`, `btn-ghost` and
+  the pack chips did; they use `background-color` now.
+- **The declarations are unlayered**, because a layered `@utility` loses to
+  both a Vue scoped `<style>` and to `glass-sm`. `hover-invert` is therefore
+  a plain class, not an `@utility`.
+- **One selector list** covers `hover-invert`, interactive `glass-sm` and
+  `btn-ghost`. They had their own copies and drifted: the rail's Clips card
+  inverted its background but not the text inside it, so half the card
+  vanished.
+- **The label flips while the fill is under it.** The fill grows from the
+  left and shrinks back to the left, so the colour change is delayed 100 ms
+  going in and 160 ms coming out. Without that the label is briefly paper on
+  paper.
+- **Everything inside inverts**, via `*`, not a list of tags: a `text-muted`
+  or `text-ink-2` class colours itself, which is what left the library cards
+  with invisible second lines.
+
+**Also.** The vocabulary chips and packs drop the warm silk ring for a plain
+**ink** border. A gradient edge cannot invert with the thing it wraps, and an
+edge that stays put while its surface flips reads as a mistake; ink inverts
+to paper for free, because ink is what the fill is made of. Only the words
+the user typed keep a ring — the cool one — since that is the one distinction
+this screen still has to draw.
+
+**And** `btn-silk`'s drift no longer jumps. `silk-drift` shifts the
+background by exactly one gradient width, so the colour at 0 % and at 100 %
+must be the same; it ended on lilac having started on sky. The ramp is
+mirrored now, like the ring's, and `e2e/_loop.mjs` proves it: rendered at
+`background-position: 0%` and at `300%`, the button is pixel-identical.

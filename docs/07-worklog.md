@@ -1444,3 +1444,29 @@ while Vue scoped styles are not, so the components' own `color` won.
 
 114 tests, all 15 e2e suites, lint and build green; `e2e/_hover.mjs` reports
 "all covered" in both themes. **Next:** Angel has 9 commits to push.
+
+## 2026-09-18 (cont.) — The wipe, rebuilt on the right mechanism
+
+**What changed.** Angel found three faults in the inversion — square corners
+that rounded off mid-sweep, a fill that showed outside the element's border,
+and a radius that did not match it — all of which were properties of doing it
+with a transformed pseudo-element. ADR-34 rebuilds it as the element's own
+`background-image` grown from 0 % to 100 % width. Same look, none of the
+faults, and it works on `<input>` too.
+
+Four more things fell out of it: components on this path may not use the
+`background` shorthand (it erases the fill); the rules had to leave
+`@layer utilities`, so `hover-invert` is a plain class now; `glass-sm`,
+`btn-ghost` and `hover-invert` share one selector list, having already
+drifted (the Clips card inverted its background but not its text); and the
+label's colour flip is delayed so it happens while the fill is under it.
+
+The vocabulary chips and packs now have plain ink borders that invert with
+them — a gradient edge cannot. Only the user's own words keep a silk ring.
+
+Separately, `btn-silk`'s drift no longer jumps: the ramp ended on lilac
+having started on sky, and `silk-drift` shifts by exactly one gradient width.
+`e2e/_loop.mjs` renders the seam both ways and diffs it — zero pixels.
+
+114 tests, 15 e2e suites, lint and build green; the hover audit still says
+"all covered" in both themes. **Next:** Angel has 10 commits to push.

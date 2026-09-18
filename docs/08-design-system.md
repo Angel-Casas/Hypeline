@@ -573,15 +573,24 @@ Something already ink (`btn-ink`, a pressed `seg-opt`) inverts the other way,
 to paper with an ink hairline. An `<input>` has no pseudo-element and so
 inverts in place, without the sweep.
 
-Three things to know before using it. A control **inside** an inverted thing
-inverts with it — otherwise it is ink on ink and disappears — and inverts
-**back** when hovered itself. The fill is a `::after` at `inset: 0` with
-`border-radius: inherit` and **never `overflow: hidden`**, which on a flex
-item would zero its automatic minimum size. And the colour half of the rule
-is deliberately unlayered with its class doubled
-(`.hover-invert.hover-invert`), because Tailwind's `@utility` output is
-layered and a Vue scoped `<style>` is not, so a component's own `color` would
-otherwise win and blank the label.
+Things to know before using it (ADR-34 has the reasoning). The fill is the
+element's **own `background-image`**, grown from `0% 100%` to `100% 100%` —
+not a pseudo-element, which distorted the corners as it scaled, sat on the
+wrong box and painted over the border. So:
+
+- **never write `background:` on something that inverts** — the shorthand
+  resets `background-image` and erases the fill. `background-color`;
+- the rules are **unlayered, with the class doubled**
+  (`.hover-invert.hover-invert`), because a layered `@utility` loses to both
+  a Vue scoped `<style>` and to `glass-sm`. `hover-invert` is a plain class;
+- `hover-invert`, interactive `glass-sm` and `btn-ghost` are **one selector
+  list**. Do not give a component its own copy: they drift;
+- a control **inside** an inverted thing inverts with it, and inverts **back**
+  when hovered itself;
+- everything inside inverts through `*`, not a list of tags, because a
+  `text-muted` class colours itself;
+- the label's colour flip is delayed (100 ms in, 160 ms out) so that it
+  happens while the fill is under it.
 
 **Check it with `e2e/_hover.mjs`** after touching any control: it matches
 `:hover` rules against every visible button, link and field on five screens

@@ -267,7 +267,7 @@ watch(() => settings.sensitivity, computeBaseline);
               <span
                 v-for="(w, i) in DEFAULT_WORDS[kind]"
                 :key="'d' + w"
-                class="vchip silk-ring"
+                class="vchip"
                 :class="{ off: shippedOff(kind, w) }"
                 :style="slice(i)"
               >
@@ -283,7 +283,7 @@ watch(() => settings.sensitivity, computeBaseline);
               <span
                 v-for="(p, i) in packWords(kind)"
                 :key="'p' + p.word"
-                class="vchip silk-ring"
+                class="vchip"
                 :class="{ off: vocab.isOff(kind, p.word) }"
                 :style="slice(i + 7)"
               >
@@ -388,7 +388,7 @@ watch(() => settings.sensitivity, computeBaseline);
           </p>
           <div class="flex flex-wrap gap-1.5">
             <button
-              class="pack silk-ring hover-invert"
+              class="pack hover-invert"
               :style="slice(0)"
               :aria-pressed="!vocab.state.enOff"
               data-testid="vocab-pack-en"
@@ -400,7 +400,7 @@ watch(() => settings.sensitivity, computeBaseline);
             <button
               v-for="(p, i) in packs"
               :key="p.id"
-              class="pack silk-ring hover-invert"
+              class="pack hover-invert"
               :style="slice(i + 1)"
               :aria-pressed="p.on"
               @click="vocab.togglePack(p.id)"
@@ -504,19 +504,29 @@ watch(() => settings.sensitivity, computeBaseline);
  * 8 s) because forty of them on one screen at the usual speed is a lot of motion for a panel
  * you read. Reduced motion stops them all — `silk-ring` handles that globally.
  */
+/*
+ * The shipped words and the packs wear a plain **ink** edge, not the warm silk they had for a
+ * build: once the hover became an inversion, a gradient border could not invert with the thing
+ * it wrapped, and an edge that stays put while its surface flips reads as a mistake (Angel,
+ * 2026-09-18). Ink inverts to the paper for free, because `--color-ink` is what the fill is.
+ * Only the words the user typed keep a silk ring — the cool one — since that is the single
+ * distinction this screen still has to draw.
+ */
 .vchip,
 .pack {
-  --ring-w: 1.5px;
-  --ring-g: var(--silk-warm);
-  transition: background-color var(--hover-ease);
-}
-
-.vchip::before,
-.pack::before {
-  animation-duration: 14s;
+  border: 1.5px solid var(--color-ink);
+  transition:
+    background-color var(--hover-ease),
+    border-color var(--hover-ease);
 }
 .vchip.mine {
+  --ring-w: 1.5px;
   --ring-g: var(--silk-cool);
+  border-color: transparent;
+}
+
+.vchip.mine::before {
+  animation-duration: 14s;
 }
 .vchip {
   display: inline-flex;
@@ -527,7 +537,7 @@ watch(() => settings.sensitivity, computeBaseline);
   font-size: 12px;
   font-family: var(--font-mono);
   color: var(--color-ink);
-  background: var(--box-film);
+  background-color: var(--box-film);
   white-space: nowrap;
 }
 .vchip.off {
@@ -635,12 +645,13 @@ watch(() => settings.sensitivity, computeBaseline);
   padding: 3px 10px;
   font-size: 12px;
   color: var(--color-ink);
-  background: var(--box-film);
+  /* `background-color`, never the shorthand: the hover fill is a background *image* (ADR-33) */
+  background-color: var(--box-film);
 }
 /* A pack that is on keeps its warm ring and fills; off is the same ring over the plain film,
    so the row reads as one family with some of it lit. */
 .pack[aria-pressed='true'] {
-  background: var(--pick-soft);
+  background-color: var(--pick-soft);
   font-weight: 600;
 }
 .pack small {

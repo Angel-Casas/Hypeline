@@ -161,7 +161,7 @@ onBeforeUnmount(() => {
   align-items: center;
   gap: 6px;
   border: 1px solid var(--color-line);
-  background: var(--ghost-bg);
+  background-color: var(--ghost-bg);
   color: var(--color-ink);
   border-radius: 999px;
   padding: 5px 10px 5px 12px;
