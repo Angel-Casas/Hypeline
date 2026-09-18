@@ -37,6 +37,8 @@ export interface ModelInfo {
   /** USD per million tokens. */
   promptPerM?: number;
   completionPerM?: number;
+  /** Unix seconds, OpenAI-style. Absent for a good part of the catalogue. */
+  created?: number;
 }
 
 export interface ChatMessage {
@@ -120,13 +122,19 @@ export async function listModels(o: ClientOptions): Promise<ModelInfo[]> {
     o.fetchImpl ?? fetch,
   );
   const json = (await res.json()) as {
-    data?: { id: string; name?: string; pricing?: { prompt?: number; completion?: number } }[];
+    data?: {
+      id: string;
+      name?: string;
+      created?: number;
+      pricing?: { prompt?: number; completion?: number };
+    }[];
   };
   return (json.data ?? []).map((m) => ({
     id: m.id,
     name: m.name ?? m.id,
     promptPerM: m.pricing?.prompt,
     completionPerM: m.pricing?.completion,
+    created: typeof m.created === 'number' ? m.created : undefined,
   }));
 }
 

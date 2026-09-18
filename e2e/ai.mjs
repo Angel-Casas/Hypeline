@@ -89,8 +89,21 @@ await p.route('https://nano-gpt.com/api/**', async (route) => {
     return route.fulfill({
       json: {
         data: [
-          { id: 'openai/gpt-5.1', name: 'GPT-5.1', pricing: { prompt: 2.5, completion: 10 } },
+          {
+            id: 'openai/gpt-5.1',
+            name: 'GPT-5.1',
+            created: 1763000000,
+            pricing: { prompt: 2.5, completion: 10 },
+          },
           { id: 'openai/gpt-5-mini', name: 'GPT-5 mini', pricing: { prompt: 0.25, completion: 2 } },
+          {
+            id: 'anthropic/claude-opus-5',
+            name: 'Claude Opus 5',
+            created: 1753000000,
+            pricing: { prompt: 5, completion: 25 },
+          },
+          { id: 'x-ai/grok-4.6', name: 'Grok 4.6', pricing: { prompt: 2, completion: 6 } },
+          { id: 'celeris-1', name: 'Celeris 1', pricing: { prompt: 0.02, completion: 0.03 } },
         ],
       },
     });
@@ -195,10 +208,60 @@ await p.waitForFunction(() => /\d+ moments/.test(document.body.innerText), null,
   timeout: 60000,
 });
 await p.waitForFunction(() => document.body.innerText.includes('$9.87'), null, { timeout: 15000 });
-console.log(
-  'models+balance loaded; default chat model =',
-  await p.getByLabel('Chat model').inputValue(),
-);
+const dial = p.getByTestId('chat-model');
+console.log('models+balance loaded; default chat model =', (await dial.innerText()).trim());
+
+/*
+ * The model picker (ADR-40): search, sort, filter, choose. The dial is a button now, not a
+ * <select>, because ~600 models is a panel.
+ */
+await dial.click();
+const picker = p.getByTestId('model-picker');
+await picker.waitFor({ timeout: 5000 });
+const rows = () => picker.locator('[data-model]');
+// the row's first line is the family glyph, so read the name span rather than the row
+const names = async () => picker.locator('[data-model] .name').allInnerTexts();
+console.log('picker groups:', await picker.locator('.gname').allInnerTexts());
+if ((await rows().count()) !== 5) throw new Error('the picker did not list every model');
+
+await picker.getByTestId('model-search').fill('claude');
+if ((await names()).length !== 1) throw new Error('search did not narrow the list');
+console.log('search "claude" →', await names());
+await picker.getByTestId('model-search').fill('');
+
+await picker.locator('[data-sort="cheap"]').click();
+const cheapFirst = (await names())[0];
+await picker.locator('[data-sort="pricey"]').click();
+const priceyFirst = (await names())[0];
+console.log('cheapest / priciest:', cheapFirst, '/', priceyFirst);
+if (cheapFirst !== 'Celeris 1' || priceyFirst !== 'Claude Opus 5')
+  throw new Error('the price sorts are not ordering by input + output');
+
+await picker.locator('[data-sort="provider"]').click();
+await picker.locator('[data-provider="openai"]').click();
+if ((await names()).length !== 2) throw new Error('the provider filter did not narrow the list');
+await picker.locator('[data-provider="openai"]').click();
+
+await picker.locator('[data-model="anthropic/claude-opus-5"]').click();
+await picker.waitFor({ state: 'detached', timeout: 5000 });
+if (!(await dial.innerText()).includes('Claude Opus 5'))
+  throw new Error('choosing a model did not change the dial');
+console.log('picked:', (await dial.innerText()).trim());
+
+// typing narrows the list and Enter takes the top hit, without the pointer ever moving
+await dial.click();
+await p.getByTestId('model-picker').getByTestId('model-search').fill('grok');
+await p.keyboard.press('Enter');
+await p.getByTestId('model-picker').waitFor({ state: 'detached', timeout: 5000 });
+if (!(await dial.innerText()).includes('Grok 4.6'))
+  throw new Error('Enter did not take the top search hit');
+console.log('picked by keyboard:', (await dial.innerText()).trim());
+
+// back to something cheap for the rest of the run
+await dial.click();
+await p.getByTestId('model-picker').getByTestId('model-recommended').click();
+await p.getByTestId('model-picker').waitFor({ state: 'detached', timeout: 5000 });
+console.log('recommended:', (await dial.innerText()).trim());
 
 await p.locator('input[placeholder="h:mm:ss"]').nth(0).fill('0:34:05');
 await p.locator('input[placeholder="h:mm:ss"]').nth(0).dispatchEvent('change');

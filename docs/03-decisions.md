@@ -1025,3 +1025,37 @@ comes back the moment playback stops.
 still mounted, which is the kind of detail that makes a test like this pass
 for the wrong reason. If a flicker is ever reported again with this in place,
 the next suspect is `backdrop-filter` on the large cards, not the blend layer.
+
+## ADR-40 — The chat model is chosen in a panel, not a dropdown (2026-09-18)
+
+**Context.** NanoGPT serves close to six hundred chat models and the AI box put every one of
+them in a `<select>`. That list is unusable: no prices until after you choose, no families, no
+search, and no way to ask the question people actually ask — "what is the cheapest thing that
+can read a chat log?". Angel has the same problem solved in another NanoGPT app of his and
+asked for the same shape here.
+
+**Decision.** `features/ai/components/ModelPicker.vue`, a sheet with two panels. Left: a search
+box, a "use the recommended model" row that names what `pickDefaultChatModel` resolves to, and
+the catalogue grouped by family with a count per group. Each row carries the name, the id, the
+month the model appeared and input/output price per million tokens. Right: sort (family, name,
+cheapest, priciest, newest, oldest) and one toggle per family, folding under the footer's
+"Filters" button below 720 px. Arrows and Enter drive it from the search box, so a model can be
+chosen without the pointer moving.
+
+The family is **read off the id** (`lib/nanogpt/catalog.ts`): NanoGPT has no provider field, but
+it does namespace ids (`anthropic/…`, `qwen/…`, `deepseek-ai/…`), and rehosts like `TEE/…` and
+`huihui-ai/…` are caught by matching the tail and the name too. Everything in that module is
+pure, so the grouping, the sorts and the search are unit-tested against a slice of the real
+catalogue rather than through the DOM.
+
+Provider glyphs are geometry drawn in **ink**, not brand colours (Angel, 2026-09-18): nine real
+brand palettes in one panel would fight the hype thread. The chosen row wears the silk ring, the
+same "this one" the rest of the app uses; an ink wash would have made it a grey row.
+
+The speech model keeps its `<select>`. Three options do not need search, families or filters.
+
+**Consequences.** `ModelInfo` gained `created`, so the catalogue's dates survive into the UI.
+The list is plain DOM — six hundred rows built per query — which is fast enough today and would
+want a virtual scroller if the catalogue tripled; that is written on the component. `e2e/ai.mjs`
+serves five models across four families and drives the whole panel: search, both price sorts,
+the family filter, a click, and a keyboard pick.

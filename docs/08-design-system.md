@@ -718,6 +718,17 @@ The PNGs were rendered from the tile SVG (mark on `#0c0a0f`, rx 16 of 64,
 silk ring 2.2) with headless Chromium; redo them the same way if the mark
 changes.
 
+## The model picker (2026-09-18)
+
+A sheet, not a dropdown (ADR-40). Rows are 6/8 px padded flex lines — glyph, name over a mono
+`id · month`, price, tick — on the app's 10 px radius; the chosen one wears a `silk-ring` and
+the rest answer the pointer with the standard `hover-frost`. Family glyphs (`◐ ◈ ◆ ◇ ◉ ◎ ▲ ✕ ☾
+◭ ◮ ◧ ◫ ●`) are **ink at 75 % opacity**, never brand colours — the decision Angel made when he
+asked for this, and the rule for any future list of third parties. Group headers are sticky
+eyebrows on the theme's own ground with a mono count at the right. This one sheet overrides
+`--sheet-bg` to 97 % ground: under sixty dense mono rows the page reads straight through the
+usual 88 % and the ids stop being legible.
+
 ## Live labels in other languages (2026-09-17)
 
 Two-word live labels ("EN VIVO", "AO VIVO") wrapped the heatmap's live pill

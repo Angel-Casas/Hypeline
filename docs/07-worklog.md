@@ -1595,3 +1595,23 @@ and `vector-effect` is **not** an inherited property, so it belongs on every
 `<line>` rather than the wrapping `<g>`.
 
 118 tests, 15 e2e suites, lint, build and locale parity green.
+
+## 2026-09-18 (cont.) — Choosing a model out of six hundred
+
+**What changed.** ADR-40: the chat model now opens a panel instead of a `<select>` — search,
+families with counts, prices per million tokens, the model's id and month, six sorts and a
+filter per family, arrows and Enter from the search box. Angel asked for the shape of the
+picker in his other NanoGPT app; it arrives here in ink and silk rather than brand colours,
+which was his call on seeing the options.
+
+The family a model belongs to is read off its id (`lib/nanogpt/catalog.ts`, pure and unit
+tested against a slice of the real catalogue), because NanoGPT's `/v1/models` has no provider
+field. `ModelInfo` gained `created`, which the rows show as "Nov 2025". The speech model keeps
+its select: three options need no search.
+
+Two things the screenshots caught that the code did not: a `width: 100%` row with side margins
+overflows its parent, which pushed the recommended row's tick off a phone screen; and a dashed
+keyboard cursor sitting on row one of an untouched list reads as a selection, so the cursor now
+starts nowhere and appears when you type or press a key.
+
+131 tests (13 new), 15 e2e suites, lint, build and locale parity (555 strings) green.

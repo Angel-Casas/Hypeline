@@ -14,6 +14,7 @@ import { useSettingsStore } from '@/features/settings/settingsStore';
 import { useClipStore } from '@/features/clips/stores/clipStore';
 import { useVodStore } from '@/features/vod/stores/vodStore';
 import { formatUsd, STT_PRICE_PER_MIN } from '@/lib/nanogpt/pricing';
+import ModelPicker from './ModelPicker.vue';
 import { REFERRAL_URL } from '@/lib/nanogpt/client';
 import { formatHms } from '@/lib/twitch/vodUrl';
 import type { ChatMessage } from '@/lib/twitch/types';
@@ -79,6 +80,16 @@ const rangeState = computed(() => {
 
 // --- models ---
 const chatModel = computed(() => models.value.find((m) => m.id === settings.chatModel));
+/** ~600 models is a panel, not a dropdown (ADR-40). */
+const pickerOpen = ref(false);
+function openPicker() {
+  if (!models.value.length) void ai.refreshModels();
+  pickerOpen.value = true;
+}
+function pickModel(id: string) {
+  settings.chatModel = id;
+  pickerOpen.value = false;
+}
 const sttPrice = computed(() => STT_PRICE_PER_MIN[settings.sttModel]);
 
 // --- status ---
@@ -217,9 +228,14 @@ watch(
       </div>
       <div class="dial">
         <span class="k">{{ t('ai.chatModel') }}</span>
-        <select v-model="settings.chatModel" class="pick" :aria-label="t('ai.chatModel')">
-          <option v-for="m in models" :key="m.id" :value="m.id">{{ m.name }}</option>
-        </select>
+        <button
+          class="pick text-left"
+          :aria-label="t('ai.chatModel')"
+          data-testid="chat-model"
+          @click="openPicker"
+        >
+          {{ chatModel?.name || settings.chatModel || t('ai.anyModel') }}
+        </button>
         <span class="text-muted">
           <template v-if="chatModel?.promptPerM != null">{{
             t('ai.perM', {
@@ -432,6 +448,13 @@ watch(
         {{ t('ai.noHits', { query: lastQuery }) }}
       </p>
     </div>
+    <ModelPicker
+      v-if="pickerOpen"
+      :models="models"
+      :selected="settings.chatModel ?? ''"
+      @pick="pickModel"
+      @close="pickerOpen = false"
+    />
   </section>
 </template>
 
