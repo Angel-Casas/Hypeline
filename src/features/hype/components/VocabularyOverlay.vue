@@ -640,6 +640,14 @@ watch(() => settings.sensitivity, computeBaseline);
   margin-right: 5px;
   letter-spacing: normal;
 }
+/* On a narrow screen the aside is what pushes the word into an ellipsis, and a truncated word
+   is useless — you cannot tell what you would be adding. The word wins the space (Angel,
+   2026-09-18); the bar and the two buttons beside it already say which list it can join. */
+@media (max-width: 640px) {
+  .tok em {
+    display: none;
+  }
+}
 .bar {
   height: 5px;
   border-radius: 999px;

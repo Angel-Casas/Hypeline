@@ -50,6 +50,20 @@ let timer: number | null = null;
 let raf = 0;
 const ready = ref(false);
 const playing = ref(false);
+/**
+ * While the video is actually playing, mark the document so the page's atmosphere can step out
+ * of the compositor's way (`src/style.css`, `[data-playing]`).
+ *
+ * A `<video>` repainting sixty times a second underneath a fixed, full-screen `mix-blend-mode`
+ * layer puts every one of those frames through Chromium's blended compositing path, and stale
+ * tiles are a known artifact there: a huge translucent rectangle flickering over the page,
+ * gone on pause and back on play (Angel, 2026-09-18). The same path, for the same reason, had
+ * already been turned off for touch devices — where it showed up as a card that would not
+ * repaint after a scroll.
+ */
+watch(playing, (on) => {
+  document.documentElement.toggleAttribute('data-playing', on);
+});
 const pendingSeek = ref<number | null>(null);
 /** How much of the VOD the current embed knows about (its duration when it loaded). */
 let loadedEnd = Infinity;
@@ -245,6 +259,7 @@ watch(
   },
 );
 onBeforeUnmount(() => {
+  document.documentElement.removeAttribute('data-playing');
   window.removeEventListener('blur', onWindowBlur);
   if (timer) clearInterval(timer);
   cancelAnimationFrame(raf);

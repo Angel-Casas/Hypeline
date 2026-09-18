@@ -265,12 +265,27 @@ body {
 }
 
 /**
- * Touch devices (Angel, 2026-09-17: on Android the top of the heatmap card would come back
- * blank after scrolling and only repaint after a few more scrolls). A fixed, full-screen
- * layer with `mix-blend-mode` puts the whole page on Chromium's blended compositing path,
- * where stale tiles are a known artifact, and a 70 px blur animating forever repaints the
- * viewport every frame. Phones get the same atmosphere without either.
+ * The same compositing trap, twice over.
+ *
+ * A fixed, full-screen layer with `mix-blend-mode` puts the whole page on Chromium's blended
+ * compositing path, where stale tiles are a known artifact, and a 70 px blur animating forever
+ * repaints the viewport every frame.
+ *
+ * On **touch devices** that showed up as the top of the heatmap card coming back blank after a
+ * scroll (Angel, 2026-09-17). While a **video is playing** it showed up as a huge translucent
+ * rectangle flickering over the page, gone on pause and back on play (Angel, 2026-09-18) — a
+ * `<video>` repainting sixty times a second under a blended layer is the heaviest version of
+ * the same thing. `[data-playing]` is set by `TwitchPlayer.vue`.
+ *
+ * Both get the same atmosphere without the blend and without the animation.
  */
+[data-playing] .hl-grain {
+  mix-blend-mode: normal;
+  opacity: calc(var(--grain-opacity) * 0.55);
+}
+[data-playing] .hl-mesh {
+  animation: none;
+}
 @media (hover: none) {
   .hl-grain {
     mix-blend-mode: normal;

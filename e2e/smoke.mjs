@@ -90,7 +90,7 @@ await p.route('https://player.twitch.tv/**', (route) =>
     body: `window.Twitch = { Player: class { constructor(el, o){ window.__player = this; this.t = 0; this.listeners = {}; this.opts = o; setTimeout(() => this.listeners['ready']?.forEach(f => f()), 10); }
       seek(s){ this.t = s; window.__seeks = (window.__seeks||[]).concat(s); } play(){} pause(){} getCurrentTime(){ return this.t; }
       addEventListener(e, f){ (this.listeners[e] ||= []).push(f); } } };
-      window.Twitch.Player.READY = 'ready'; window.Twitch.Player.PLAYING = 'playing';`,
+      window.Twitch.Player.READY = 'ready'; window.Twitch.Player.PLAYING = 'playing'; window.Twitch.Player.PAUSE = 'pause';`,
   }),
 );
 
@@ -117,6 +117,32 @@ console.log('player.seek calls:', seeks);
 if (!seeks?.length) throw new Error('clicking a moment did not seek the player');
 const parent = await p.evaluate(() => window.__player.opts.parent);
 console.log('embed parent:', parent);
+
+/*
+ * While the video plays, the page's atmosphere has to leave the compositor alone: a fixed,
+ * full-screen `mix-blend-mode` layer over a video repainting 60 times a second is what put a
+ * huge flickering rectangle over the page (Angel, 2026-09-18).
+ */
+const blend = () =>
+  p.evaluate(() => ({
+    flag: document.documentElement.hasAttribute('data-playing'),
+    grain: getComputedStyle(document.querySelector('.hl-grain')).mixBlendMode,
+    mesh: getComputedStyle(document.querySelector('.hl-mesh')).animationName,
+  }));
+const fire = (e) => p.evaluate((ev) => window.__player.listeners[ev]?.forEach((f) => f()), e);
+console.log('atmosphere at rest:', await blend());
+await fire('playing');
+await p.waitForTimeout(150);
+const onPlay = await blend();
+console.log('atmosphere while playing:', onPlay);
+if (!onPlay.flag || onPlay.grain !== 'normal' || onPlay.mesh !== 'none')
+  throw new Error('the blended layer stayed on the compositing path while playing');
+await fire('pause');
+await p.waitForTimeout(150);
+const onPause = await blend();
+console.log('atmosphere after pause:', onPause);
+if (onPause.flag || onPause.grain === 'normal')
+  throw new Error('the atmosphere did not come back after pause');
 
 await p
   .locator('svg.hl-timeline')

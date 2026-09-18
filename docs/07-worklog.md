@@ -1541,3 +1541,20 @@ had chosen by hand.
 
 118 tests, 15 e2e suites (vocab.mjs now checks the message, including on a
 second press), lint, build and locale parity green.
+
+## 2026-09-18 (cont.) — A flicker over the video, and truncated words on phones
+
+**What changed.** ADR-39: while the embed is playing, `<html>` carries
+`data-playing` and the page's atmosphere steps out of the compositor's way —
+the grain stops blending and the mesh stops animating. A fixed full-screen
+`mix-blend-mode` layer over a video repainting 60 times a second is the
+heaviest case of the blended-compositing trap this file already described for
+touch devices, and it showed up as a huge translucent rectangle flickering
+over the dashboard, gone on pause. `smoke.mjs` now asserts all three states.
+
+Also: on screens under 640 px the "– WORD" / "– EMOTE" aside is hidden in the
+two token lists. It was what pushed the word itself into an ellipsis, and a
+truncated word is useless — you cannot tell what you would be adding
+(Angel, 2026-09-18). Measured at 390 px: 8 truncated words before, 0 after.
+
+118 tests, 15 e2e suites, lint, build and the hover audit green.

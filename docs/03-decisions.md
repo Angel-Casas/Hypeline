@@ -998,3 +998,30 @@ honest place for "forget what I picked".
 **Consequences.** Three strings in ten catalogs. The e2e asserts both that
 the note names Español on a Spanish chat and that a _second_ press still
 answers, since the silent case was the whole bug.
+
+## ADR-39 — The atmosphere steps aside while a video plays (2026-09-18)
+
+**Context.** Angel: a giant semi-transparent rectangle flickering over the
+dashboard while a VOD played — gone on pause, back on play.
+
+**Cause, already written down here once.** `.hl-grain` is a fixed,
+full-screen layer with `mix-blend-mode`, and `.hl-mesh` is a 70 px blur
+animating forever. Together they put the whole page on Chromium's _blended_
+compositing path, where stale tiles are a known artifact. The same pair had
+already been turned off for touch devices in 2026-09-17, when the heatmap
+card would come back blank after a scroll. A `<video>` repainting sixty times
+a second under a blended full-screen layer is the heaviest version of that
+same situation, and it produces the same artifact at page scale.
+
+**Decision.** `TwitchPlayer.vue` sets `data-playing` on `<html>` while the
+embed reports playing and clears it on pause and on unmount. While it is set,
+the grain drops to `mix-blend-mode: normal` at 55 % opacity and the mesh's
+animation stops — exactly the compromise phones already get. The atmosphere
+comes back the moment playback stops.
+
+**Consequences.** `e2e/smoke.mjs` drives the stubbed player's `playing` and
+`pause` listeners and asserts the computed `mix-blend-mode` and the mesh's
+`animation-name` in all three states; the probe has to sit while the embed is
+still mounted, which is the kind of detail that makes a test like this pass
+for the wrong reason. If a flicker is ever reported again with this in place,
+the next suspect is `backdrop-filter` on the large cards, not the blend layer.
