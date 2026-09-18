@@ -64,7 +64,7 @@ onBeforeUnmount(() => document.removeEventListener('keydown', onKey));
           role="radio"
           :aria-checked="l.code === locale"
           :lang="l.code"
-          class="flex flex-col items-start rounded-xl px-3 py-2 text-left transition-colors hover-invert focus:outline-none"
+          class="flex flex-col items-start rounded-xl px-3 py-2 text-left transition-colors hover-frost focus:outline-none"
           :class="l.code === locale ? 'silk-ring bg-ink/4' : ''"
           @click="preview(l.code)"
         >

@@ -1,0 +1,672 @@
+<!doctype html>
+<html lang="en" data-theme="day">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Hypeline — ten hovers</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Gloock&family=Manrope:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --ground: #fbf9fa;
+        --ground-2: #f3eef2;
+        --ink: #221c2a;
+        --line: rgba(34, 28, 42, 0.12);
+        --box: rgb(255 255 255 / 0.66);
+        --ease: 0.16s cubic-bezier(0.2, 0.7, 0.2, 1);
+        --wipe: 0.22s cubic-bezier(0.2, 0.7, 0.2, 1);
+        --mono: 'JetBrains Mono', ui-monospace, monospace;
+        --petal: #ffd0e4;
+        --sky: #cfdcff;
+        --butter: #fff0bd;
+        --lilac: #ddd0ff;
+        --apricot: #ffdcc4;
+        --shadow: rgba(22, 18, 26, 0.5);
+        --spot: rgba(34, 28, 42, 0.1);
+      }
+      [data-theme='night'] {
+        --ground: #000;
+        --ground-2: #0c0a0f;
+        --ink: #f3edf6;
+        --line: rgba(255, 255, 255, 0.14);
+        --box: rgb(255 255 255 / 0.05);
+        --petal: #5b2a46;
+        --sky: #273258;
+        --butter: #5a4b1e;
+        --lilac: #3b2c60;
+        --apricot: #5e3a26;
+        --shadow: rgba(0, 0, 0, 0.9);
+        --spot: rgba(255, 255, 255, 0.12);
+      }
+      @property --silk-a {
+        syntax: '<angle>';
+        inherits: false;
+        initial-value: 0deg;
+      }
+      @keyframes silk-turn {
+        to {
+          --silk-a: 360deg;
+        }
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        padding: 26px 20px 80px;
+        background: var(--ground);
+        color: var(--ink);
+        font-family: Manrope, system-ui, sans-serif;
+        font-size: 14px;
+      }
+      .wrap {
+        max-width: 1080px;
+        margin: 0 auto;
+      }
+      h1 {
+        font-family: Gloock, serif;
+        font-weight: 400;
+        font-size: 30px;
+        margin: 0 0 6px;
+      }
+      h2 {
+        font-family: Gloock, serif;
+        font-weight: 400;
+        font-size: 20px;
+        margin: 0;
+      }
+      .eyebrow {
+        font-family: var(--mono);
+        font-size: 10.5px;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+      }
+      .lede {
+        max-width: 78ch;
+        margin: 0 0 4px;
+        line-height: 1.55;
+      }
+      .topbar {
+        display: flex;
+        justify-content: space-between;
+        gap: 16px;
+        align-items: flex-start;
+        margin-bottom: 24px;
+        flex-wrap: wrap;
+      }
+      .toggle {
+        border: 1px solid var(--line);
+        background-color: var(--box);
+        color: var(--ink);
+        border-radius: 999px;
+        padding: 8px 15px;
+        font: inherit;
+        font-size: 12px;
+        cursor: pointer;
+      }
+      .card {
+        border: 1px solid var(--line);
+        background: var(--ground-2);
+        border-radius: 18px;
+        padding: 15px 18px 18px;
+        margin: 0 0 16px;
+      }
+      .card > header {
+        display: flex;
+        justify-content: space-between;
+        align-items: baseline;
+        gap: 12px;
+        flex-wrap: wrap;
+      }
+      .why {
+        font-size: 12.5px;
+        margin: 6px 0 14px;
+        max-width: 80ch;
+        line-height: 1.6;
+        opacity: 0.92;
+      }
+      .demo {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 10px 14px;
+        background-color: var(--box);
+        border: 1px solid var(--line);
+        border-radius: 14px;
+        padding: 12px;
+      }
+
+      /* ---- the real elements ---- */
+      .row {
+        display: grid;
+        grid-template-columns: 150px 66px 26px auto;
+        align-items: center;
+        gap: 8px;
+        padding: 5px 7px;
+        border-radius: 9px;
+        width: 100%;
+        max-width: 470px;
+      }
+      .tok {
+        font-family: var(--mono);
+        font-size: 12.5px;
+        display: flex;
+        gap: 5px;
+        align-items: baseline;
+      }
+      .tok em {
+        font-style: normal;
+        font-size: 9.5px;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+      }
+      .bar {
+        height: 5px;
+        border-radius: 999px;
+        background-color: color-mix(in srgb, var(--ink) 12%, transparent);
+        position: relative;
+      }
+      .bar i {
+        position: absolute;
+        inset: 0 38% 0 0;
+        border-radius: 999px;
+        background: linear-gradient(90deg, #ff9bb8, #c9a3df, #ffd08a);
+      }
+      .n {
+        font-family: var(--mono);
+        font-size: 12px;
+        text-align: right;
+      }
+      .mini {
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        font: inherit;
+        font-size: 11px;
+        padding: 2px 8px;
+        background-color: transparent;
+        color: var(--ink);
+        white-space: nowrap;
+        cursor: pointer;
+      }
+      .ghost {
+        border: 1px solid var(--line);
+        background-color: var(--box);
+        color: var(--ink);
+        border-radius: 12px;
+        padding: 7px 14px;
+        font: inherit;
+        font-size: 13px;
+        cursor: pointer;
+      }
+      .icon {
+        width: 34px;
+        height: 34px;
+        display: grid;
+        place-items: center;
+        border: 1px solid var(--line);
+        background-color: var(--box);
+        color: var(--ink);
+        border-radius: 12px;
+        font-size: 15px;
+        cursor: pointer;
+      }
+      .pack {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        border: 1.5px solid var(--ink);
+        border-radius: 999px;
+        padding: 4px 11px;
+        background-color: var(--box);
+        color: var(--ink);
+        font: inherit;
+        font-size: 12px;
+        cursor: pointer;
+      }
+      .pack small {
+        font-family: var(--mono);
+        font-size: 10px;
+      }
+      .link {
+        font-family: var(--mono);
+        font-size: 11.5px;
+        color: var(--ink);
+        text-decoration: underline;
+        text-underline-offset: 2px;
+        background-color: transparent;
+        border: 0;
+        padding: 2px 5px;
+        border-radius: 5px;
+        cursor: pointer;
+      }
+      .el {
+        position: relative;
+        transition:
+          background-color var(--ease),
+          border-color var(--ease),
+          box-shadow var(--ease),
+          transform var(--ease),
+          letter-spacing var(--ease),
+          filter var(--ease);
+      }
+
+      /* ================= 1 — silk edge ================= */
+      .o1 .el::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        border-radius: inherit;
+        padding: 1.5px;
+        pointer-events: none;
+        opacity: 0;
+        transition: opacity var(--ease);
+        background: conic-gradient(
+          from var(--silk-a),
+          #8eb0ff,
+          #9b8bff,
+          #ae81ff,
+          #ff77b5,
+          #ffa968,
+          #ffd15e,
+          #ffa968,
+          #ff77b5,
+          #ae81ff,
+          #9b8bff,
+          #8eb0ff
+        );
+        -webkit-mask:
+          linear-gradient(#000 0 0) content-box,
+          linear-gradient(#000 0 0);
+        -webkit-mask-composite: xor;
+        mask:
+          linear-gradient(#000 0 0) content-box,
+          linear-gradient(#000 0 0);
+        mask-composite: exclude;
+        animation: silk-turn 8s linear infinite;
+      }
+      .o1 .el:hover::before {
+        opacity: 1;
+      }
+
+      /* ================= 2 — the outline draws itself ================= */
+      .o2 .el::before,
+      .o2 .el::after {
+        content: '';
+        position: absolute;
+        inset: 0;
+        border-radius: inherit;
+        pointer-events: none;
+        border: 1.5px solid var(--ink);
+        clip-path: inset(0 100% 0 0);
+        transition: clip-path 0.26s cubic-bezier(0.4, 0, 0.2, 1);
+      }
+      .o2 .el::after {
+        clip-path: inset(0 0 0 100%);
+      }
+      .o2 .el:hover::before {
+        clip-path: inset(0 50% 0 0);
+      }
+      .o2 .el:hover::after {
+        clip-path: inset(0 0 0 50%);
+      }
+
+      /* ================= 3 — underline sweep ================= */
+      .o3 .el::after {
+        content: '';
+        position: absolute;
+        left: 0;
+        right: 0;
+        bottom: -2px;
+        height: 2px;
+        border-radius: 2px;
+        pointer-events: none;
+        background: linear-gradient(90deg, #ae81ff, #ff77b5, #ffa968);
+        transform: scaleX(0);
+        transform-origin: left;
+        transition: transform var(--wipe);
+      }
+      .o3 .el:hover::after {
+        transform: scaleX(1);
+      }
+
+      /* ================= 4 — slate brackets ================= */
+      .o4 .el::before,
+      .o4 .el::after {
+        content: '';
+        position: absolute;
+        width: 9px;
+        height: 9px;
+        pointer-events: none;
+        opacity: 0;
+        transition:
+          opacity var(--ease),
+          inset var(--ease);
+      }
+      .o4 .el::before {
+        top: 2px;
+        left: 2px;
+        border-top: 1.5px solid var(--ink);
+        border-left: 1.5px solid var(--ink);
+      }
+      .o4 .el::after {
+        right: 2px;
+        bottom: 2px;
+        border-bottom: 1.5px solid var(--ink);
+        border-right: 1.5px solid var(--ink);
+      }
+      .o4 .el:hover::before {
+        opacity: 1;
+        top: -3px;
+        left: -3px;
+      }
+      .o4 .el:hover::after {
+        opacity: 1;
+        right: -3px;
+        bottom: -3px;
+      }
+
+      /* ================= 5 — lift ================= */
+      .o5 .el:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 22px -12px var(--shadow);
+      }
+
+      /* ================= 6 — press ================= */
+      .o6 .el:hover {
+        transform: scale(0.965);
+        background-color: color-mix(in srgb, var(--ink) 6%, transparent);
+      }
+      [data-theme='night'] .o6 .el:hover {
+        background-color: color-mix(in srgb, #fff 8%, transparent);
+      }
+
+      /* ================= 7 — frost ================= */
+      .o7 .el:hover {
+        backdrop-filter: blur(6px) saturate(1.6) brightness(1.06);
+        -webkit-backdrop-filter: blur(6px) saturate(1.6) brightness(1.06);
+        background-color: color-mix(in srgb, #fff 55%, transparent);
+        border-color: rgba(255, 255, 255, 0.9);
+        box-shadow: inset 0 1px 0 #fff;
+      }
+      [data-theme='night'] .o7 .el:hover {
+        background-color: color-mix(in srgb, #fff 9%, transparent);
+        border-color: rgba(255, 255, 255, 0.24);
+        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.12);
+      }
+
+      /* ================= 8 — the pointer carries a light ================= */
+      .o8 .el {
+        overflow: hidden;
+      }
+      .o8 .el::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        pointer-events: none;
+        opacity: 0;
+        transition: opacity var(--ease);
+        background: radial-gradient(
+          120px circle at var(--x, 50%) var(--y, 50%),
+          var(--spot),
+          transparent 70%
+        );
+      }
+      .o8 .el:hover::before {
+        opacity: 1;
+      }
+
+      /* ================= 9 — a pastel of its own ================= */
+      .o9 .el:hover {
+        background-color: var(--tint, var(--lilac));
+        border-color: color-mix(in srgb, var(--tint, var(--lilac)) 70%, var(--ink));
+      }
+      .o9 .row {
+        --tint: var(--sky);
+      }
+      .o9 .ghost {
+        --tint: var(--petal);
+      }
+      .o9 .icon {
+        --tint: var(--butter);
+      }
+      .o9 .pack {
+        --tint: var(--apricot);
+      }
+      .o9 .link {
+        --tint: var(--lilac);
+      }
+
+      /* ================= 10 — typographic ================= */
+      .o10 .el:hover {
+        letter-spacing: 0.04em;
+        font-weight: 700;
+      }
+      .o10 .el::after {
+        content: '→';
+        position: absolute;
+        /* outside the box, so it never collides with a short label */
+        right: -15px;
+        top: 50%;
+        transform: translate(-6px, -50%);
+        opacity: 0;
+        font-family: var(--mono);
+        font-size: 12px;
+        transition:
+          opacity var(--ease),
+          transform var(--ease);
+        pointer-events: none;
+      }
+      .o10 .el:hover::after {
+        opacity: 1;
+        transform: translate(4px, -50%);
+      }
+      .o10 .row:hover,
+      .o10 .icon:hover {
+        letter-spacing: normal;
+      }
+
+      .note {
+        font-family: var(--mono);
+        font-size: 10.5px;
+        opacity: 0.8;
+      }
+      .foot {
+        border-top: 1px solid var(--line);
+        margin-top: 26px;
+        padding-top: 16px;
+        font-size: 13px;
+        line-height: 1.6;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <div class="topbar">
+        <div>
+          <p class="eyebrow">Hypeline · hover</p>
+          <h1>Ten ways, none of them a fill</h1>
+          <p class="lede">
+            Three rounds have all been variations on <i>changing the surface colour</i>, and none of
+            them landed. These ten mostly leave the surface alone and answer the pointer some other
+            way — with an edge, a mark, a movement, a light, or the type itself. Hover each strip.
+            The theme button matters, as always.
+          </p>
+        </div>
+        <button class="toggle" id="theme">☾ Night</button>
+      </div>
+
+      <div class="card o1">
+        <header>
+          <div><span class="eyebrow">1</span><h2>The silk edge lights up</h2></div>
+          <span class="note">the app's own ring, on demand</span>
+        </header>
+        <p class="why">
+          The turning pastel ring is already the signature of this app — on the player, the moment
+          chips, the rail cards. Here it is invisible until the pointer arrives. Nothing moves and
+          nothing fills; the thing simply becomes one of the special ones for as long as you are on
+          it. The risk is that the ring already means "this matters" elsewhere.
+        </p>
+        <div class="demo"></div>
+      </div>
+
+      <div class="card o2">
+        <header>
+          <div><span class="eyebrow">2</span><h2>The outline draws itself</h2></div>
+          <span class="note">two halves meeting at the top</span>
+        </header>
+        <p class="why">
+          An ink hairline grows out from the middle in both directions and closes around the
+          element. Precise, quiet, and it reads as <i>selection</i> rather than decoration — the
+          gesture a drafting tool would use. Costs nothing but a border.
+        </p>
+        <div class="demo"></div>
+      </div>
+
+      <div class="card o3">
+        <header>
+          <div><span class="eyebrow">3</span><h2>A thread underneath</h2></div>
+          <span class="note">2 px of the hype palette</span>
+        </header>
+        <p class="why">
+          A rule in lilac → petal → apricot grows left to right under the element, like a tiny
+          length of the hype thread. The lightest touch of the ten, and the most obviously ours. On
+          a row it underlines the whole row; on a button it sits just below the baseline.
+        </p>
+        <div class="demo"></div>
+      </div>
+
+      <div class="card o4">
+        <header>
+          <div><span class="eyebrow">4</span><h2>Slate brackets</h2></div>
+          <span class="note">corner marks, pulled outward</span>
+        </header>
+        <p class="why">
+          Two corner marks appear and push out a few pixels, the way a camera or an editing timeline
+          frames a selection. For an app about cutting clips this is the most <i>on-subject</i>
+          idea here — it says "this is the thing you are about to take".
+        </p>
+        <div class="demo"></div>
+      </div>
+
+      <div class="card o5">
+        <header>
+          <div><span class="eyebrow">5</span><h2>It rises</h2></div>
+          <span class="note">2 px and a shadow, no colour at all</span>
+        </header>
+        <p class="why">
+          Pure elevation: the element lifts off the paper and casts a soft shadow. Already in the
+          app on the moment chips and cards, so choosing it would mean one gesture everywhere
+          instead of two. Completely colour-neutral, which after three rounds may be the point.
+        </p>
+        <div class="demo"></div>
+      </div>
+
+      <div class="card o6">
+        <header>
+          <div><span class="eyebrow">6</span><h2>It presses in</h2></div>
+          <span class="note">the opposite of 5</span>
+        </header>
+        <p class="why">
+          The element shrinks very slightly, as if the pointer were pushing it into the page. Almost
+          no one does this on hover — it is normally reserved for the click — which makes it feel
+          unusually physical. Small controls take it better than wide rows.
+        </p>
+        <div class="demo"></div>
+      </div>
+
+      <div class="card o7">
+        <header>
+          <div><span class="eyebrow">7</span><h2>Frost</h2></div>
+          <span class="note">the glass thickens</span>
+        </header>
+        <p class="why">
+          The app is built on frosted glass, so the hover makes the glass <i>more</i> itself:
+          blurrier, a touch brighter, with a sharper highlight along the top edge. The surface
+          changes without changing colour. It needs something behind it to blur, so it is strongest
+          over the mesh and weakest inside a flat panel.
+        </p>
+        <div class="demo"></div>
+      </div>
+
+      <div class="card o8">
+        <header>
+          <div><span class="eyebrow">8</span><h2>The pointer carries a light</h2></div>
+          <span class="note">follows the cursor</span>
+        </header>
+        <p class="why">
+          A soft round light sits under the pointer and moves with it across the element. The only
+          one of the ten that responds to <i>where</i> you are, not just <i>that</i> you are —
+          which makes a wide row feel alive in a way a uniform fill cannot. Needs two lines of
+          JavaScript to feed the cursor position in.
+        </p>
+        <div class="demo"></div>
+      </div>
+
+      <div class="card o9">
+        <header>
+          <div><span class="eyebrow">9</span><h2>A pastel of its own</h2></div>
+          <span class="note">sky, petal, butter, apricot, lilac</span>
+        </header>
+        <p class="why">
+          Each kind of control takes one of the five palette tints — rows sky, buttons petal, icons
+          butter, chips apricot, links lilac. It is a fill, but never grey and never the same twice,
+          and it teaches the palette by using it. The risk is obvious: five hover colours is four
+          more than most systems have.
+        </p>
+        <div class="demo"></div>
+      </div>
+
+      <div class="card o10">
+        <header>
+          <div><span class="eyebrow">10</span><h2>The type answers</h2></div>
+          <span class="note">weight, tracking, and an arrow</span>
+        </header>
+        <p class="why">
+          No surface, no edge, no movement of the box: the label thickens and opens up its letter
+          spacing, and a small arrow slides in from the right. Editorial rather than interface — it
+          suits the Gloock-and-Manrope side of this app. Rows and icons keep their tracking, since
+          mono and single glyphs do not take it well.
+        </p>
+        <div class="demo"></div>
+      </div>
+
+      <div class="foot">
+        Tell me a number, or two you would like crossed — several of these combine well (2 + 5, or
+        3 + 10). If none of them is right, say what is wrong with the closest one and the next ten
+        will be better aimed.
+      </div>
+    </div>
+    <script>
+      const STRIP = `
+        <div class="row el">
+          <span class="tok"><b>POGGERS</b><em>emote</em></span>
+          <span class="bar"><i></i></span><span class="n">19</span>
+          <span><button class="mini">+ important</button></span>
+        </div>
+        <button class="ghost el">Preview</button>
+        <button class="icon el">☾</button>
+        <button class="pack el">Español <small>0</small></button>
+        <button class="link el">queue all 18 as clips</button>`;
+      for (const d of document.querySelectorAll('.demo')) d.innerHTML = STRIP;
+
+      // option 8 needs to know where the pointer is
+      for (const el of document.querySelectorAll('.o8 .el')) {
+        el.addEventListener('pointermove', (e) => {
+          const r = el.getBoundingClientRect();
+          el.style.setProperty('--x', e.clientX - r.left + 'px');
+          el.style.setProperty('--y', e.clientY - r.top + 'px');
+        });
+      }
+
+      const root = document.documentElement,
+        tb = document.getElementById('theme');
+      tb.onclick = () => {
+        const night = root.dataset.theme === 'night';
+        root.dataset.theme = night ? 'day' : 'night';
+        tb.textContent = night ? '☾ Night' : '☀ Day';
+      };
+    </script>
+  </body>
+</html>

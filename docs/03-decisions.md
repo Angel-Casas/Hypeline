@@ -851,3 +851,46 @@ background by exactly one gradient width, so the colour at 0 % and at 100 %
 must be the same; it ended on lilac having started on sky. The ramp is
 mirrored now, like the ring's, and `e2e/_loop.mjs` proves it: rendered at
 `background-position: 0%` and at `300%`, the button is pixel-identical.
+
+## ADR-35 — The hover is frost and the silk edge (2026-09-18)
+
+**Context.** ADR-32 (accent wash), ADR-33/34 (ink inversion, wiped) were all
+variations on changing the surface _colour_, and Angel rejected each. Shown
+ten techniques that mostly do not (`design/hover/ten.html`), he kept two —
+the silk edge appearing, and frost — and then chose them combined from the
+follow-up set (`design/hover/edges.html`).
+
+**Decision.** `hover-frost` replaces `hover-invert`. The hovered thing's
+glass thickens and the turning silk ring fades in over its hairline. No fill,
+no text colour change, which deletes most of the machinery the inversion
+needed: nothing can disappear into the hover, and no component has to be told
+to follow it.
+
+**The film is the theme's own ground.** White by day, black by night, with the
+backdrop brightened by day and darkened by night. Angel found the first cut
+whitening the _dark_ theme, which is the ADR-30 mistake one layer down: a
+surface moves towards its own ground, away from the page, never towards the
+other theme's.
+
+**Two consequences that only a screenshot could find:**
+
+1. **A frost cannot whiten a panel that is already white.** Measured: the
+   vocabulary rows go from `254,253,254` to `255,255,255` on hover by day —
+   a difference of one. So the frost also carries a highlight along its top
+   edge and a soft pane shadow, and on those panels those, plus the ring,
+   are the whole cue. The frost proper earns its keep where something sits
+   behind: the rail, the dashboard, anything over the mesh.
+2. **An element that already wears a silk ring gets a thicker one**
+   (1.5 px → 2.5 px) rather than a second ring. Without that the starter-pack
+   chips — ringed at rest — had no visible hover at all by day. The hover
+   ring lives in `::after` so it can coexist with `silk-ring`, which owns
+   `::before`.
+
+**Consequences.** The vocabulary chips get their warm silk back: they went to
+plain ink borders only because a gradient edge could not invert with the
+thing it wrapped, and the frost does not touch the border. `hover-line`
+(fields) and `hover-danger` are unchanged; `hover-lift` stays its own tier.
+One open tension, worth watching: the silk ring already means "this one
+matters" on the player and the moment chips, and now also means "the pointer
+is here". If that reads as noise, the hover ring is the half to change —
+`--ring-g` takes a quieter gradient without touching anything else.

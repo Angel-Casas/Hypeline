@@ -114,23 +114,24 @@
   --pick: #9a5a06;
   --pick-soft: color-mix(in srgb, #ffa968 22%, transparent);
   /*
-   * Hover (ADR-32, rewritten by ADR-33). **Inversion, wiped in from the left**: the hovered
-   * thing swaps with the page — ink fills, everything on it becomes the paper — and the fill
-   * arrives as a sweep rather than appearing. No tint, no wash, so there is no grey and
-   * nothing competing with `--pick-soft` (warm, "you chose this") or the silk rings. The two
-   * colours are the theme's own ground and ink, which is why it inverts twice as hard at
-   * night: near-white on black becomes black on near-white.
+   * Hover (ADR-35, after ADR-32/33/34). The hovered thing **frosts and takes the silk edge**:
+   * its glass thickens and the turning pastel ring appears in place of its hairline. Nothing
+   * is filled with a colour and no text changes, which is what makes it survivable — a nested
+   * button cannot disappear into it and no component has to be told to follow.
+   *
+   * The film is the theme's **own ground**: white by day, black by night, and the backdrop is
+   * brightened by day and darkened by night. A frost that whitens a dark page is the ADR-30
+   * mistake one layer down (Angel, 2026-09-18) — a surface moves towards its own ground, away
+   * from the page, never towards the other theme's.
    */
-  --invert-bg: var(--color-ink);
-  --invert-fg: var(--color-ground);
-  /* the danger red has to survive landing on the inverted fill, so it lightens there */
-  --invert-danger: #ff8fa0;
+  --frost-bg: rgb(255 255 255 / 0.82);
+  --frost-bright: 1.1;
+  --frost-inset: rgba(255, 255, 255, 0.95);
+  --frost-shadow: 0 3px 12px -7px rgba(22, 18, 26, 0.45);
   --hover-line: var(--color-ink);
   --hover-shadow: 0 10px 24px -14px rgba(22, 18, 26, 0.55);
   --hover-danger: color-mix(in srgb, var(--color-danger) 14%, transparent);
   --hover-ease: 0.16s cubic-bezier(0.2, 0.7, 0.2, 1);
-  /* the sweep. Long enough to read as motion, short enough not to lag the pointer. */
-  --wipe: 0.22s cubic-bezier(0.2, 0.7, 0.2, 1);
   --font-display: 'Gloock', 'Iowan Old Style', Georgia, serif;
   --font-sans: 'Manrope', 'Helvetica Neue', Arial, sans-serif;
   --font-mono: 'JetBrains Mono', Menlo, Consolas, monospace;
@@ -185,8 +186,12 @@
   --box-film: rgb(255 255 255 / 0.05);
   --pick: #ffc07a;
   --pick-soft: color-mix(in srgb, #ffa968 20%, transparent);
-  /* night inverts the other way by itself: --color-ink is near-white and --color-ground black */
-  --invert-danger: #b03a4a;
+  /* night frosts *downwards*: a black film and a darkened backdrop, with the thinnest of
+     highlights along the top so it still reads as glass rather than as a hole */
+  --frost-bg: rgb(0 0 0 / 0.72);
+  --frost-bright: 0.7;
+  --frost-inset: rgba(255, 255, 255, 0.12);
+  --frost-shadow: 0 3px 12px -7px rgba(0, 0, 0, 0.9);
   --hover-shadow: 0 10px 24px -14px rgba(0, 0, 0, 0.75);
   --hover-danger: color-mix(in srgb, var(--color-danger) 18%, transparent);
   --glass-bg: rgba(255, 255, 255, 0.06);
@@ -311,10 +316,9 @@ body {
   .hover-lift:hover:not(:disabled) {
     transform: none;
   }
-  /* the inversion still happens too — it simply arrives rather than sweeping */
-  .hover-invert,
-  .btn-ghost {
-    transition-duration: 0s;
+  /* the frost still happens; only the ring's turning stops, which `silk-ring` handles above */
+  .hover-frost::after {
+    animation: none;
   }
 }
 
@@ -366,9 +370,9 @@ body {
 /*
  * The hover system (ADR-32). Nothing in the app invents its own hover: it picks a tier.
  *
- *   hover-invert— anything the pointer can press: menu rows, icon buttons, ghost buttons, list
- *                 rows, chips, links. Ink wipes in from the left and the content becomes the
- *                 paper (Angel, 2026-09-18: straight inversion with the wipe).
+ *   hover-frost — anything the pointer can press: menu rows, icon buttons, ghost buttons, list
+ *                 rows, chips, links. The glass thickens towards the theme's own ground and
+ *                 the silk ring appears in place of the hairline (Angel, 2026-09-18).
  *   hover-lift  — a thing the pointer could *pick up*: cards, chips, handles, tiles. 2 px up
  *                 and an accent-tinted shadow. The visible one.
  *   hover-line  — a thing the pointer can *type into or open*: fields and selects, where a
@@ -379,110 +383,82 @@ body {
  * All four are `:not(:disabled)` and all four transition on `--hover-ease`. `hover-lift` is
  * flattened under reduced motion, further down.
  */
-/* `hover-invert` is a plain class, not an `@utility`: all of it lives unlayered below. */
 /*
-   * The fill is the element's **own background-image**, grown from 0 % to 100 % width, not a
-   * pseudo-element. Three bugs came from the pseudo-element version (Angel, 2026-09-18):
-   *
-   *  - it was revealed with `transform: scaleX()`, and scaling a rounded box squashes its
-   *    corners, so the fill started square and rounded off as it arrived;
-   *  - an absolutely positioned child is laid out against the *padding* box, so `inset: 0`
-   *    plus `border-radius: inherit` (the *border* box's radius) bulged past the border's
-   *    inner curve — the fill showed outside the element's own edge;
-   *  - and a negative-z-index child paints above the element's border, hiding it.
-   *
-   * A background layer has none of those problems: it is clipped by the element's own box and
-   * radius, it sits under the border, and `background-size` interpolates without distortion.
-   * It also works on an `<input>`, which cannot have a pseudo-element at all.
-   *
-   * The declarations themselves are in the unlayered block below, because `background:` as a
-   * shorthand — which `glass-sm` uses, and which the pack chips used — resets `background-image`
-   * and would erase the fill.
-   */
-/*
- * The colour half of the inversion lives outside the utility, with the class doubled. Tailwind
- * puts `@utility` output in `@layer utilities`, and an unlayered rule — which every Vue scoped
- * `<style>` is, and which beats *any* layered rule whatever its specificity — is the only way
- * to win against a component that colours itself. The starter-pack chips did, and their labels
- * vanished into the fill (2026-09-18).
+ * `hover-frost` is a plain class, not an `@utility`: Tailwind puts `@utility` output in
+ * `@layer utilities`, and an unlayered rule — which every Vue scoped `<style>` is — beats any
+ * layered one whatever its specificity. The class is doubled for the same reason.
+ *
+ * Two things happen at once (ADR-35): the surface frosts, and the silk ring fades in over the
+ * element's own hairline. The ring lives in `::after` so it can sit beside `silk-ring`, which
+ * owns `::before`; an element that already wears a ring keeps its own and skips this one.
  */
-/*
- * Everything that inverts, in one list. `glass-sm` buttons and `btn-ghost` used to carry their
- * own copies of these rules and drifted: the rail's Clips card inverted its background but not
- * the text inside it, so half the card vanished (Angel, 2026-09-18).
- */
-.hover-invert.hover-invert,
-:is(button, a, [role='button']).glass-sm,
-.btn-ghost.btn-ghost {
-  background-image: linear-gradient(var(--invert-bg), var(--invert-bg));
-  background-repeat: no-repeat;
-  background-position: left center;
-  background-size: 0% 100%;
-  /*
-   * The text flips *while the fill is under it*, not before. The fill grows from the left and
-   * shrinks back to the left, so on the way in the label is covered early (flip at ~100 ms of
-   * the 220 ms sweep) and on the way out it is the last thing uncovered (flip at ~160 ms).
-   * Without the two delays the label spends a moment as paper on paper and disappears — which
-   * is what the mid-sweep screenshot showed (2026-09-18).
-   */
+.hover-frost {
+  position: relative;
+  isolation: isolate;
   transition:
-    background-size var(--wipe),
-    color 0.05s linear 0.16s,
-    border-color 0.05s linear 0.16s;
+    background-color var(--hover-ease),
+    border-color var(--hover-ease),
+    box-shadow var(--hover-ease),
+    backdrop-filter var(--hover-ease);
 }
-.hover-invert.hover-invert:hover:not(:disabled),
-.hover-invert.hover-invert:focus-visible:not(:disabled),
+.hover-frost::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: var(--ring-w, 1.5px);
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity var(--hover-ease);
+  background: var(--ring-g, var(--silk-conic));
+  -webkit-mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  mask-composite: exclude;
+  animation: silk-turn 8s linear infinite;
+}
+.hover-frost.hover-frost:hover:not(:disabled)::after,
+.hover-frost.hover-frost:focus-visible:not(:disabled)::after {
+  opacity: 1;
+}
+/*
+ * Something that already wears a silk ring does not want a second one — it gets *more* of the
+ * one it has: the hairline thickens from 1.5 px to 2.5 px. Without this the pack chips, which
+ * are ringed at rest, had no visible hover at all by day, since a white film cannot whiten a
+ * panel that is already white (2026-09-18).
+ */
+.silk-ring.hover-frost::after,
+.silk-frame.hover-frost::after {
+  content: none;
+}
+.silk-ring.hover-frost:hover:not(:disabled),
+.silk-ring.hover-frost:focus-visible:not(:disabled) {
+  --ring-w: 2.5px;
+}
+.hover-frost.hover-frost:hover:not(:disabled),
+.hover-frost.hover-frost:focus-visible:not(:disabled),
 :is(button, a, [role='button']).glass-sm:hover:not(:disabled),
 .btn-ghost.btn-ghost:hover:not(:disabled) {
-  background-size: 100% 100%;
-  color: var(--invert-fg);
-  border-color: var(--invert-fg);
-  transition:
-    background-size var(--wipe),
-    color 0.05s linear 0.1s,
-    border-color 0.05s linear 0.1s;
+  background-color: var(--frost-bg);
+  backdrop-filter: blur(6px) saturate(1.5) brightness(var(--frost-bright));
+  -webkit-backdrop-filter: blur(6px) saturate(1.5) brightness(var(--frost-bright));
+  border-color: transparent;
+  /* the film alone is invisible on a panel that is already near-white (or near-black), which is
+     most of this app — so the frost also lifts: a highlight along the top edge and a soft pane
+     shadow underneath, both in the theme's own direction (2026-09-18) */
+  box-shadow:
+    inset 0 1px 0 var(--frost-inset),
+    var(--frost-shadow);
 }
-/*
- * *Everything* inside inverts, not just the tags we thought of. A `text-muted` or `text-ink-2`
- * class sets its own colour, so the rail's library cards kept ink text on the ink fill and the
- * lines below each title disappeared (Angel, 2026-09-18). `*` is right here: the exceptions
- * are listed below it, and a Tailwind colour utility is layered, so this unlayered rule wins.
- */
-.hover-invert.hover-invert:hover:not(:disabled) *,
-:is(button, a, [role='button']).glass-sm:hover:not(:disabled) *,
-.btn-ghost.btn-ghost:hover:not(:disabled) * {
-  color: inherit;
+/* A destructive control keeps its red, which is the one hover that is not the frost. */
+.hover-frost:hover .hover-danger:hover {
+  background-color: var(--hover-danger);
 }
-.hover-invert.hover-invert:hover:not(:disabled) :where(.mini, .btn-ghost, .vchip, .pack),
-:is(button, a, [role='button']).glass-sm:hover:not(:disabled) :where(.mini, .vchip, .pack) {
-  border-color: color-mix(in srgb, var(--invert-fg) 45%, transparent);
-}
-/* red still has to read as red once it is sitting on the fill */
-.hover-invert.hover-invert:hover:not(:disabled) :where(.purge, .text-danger),
-.hover-invert.hover-invert:hover:not(:disabled) :where(.purge, .text-danger) *,
-:is(button, a, [role='button']).glass-sm:hover:not(:disabled) :where(.purge, .text-danger) {
-  color: var(--invert-danger);
-}
-/*
- * A control inside an already-inverted row inverts *back* when the pointer reaches it: its fill
- * becomes the paper and its text the ink. Two nested inversions cancelling is the honest
- * reading of the idea, and without it the child's own ink fill would be invisible on its
- * parent's.
- */
-.hover-invert:hover .hover-invert.hover-invert:hover:not(:disabled) {
-  background-image: linear-gradient(var(--invert-fg), var(--invert-fg));
-  color: var(--invert-bg);
-  border-color: var(--invert-bg);
-}
-.hover-invert:hover .hover-invert.hover-invert:hover:not(:disabled) *,
-:is(button, a, [role='button']).glass-sm:hover:not(:disabled) *,
-.btn-ghost.btn-ghost:hover:not(:disabled) * {
-  color: inherit;
-}
-/* A destructive control inside an inverted row keeps its own red wash, not the row's fill. */
-.hover-invert:hover .hover-danger:hover {
-  background: var(--hover-danger);
-}
+
 @utility hover-lift {
   transition:
     transform var(--hover-ease),
@@ -511,10 +487,7 @@ body {
     background: var(--hover-danger);
   }
 }
-/* A destructive control inside an inverted row keeps its own red wash, not the row's fill. */
-.hover-invert:hover .hover-danger:hover {
-  background: var(--hover-danger);
-}
+
 @utility btn-ink {
   background: var(--color-ink);
   color: var(--color-ground);
@@ -524,12 +497,11 @@ body {
   font-size: 0.875rem;
   transition:
     background-color var(--hover-ease),
-    color var(--hover-ease);
-  /* already ink: it inverts the other way, becoming the paper with ink text */
+    box-shadow var(--hover-ease);
+  /* a solid ink button has no glass to frost, so it moves towards the ground instead —
+     lighter by day, darker by night, the same direction as the frost */
   &:hover:not(:disabled) {
-    background: var(--color-ground);
-    color: var(--color-ink);
-    box-shadow: inset 0 0 0 1px var(--color-ink);
+    background-color: color-mix(in srgb, var(--color-ink) 86%, var(--color-ground));
   }
 }
 @utility btn-ghost {
@@ -538,11 +510,13 @@ body {
   border-radius: 12px;
   padding: 0.5rem 0.9rem;
   font-size: 0.875rem;
-  /* the fill and its timing are in the shared block below, with every other inverting thing */
-  &:hover:not(:disabled) {
-    color: var(--invert-fg);
-    border-color: var(--invert-fg);
-  }
+  position: relative;
+  isolation: isolate;
+  /* the frost itself is in the shared block below, with everything else that frosts */
+  transition:
+    background-color var(--hover-ease),
+    border-color var(--hover-ease),
+    box-shadow var(--hover-ease);
 }
 /* the silk button: a slowly drifting pastel gradient for the one action worth drawing the
    eye to (Angel, 2026-09-15: "Transcribe VOD"). Ink text on pastel in both themes. */
@@ -625,6 +599,7 @@ body {
       linear-gradient(#000 0 0);
     mask-composite: exclude;
     animation: silk-turn 8s linear infinite;
+    transition: padding var(--hover-ease);
   }
 }
 /*
@@ -676,14 +651,13 @@ body {
     color var(--hover-ease);
   /* this used to be `color: ink` over `muted`, which has done nothing since muted became ink */
   &:hover:not(:disabled):not([aria-pressed='true']) {
-    background: var(--invert-bg);
-    color: var(--invert-fg);
+    background-color: var(--frost-bg);
+    box-shadow:
+      inset 0 1px 0 var(--frost-inset),
+      var(--frost-shadow);
   }
-  /* the pressed option is already the inversion, so hovering it goes the other way */
   &[aria-pressed='true']:hover {
-    background: var(--color-ground);
-    color: var(--color-ink);
-    box-shadow: inset 0 0 0 1px var(--color-ink);
+    background-color: color-mix(in srgb, var(--color-ink) 86%, var(--color-ground));
   }
   &[aria-pressed='true'] {
     background: var(--color-ink);
@@ -723,10 +697,7 @@ body {
  * 2. An underlined word *is* the control — a fill would look like a highlighter — so its
  *    underline thickens and takes the accent instead.
  */
-:is(button, a, [role='button']).glass-sm:hover:not(:disabled) {
-  color: var(--invert-fg);
-  border-color: var(--invert-fg);
-}
+
 :is(a, button):is(.underline, .text-accent) {
   text-underline-offset: 2px;
   transition:
@@ -734,11 +705,12 @@ body {
     color var(--hover-ease);
 }
 :is(a, button):is(.underline, .text-accent):hover:not(:disabled) {
-  color: var(--invert-fg);
-  background: var(--invert-bg);
+  /* an underlined word is the control: it frosts a little and its rule thickens, rather than
+     growing a box around itself */
+  background-color: var(--frost-bg);
   border-radius: 4px;
-  box-shadow: 0 0 0 3px var(--invert-bg);
-  text-decoration-color: var(--invert-fg);
+  box-shadow: 0 0 0 3px var(--frost-bg);
+  text-decoration-thickness: 2px;
 }
 
 input:focus-visible,

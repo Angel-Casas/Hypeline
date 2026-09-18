@@ -122,7 +122,7 @@ onBeforeUnmount(() => {
           role="menuitemradio"
           :aria-checked="l.code === locale"
           :lang="l.code"
-          class="flex w-full items-center justify-between rounded-xl px-2.5 py-1.5 text-left text-[13px] text-ink transition-colors hover-invert focus:outline-none"
+          class="flex w-full items-center justify-between rounded-xl px-2.5 py-1.5 text-left text-[13px] text-ink transition-colors hover-frost focus:outline-none"
           :class="l.code === locale ? 'silk-ring font-semibold' : ''"
           @click="pick(l.code)"
         >

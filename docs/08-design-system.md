@@ -556,46 +556,34 @@ the panel alone: the grey was only visible _around_ the panel.
 
 ## Hover (2026-09-18)
 
-Four tiers — ADR-32 for the shape of the system, ADR-33 for what a hover
-actually looks like. **`hover-invert`** is the one you will use: the hovered
-thing swaps with the page, ink filling and the content becoming the paper,
-and the fill **wipes in from the left** over 220 ms. Night inverts twice as
-hard on its own, since ink there is near-white. `hover-lift` for something
-the pointer could pick up (2 px + `--hover-shadow`), `hover-line` for
-something it can type into (the border goes to ink), `hover-danger` for
-anything that deletes — the one hover that is not an inversion, because red
-on red says nothing. All on `--hover-ease`; the sweep is `--wipe`.
+Four tiers — ADR-32 for the shape of the system, ADR-35 for what a hover
+looks like. **`hover-frost`** is the one you will use: the element's glass
+thickens towards **its own theme's ground** (white by day, black by night,
+backdrop brightened by day and darkened by night) and the turning silk ring
+fades in over its hairline. Nothing is filled with a colour and no text
+changes. `hover-lift` for something the pointer could pick up, `hover-line`
+for something it can type into (the border goes to ink), `hover-danger` for
+anything that deletes. All on `--hover-ease`.
 
-The tiers are already inside `btn-ghost`, `btn-ink`, `seg-opt`, `field` and
-any `glass-sm` that is a button or a link, so a new component usually needs
+The tiers are inside `btn-ghost`, `btn-ink`, `seg-opt`, `field` and any
+`glass-sm` that is a button or a link, so a new component usually needs
 nothing; when it does, it picks a tier rather than inventing a hover.
-Something already ink (`btn-ink`, a pressed `seg-opt`) inverts the other way,
-to paper with an ink hairline. An `<input>` has no pseudo-element and so
-inverts in place, without the sweep.
 
-Things to know before using it (ADR-34 has the reasoning). The fill is the
-element's **own `background-image`**, grown from `0% 100%` to `100% 100%` —
-not a pseudo-element, which distorted the corners as it scaled, sat on the
-wrong box and painted over the border. So:
+Things to know:
 
-- **never write `background:` on something that inverts** — the shorthand
-  resets `background-image` and erases the fill. `background-color`;
-- the rules are **unlayered, with the class doubled**
-  (`.hover-invert.hover-invert`), because a layered `@utility` loses to both
-  a Vue scoped `<style>` and to `glass-sm`. `hover-invert` is a plain class;
-- `hover-invert`, interactive `glass-sm` and `btn-ghost` are **one selector
-  list**. Do not give a component its own copy: they drift;
-- a control **inside** an inverted thing inverts with it, and inverts **back**
-  when hovered itself;
-- everything inside inverts through `*`, not a list of tags, because a
-  `text-muted` class colours itself;
-- the label's colour flip is delayed (100 ms in, 160 ms out) so that it
-  happens while the fill is under it.
-
-**Check it with `e2e/_hover.mjs`** after touching any control: it matches
-`:hover` rules against every visible button, link and field on five screens
-and prints what the pointer would not move. It should say "all covered" in
-both themes.
+- the hover ring is `::after`, because `silk-ring` owns `::before`. An
+  element that **already** wears a ring keeps it and thickens it to 2.5 px
+  instead of growing a second one;
+- **a frost cannot whiten an already-white panel** — the vocabulary rows
+  move by one value out of 255 — so it also carries a top highlight and a
+  pane shadow, and those plus the ring are the cue on flat surfaces. The
+  frost proper shows where something sits behind it: the rail, the
+  dashboard, anything over the mesh;
+- something already ink (`btn-ink`, a pressed `seg-opt`) has no glass to
+  frost, so it moves towards the ground instead — the same direction;
+- an `<input>` has no pseudo-element, so it takes the film without the ring;
+- the rules are unlayered with the class doubled (`.hover-frost.hover-frost`),
+  because a layered `@utility` loses to a Vue scoped `<style>`.
 
 ## Fields (2026-09-18)
 

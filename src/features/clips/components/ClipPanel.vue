@@ -800,18 +800,14 @@ function download(url: string, name: string) {
   color: #f3edf6;
   outline: none;
 }
-/* An <input> cannot carry the wipe — no pseudo-element — so it inverts in place. The foot it
-   sits on is already dark, so "inverted" here means the paper colour with ink text. */
+/* An <input> has no pseudo-element, so it takes the frost film alone, without the silk edge. */
 .time {
   border-radius: 6px;
   padding: 0 3px;
-  transition:
-    background-color var(--hover-ease),
-    color var(--hover-ease);
+  transition: background-color var(--hover-ease);
 }
 .time:hover {
-  background: var(--color-ground);
-  color: var(--color-ink);
+  background-color: var(--frost-bg);
 }
 .time:focus {
   text-decoration: underline;

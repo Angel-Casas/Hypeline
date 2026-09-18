@@ -108,7 +108,7 @@ onBeforeUnmount(() => {
   <button
     ref="btn"
     type="button"
-    class="pick hover-invert"
+    class="pick hover-frost"
     v-bind="$attrs"
     :title="title"
     aria-haspopup="menu"
@@ -137,7 +137,7 @@ onBeforeUnmount(() => {
           type="button"
           role="menuitemradio"
           :aria-checked="o.v === modelValue"
-          class="flex w-full items-center justify-between gap-3 rounded-xl px-2.5 py-1.5 text-left text-[13px] text-ink transition-colors hover-invert focus:outline-none"
+          class="flex w-full items-center justify-between gap-3 rounded-xl px-2.5 py-1.5 text-left text-[13px] text-ink transition-colors hover-frost focus:outline-none"
           :class="o.v === modelValue ? 'font-semibold' : ''"
           @click="pick(o.v)"
         >

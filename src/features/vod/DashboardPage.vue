@@ -578,7 +578,7 @@ watch(
             v-for="v in vods"
             :key="v.id"
             class="group flex items-center gap-2 rounded-xl px-2 py-1.5"
-            :class="[v.id === info?.id ? 'bg-lift/70' : '', 'hover-invert']"
+            :class="[v.id === info?.id ? 'bg-lift/70' : '', 'hover-frost']"
           >
             <button class="min-w-0 flex-1 text-left" @click="open(v.id)">
               <div class="truncate text-xs leading-tight font-semibold">{{ v.title || v.id }}</div>
@@ -811,7 +811,7 @@ watch(
             role="tab"
             :aria-selected="tab === tb.id"
             class="flex-1 rounded-full py-1.5 text-xs font-semibold transition-colors"
-            :class="tab === tb.id ? 'bg-ink text-ground' : 'text-muted hover-invert'"
+            :class="tab === tb.id ? 'bg-ink text-ground' : 'text-muted hover-frost'"
             @click="tab = tb.id"
           >
             {{ tb.label }}
@@ -883,7 +883,7 @@ watch(
                 <li
                   v-for="m in liveFeed.slice(0, 6)"
                   :key="m.id"
-                  class="flex items-center gap-2 rounded-lg px-1.5 py-1 hover-invert"
+                  class="flex items-center gap-2 rounded-lg px-1.5 py-1 hover-frost"
                 >
                   <button
                     class="font-mono text-[12px] font-semibold tabular-nums"

@@ -267,7 +267,7 @@ watch(() => settings.sensitivity, computeBaseline);
               <span
                 v-for="(w, i) in DEFAULT_WORDS[kind]"
                 :key="'d' + w"
-                class="vchip"
+                class="vchip silk-ring"
                 :class="{ off: shippedOff(kind, w) }"
                 :style="slice(i)"
               >
@@ -283,7 +283,7 @@ watch(() => settings.sensitivity, computeBaseline);
               <span
                 v-for="(p, i) in packWords(kind)"
                 :key="'p' + p.word"
-                class="vchip"
+                class="vchip silk-ring"
                 :class="{ off: vocab.isOff(kind, p.word) }"
                 :style="slice(i + 7)"
               >
@@ -341,7 +341,7 @@ watch(() => settings.sensitivity, computeBaseline);
             </p>
             <p v-if="!col.rows.length" class="text-xs text-ink">{{ t('vocab.seen.empty') }}</p>
             <ul v-else class="seen">
-              <li v-for="s in col.rows" :key="s.token" class="seenrow hover-invert">
+              <li v-for="s in col.rows" :key="s.token" class="seenrow hover-frost">
                 <span class="tok"
                   ><b>{{ s.token }}</b
                   ><em>{{ t(`vocab.kind.${s.kind}`) }}</em></span
@@ -358,7 +358,7 @@ watch(() => settings.sensitivity, computeBaseline);
                   <button
                     v-for="kind in KINDS"
                     :key="kind"
-                    class="mini hover-invert"
+                    class="mini hover-frost"
                     :class="{ done: inList(kind, s.token) }"
                     :disabled="inList(kind, s.token)"
                     @click="vocab.add(scope, kind, s.token)"
@@ -376,7 +376,7 @@ watch(() => settings.sensitivity, computeBaseline);
           <div class="flex items-baseline justify-between gap-2">
             <h3 class="text-[13px] font-bold">{{ t('vocab.packs.name') }}</h3>
             <button
-              class="mini hover-invert"
+              class="mini hover-frost"
               data-testid="vocab-detect"
               @click="vocab.setPacks(packsToEnable(counts))"
             >
@@ -388,7 +388,7 @@ watch(() => settings.sensitivity, computeBaseline);
           </p>
           <div class="flex flex-wrap gap-1.5">
             <button
-              class="pack hover-invert"
+              class="pack silk-ring hover-frost"
               :style="slice(0)"
               :aria-pressed="!vocab.state.enOff"
               data-testid="vocab-pack-en"
@@ -400,7 +400,7 @@ watch(() => settings.sensitivity, computeBaseline);
             <button
               v-for="(p, i) in packs"
               :key="p.id"
-              class="pack hover-invert"
+              class="pack silk-ring hover-frost"
               :style="slice(i + 1)"
               :aria-pressed="p.on"
               @click="vocab.togglePack(p.id)"
@@ -505,27 +505,23 @@ watch(() => settings.sensitivity, computeBaseline);
  * you read. Reduced motion stops them all — `silk-ring` handles that globally.
  */
 /*
- * The shipped words and the packs wear a plain **ink** edge, not the warm silk they had for a
- * build: once the hover became an inversion, a gradient border could not invert with the thing
- * it wrapped, and an edge that stays put while its surface flips reads as a mistake (Angel,
- * 2026-09-18). Ink inverts to the paper for free, because `--color-ink` is what the fill is.
- * Only the words the user typed keep a silk ring — the cool one — since that is the single
- * distinction this screen still has to draw.
+ * The warm silk is back on the shipped words and the packs. It went to a plain ink border for
+ * one build, when the hover was an inversion and a gradient edge could not invert with the
+ * thing it wrapped; the frost does not touch the border, so the ring is free again (ADR-35).
+ * The user's own words keep the cool ring — the one distinction this screen has to draw.
  */
 .vchip,
 .pack {
-  border: 1.5px solid var(--color-ink);
-  transition:
-    background-color var(--hover-ease),
-    border-color var(--hover-ease);
+  --ring-w: 1.5px;
+  --ring-g: var(--silk-warm);
+  transition: background-color var(--hover-ease);
 }
 .vchip.mine {
-  --ring-w: 1.5px;
   --ring-g: var(--silk-cool);
-  border-color: transparent;
 }
 
-.vchip.mine::before {
+.vchip::before,
+.pack::before {
   animation-duration: 14s;
 }
 .vchip {

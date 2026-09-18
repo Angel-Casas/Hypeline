@@ -1470,3 +1470,24 @@ having started on sky, and `silk-drift` shifts by exactly one gradient width.
 
 114 tests, 15 e2e suites, lint and build green; the hover audit still says
 "all covered" in both themes. **Next:** Angel has 10 commits to push.
+
+## 2026-09-18 (cont.) — The hover, fourth time: frost and the silk edge
+
+**What changed.** Three rounds of colour-fill hovers were all rejected, so I
+mocked ten techniques that mostly leave the surface alone
+(`design/hover/ten.html`); Angel kept the silk edge and frost, and picked
+them combined from the follow-up (`design/hover/edges.html`). ADR-35:
+`hover-frost` — the glass thickens and the silk ring fades in over the
+hairline. No fill, no text colour change, so all the descendant and
+re-inversion machinery is gone.
+
+**What the screenshots caught.** The first cut whitened the _night_ theme
+(the film has to move towards each theme's own ground); a frost cannot
+whiten an already-white panel, so it needed a top highlight and a pane
+shadow to read at all on the vocabulary boxes; and an element that already
+wears a ring got nothing, so those now thicken their own ring instead of
+growing a second one. The vocabulary chips took their warm silk back, since
+a gradient edge no longer has to invert with anything.
+
+114 tests, 15 e2e suites, lint and build green; the hover audit reports "all
+covered" in both themes. **Next:** Angel has 11 commits to push.
