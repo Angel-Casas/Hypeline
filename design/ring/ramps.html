@@ -1,0 +1,172 @@
+<!doctype html>
+<html lang="en" data-theme="night">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Silk ring — five ramps</title>
+<link href="https://fonts.googleapis.com/css2?family=Gloock&family=Manrope:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --color-ground:#fbf9fa; --color-ground-2:#f3eef2; --color-ink:#221c2a; --color-muted:#6f6779;
+  --color-line:rgba(34,28,42,.12); --ghost-bg:rgba(255,255,255,.5);
+  --font-mono:'JetBrains Mono',ui-monospace,monospace;
+}
+[data-theme="night"]{
+  --color-ground:#000; --color-ground-2:#0c0a0f; --color-ink:#f3edf6; --color-muted:#9b91a5;
+  --color-line:rgba(255,255,255,.14); --ghost-bg:rgba(255,255,255,.04);
+}
+@property --silk-a { syntax:'<angle>'; inherits:false; initial-value:0deg }
+@keyframes silk-turn { to { --silk-a:360deg } }
+*{box-sizing:border-box}
+body{margin:0;background:var(--color-ground);color:var(--color-ink);
+  font-family:Manrope,system-ui,sans-serif;font-size:14px;padding:26px 20px 70px}
+.wrap{max-width:1000px;margin:0 auto}
+h1{font-family:Gloock,serif;font-weight:400;font-size:28px;margin:0 0 6px}
+h2{font-family:Gloock,serif;font-weight:400;font-size:19px;margin:0}
+.eyebrow{font-family:var(--font-mono);font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--color-muted)}
+.lede{color:var(--color-muted);max-width:70ch;margin:0 0 4px}
+.topbar{display:flex;justify-content:space-between;gap:16px;align-items:flex-start;margin-bottom:22px;flex-wrap:wrap}
+.toggle{border:1px solid var(--color-line);background:var(--ghost-bg);color:var(--color-ink);
+  border-radius:999px;padding:7px 14px;font:inherit;font-size:12px;cursor:pointer}
+.card{border:1px solid var(--color-line);background:var(--color-ground-2);border-radius:18px;padding:16px 18px;margin:0 0 18px}
+.card>header{display:flex;justify-content:space-between;align-items:baseline;gap:12px;flex-wrap:wrap}
+.why{color:var(--color-muted);font-size:12.5px;margin:6px 0 13px;max-width:74ch}
+.row{display:flex;flex-wrap:wrap;align-items:center;gap:16px}
+.ring{position:relative;isolation:isolate}
+.ring::before{content:'';position:absolute;inset:0;border-radius:inherit;padding:var(--ring-w,1.5px);
+  pointer-events:none;background:var(--g),linear-gradient(var(--color-line) 0 0);
+  -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);
+  -webkit-mask-composite:xor;mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);
+  mask-composite:exclude;animation:silk-turn 8s linear infinite}
+.btn{border:0;background:var(--ghost-bg);color:var(--color-ink);border-radius:999px;padding:9px 18px;font:inherit;font-size:14px}
+.chip{border-radius:12px;padding:7px 11px;background:var(--ghost-bg);font-family:var(--font-mono);font-size:12px}
+.frame{width:150px;height:86px;border-radius:14px;background:#000;--ring-w:3px}
+.strip{height:26px;border-radius:999px;margin-top:12px;background:var(--flat)}
+.note{font-family:var(--font-mono);font-size:10.5px;color:var(--color-muted)}
+
+/* 1 — mirror: out through the warm half and back through the cool one */
+.r1{--g:conic-gradient(from var(--silk-a),#ffd65e 0deg,#ffa968 45deg,#ff77b5 90deg,#ae81ff 135deg,
+  #8eb0ff 180deg,#ae81ff 225deg,#ff77b5 270deg,#ffa968 315deg,#ffd65e 360deg);
+  --flat:linear-gradient(90deg,#ffd65e,#ffa968,#ff77b5,#ae81ff,#8eb0ff,#ae81ff,#ff77b5,#ffa968,#ffd65e)}
+/* 2 — mirror, cool-led: the same idea with the blue half given more of the turn */
+.r2{--g:conic-gradient(from var(--silk-a),#8eb0ff 0deg,#7f9cff 40deg,#9b8bff 80deg,#ae81ff 120deg,
+  #d982e0 155deg,#ff77b5 190deg,#ff8f9c 220deg,#ffa968 250deg,#ff8f9c 285deg,#ff77b5 310deg,
+  #ae81ff 340deg,#8eb0ff 360deg);
+  --flat:linear-gradient(90deg,#8eb0ff,#7f9cff,#9b8bff,#ae81ff,#d982e0,#ff77b5,#ff8f9c,#ffa968,#ff8f9c,#ff77b5,#ae81ff,#8eb0ff)}
+/* 3 — mint bridge: one new hue lets it loop one way, right around the wheel */
+.r3{--g:conic-gradient(from var(--silk-a),#ff77b5 0deg,#ffa968 55deg,#ffd65e 110deg,#8fe0bb 165deg,
+  #8eb0ff 225deg,#ae81ff 280deg,#e07fd0 325deg,#ff77b5 360deg);
+  --flat:linear-gradient(90deg,#ff77b5,#ffa968,#ffd65e,#8fe0bb,#8eb0ff,#ae81ff,#e07fd0,#ff77b5)}
+/* 4 — pink to violet: no warm at all, the two signature hues and what lies between */
+.r4{--g:conic-gradient(from var(--silk-a),#ff77b5 0deg,#e77fd6 60deg,#ae81ff 120deg,#8eb0ff 180deg,
+  #ae81ff 240deg,#e77fd6 300deg,#ff77b5 360deg);
+  --flat:linear-gradient(90deg,#ff77b5,#e77fd6,#ae81ff,#8eb0ff,#ae81ff,#e77fd6,#ff77b5)}
+/* 5 — warm silk: no cool at all, sunset only */
+.r5{--g:conic-gradient(from var(--silk-a),#ffd65e 0deg,#ffb066 60deg,#ff8f8f 120deg,#ff77b5 180deg,
+  #ff8f8f 240deg,#ffb066 300deg,#ffd65e 360deg);
+  --flat:linear-gradient(90deg,#ffd65e,#ffb066,#ff8f8f,#ff77b5,#ff8f8f,#ffb066,#ffd65e)}
+/* today, for reference */
+.r0{--g:conic-gradient(from var(--silk-a),#ffd0e4 0deg,#ff77b5 40deg,#ffa968 80deg,#ffde68 115deg,
+  #fff0bd 150deg,#cfdcff 190deg,#8eb0ff 225deg,#ae81ff 265deg,#ddd0ff 300deg,#ff9bd0 335deg,#ffd0e4 360deg);
+  --flat:linear-gradient(90deg,#ffd0e4,#ff77b5,#ffa968,#ffde68,#fff0bd,#cfdcff,#8eb0ff,#ae81ff,#ddd0ff,#ff9bd0,#ffd0e4)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="topbar">
+    <div>
+      <p class="eyebrow">Hypeline · silk ring</p>
+      <h1>Five ramps, no white in any of them</h1>
+      <p class="lede">The white came from four pale tints — and they were there to solve a real problem:
+        the palette skips green, so a one-way loop has to get from butter back to sky, and sRGB drags
+        <code>#ffde68 → #8eb0ff</code> straight through a drab khaki. Each option below solves that a
+        different way. Every one is the real ring CSS at the real speed.</p>
+    </div>
+    <button class="toggle" id="theme">☀︎ Day</button>
+  </div>
+
+  <div class="card">
+    <header><div><span class="eyebrow">Today</span><h2>What you have now</h2></div><span class="note">4 pale tints</span></header>
+    <div class="row">
+      <button class="btn ring r0">Chat vocabulary</button>
+      <span class="chip ring r0">0:23:15 13.3×</span>
+      <div class="frame ring r0"></div>
+    </div>
+    <div class="strip r0"></div>
+  </div>
+
+  <div class="card">
+    <header><div><span class="eyebrow">Option 1</span><h2>Mirror</h2></div><span class="note">butter · apricot · petal · lilac · sky · and back</span></header>
+    <p class="why">Out through the warm half, back through the cool one. Nothing pale, and no jump to
+      hide: every neighbour is next to it on the colour wheel, so every midpoint stays chromatic.
+      All five palette hues, at full pastel. The turn reads as a ribbon rather than a wheel.</p>
+    <div class="row">
+      <button class="btn ring r1">Chat vocabulary</button>
+      <span class="chip ring r1">0:23:15 13.3×</span>
+      <div class="frame ring r1"></div>
+    </div>
+    <div class="strip r1"></div>
+  </div>
+
+  <div class="card">
+    <header><div><span class="eyebrow">Option 2</span><h2>Mirror, cool-led</h2></div><span class="note">more blue than warm</span></header>
+    <p class="why">The same idea, weighted: sky and lilac take two-thirds of the turn and the warm end
+      is a short flare of coral and apricot. Quieter, and it sits better against the true-black night
+      theme — the app is mostly cool, and this stops the ring reading as a rainbow.</p>
+    <div class="row">
+      <button class="btn ring r2">Chat vocabulary</button>
+      <span class="chip ring r2">0:23:15 13.3×</span>
+      <div class="frame ring r2"></div>
+    </div>
+    <div class="strip r2"></div>
+  </div>
+
+  <div class="card">
+    <header><div><span class="eyebrow">Option 3</span><h2>Mint bridge</h2></div><span class="note">one new hue, one-way loop</span></header>
+    <p class="why">Adds a soft mint between butter and sky, which is the missing rung on the wheel. That
+      buys a true one-way rotation — the ring turns like a wheel rather than swinging like a ribbon —
+      at the cost of a hue the palette does not have anywhere else.</p>
+    <div class="row">
+      <button class="btn ring r3">Chat vocabulary</button>
+      <span class="chip ring r3">0:23:15 13.3×</span>
+      <div class="frame ring r3"></div>
+    </div>
+    <div class="strip r3"></div>
+  </div>
+
+  <div class="card">
+    <header><div><span class="eyebrow">Option 4</span><h2>Pink to violet</h2></div><span class="note">no warm at all</span></header>
+    <p class="why">Petal, orchid, lilac, sky and back — the two signature hues and what lies between
+      them. The most restrained of the five and the most obviously one thing rather than a spectrum.
+      Loses the apricot and butter that the hype thread uses at its peaks.</p>
+    <div class="row">
+      <button class="btn ring r4">Chat vocabulary</button>
+      <span class="chip ring r4">0:23:15 13.3×</span>
+      <div class="frame ring r4"></div>
+    </div>
+    <div class="strip r4"></div>
+  </div>
+
+  <div class="card">
+    <header><div><span class="eyebrow">Option 5</span><h2>Warm silk</h2></div><span class="note">no cool at all</span></header>
+    <p class="why">Butter, apricot, coral, petal and back. Sunset rather than spectrum — warm against
+      the black, and the closest of the five to a single material catching light. Loses the blue half
+      of the palette entirely, which is most of what the app is made of.</p>
+    <div class="row">
+      <button class="btn ring r5">Chat vocabulary</button>
+      <span class="chip ring r5">0:23:15 13.3×</span>
+      <div class="frame ring r5"></div>
+    </div>
+    <div class="strip r5"></div>
+  </div>
+</div>
+<script>
+const root = document.documentElement, tb = document.getElementById('theme');
+tb.onclick = () => {
+  const night = root.dataset.theme === 'night';
+  root.dataset.theme = night ? 'day' : 'night';
+  tb.textContent = night ? '☾ Night' : '☀︎ Day';
+};
+</script>
+</body>
+</html>

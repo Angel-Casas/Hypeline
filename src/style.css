@@ -327,27 +327,37 @@ body {
     padding: var(--ring-w, 1.5px);
     pointer-events: none;
     /*
-     * One turn of silk: petal → apricot → butter → sky → lilac and back, never leaving the
-     * palette. It used to have four `transparent` arcs, which read as grey twice over: the
-     * faint hairline underneath showed through every gap, and a colour fading to
-     * `transparent` in sRGB loses its saturation on the way out, so the bright arcs greyed at
-     * both ends too. A gap in a gradient is never really empty — it is whatever sits
-     * underneath, desaturated — so there are none (Angel, 2026-09-18).
+     * One turn of silk: sky and lilac for two thirds of it, then a short flare through petal,
+     * coral and apricot and back. Cool-led, because the app is mostly cool and an even spread
+     * of all five hues reads as a rainbow against true black (Angel, 2026-09-18).
+     *
+     * The ramp **mirrors** rather than looping, and that is the whole trick. Five hues cannot
+     * close a circle on their own — the palette skips green, so a one-way loop has to get from
+     * butter back to sky, and sRGB drags `#ffde68 → #8eb0ff` straight through a drab khaki
+     * (198,199,180). Going out and back has no jump to hide: every neighbour is adjacent on
+     * the wheel and every midpoint stays chromatic.
+     *
+     * Two earlier passes got this wrong in opposite directions. Four `transparent` arcs let
+     * the hairline below show through, and a colour fading to `transparent` in sRGB loses its
+     * saturation on the way out, so the bright arcs greyed at both ends too. Pale tints of the
+     * palette fixed the grey but were near-white, and they covered more of the turn than the
+     * saturated stops did. So: no transparency, no tints, no jump.
      */
     background:
       conic-gradient(
         from var(--silk-a),
-        #ffd0e4 0deg,
-        #ff77b5 40deg,
-        #ffa968 80deg,
-        #ffde68 115deg,
-        #fff0bd 150deg,
-        #cfdcff 190deg,
-        #8eb0ff 225deg,
-        #ae81ff 265deg,
-        #ddd0ff 300deg,
-        #ff9bd0 335deg,
-        #ffd0e4 360deg
+        #8eb0ff 0deg,
+        #7f9cff 40deg,
+        #9b8bff 80deg,
+        #ae81ff 120deg,
+        #d982e0 155deg,
+        #ff77b5 190deg,
+        #ff8f9c 220deg,
+        #ffa968 250deg,
+        #ff8f9c 285deg,
+        #ff77b5 310deg,
+        #ae81ff 340deg,
+        #8eb0ff 360deg
       ),
       linear-gradient(var(--color-line) 0 0);
     -webkit-mask:
