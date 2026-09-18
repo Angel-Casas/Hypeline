@@ -327,27 +327,27 @@ body {
     padding: var(--ring-w, 1.5px);
     pointer-events: none;
     /*
-     * One turn of silk: petal → apricot → butter → sky → lilac and back, with pale tints of
-     * the palette where it used to go transparent. Four transparent arcs meant the grey
-     * hairline below showed through in four places, and a colour fading to `transparent` in
-     * sRGB loses its saturation on the way out, so the bright arcs greyed at both ends too
-     * (Angel, 2026-09-18). One gap survives, at the seam, and it fades through a *transparent
-     * petal* rather than plain `transparent` so even that fade keeps its hue.
+     * One turn of silk: petal → apricot → butter → sky → lilac and back, never leaving the
+     * palette. It used to have four `transparent` arcs, which read as grey twice over: the
+     * faint hairline underneath showed through every gap, and a colour fading to
+     * `transparent` in sRGB loses its saturation on the way out, so the bright arcs greyed at
+     * both ends too. A gap in a gradient is never really empty — it is whatever sits
+     * underneath, desaturated — so there are none (Angel, 2026-09-18).
      */
     background:
       conic-gradient(
         from var(--silk-a),
-        rgb(255 208 228 / 0) 0deg,
-        #ff77b5 25deg,
-        #ffa968 65deg,
-        #ffde68 100deg,
-        #fff0bd 135deg,
-        #cfdcff 175deg,
-        #8eb0ff 215deg,
-        #ae81ff 255deg,
-        #ddd0ff 295deg,
-        #ff9bd0 330deg,
-        rgb(255 208 228 / 0) 360deg
+        #ffd0e4 0deg,
+        #ff77b5 40deg,
+        #ffa968 80deg,
+        #ffde68 115deg,
+        #fff0bd 150deg,
+        #cfdcff 190deg,
+        #8eb0ff 225deg,
+        #ae81ff 265deg,
+        #ddd0ff 300deg,
+        #ff9bd0 335deg,
+        #ffd0e4 360deg
       ),
       linear-gradient(var(--color-line) 0 0);
     -webkit-mask:
