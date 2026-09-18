@@ -24,6 +24,37 @@
   --color-warn: #8a6a10;
   /* "lift": the colour surfaces move towards when they rise (hover rows, active items) */
   --color-lift: #ffffff;
+  /*
+   * The one silk gradient, shared by `silk-ring` and `silk-frame` — it lived in both of them
+   * and the player's frame silently kept an old version through two rounds of changes
+   * (Angel, 2026-09-18). `--silk-a` resolves against whichever element uses this, so the
+   * animation still belongs to the element, not to the token.
+   *
+   * Cool-led: sky and lilac for two thirds of the turn, then a short flare through petal,
+   * coral and apricot. The ramp **mirrors** rather than looping, and that is the whole trick.
+   * Five hues cannot close a circle — the palette skips green, so a one-way loop has to get
+   * from butter back to sky, and sRGB drags `#ffde68 → #8eb0ff` straight through a drab khaki
+   * (198,199,180). Going out and back has no jump to hide: every neighbour is adjacent on the
+   * wheel and every midpoint stays chromatic. Earlier passes used `transparent` arcs (the
+   * hairline below showed through, and sRGB fades to transparent desaturate) and then pale
+   * tints (near-white, and wider than the saturated stops). So: no transparency, no tints,
+   * no jump.
+   */
+  --silk-conic: conic-gradient(
+    from var(--silk-a),
+    #8eb0ff 0deg,
+    #7f9cff 40deg,
+    #9b8bff 80deg,
+    #ae81ff 120deg,
+    #d982e0 155deg,
+    #ff77b5 190deg,
+    #ff8f9c 220deg,
+    #ffa968 250deg,
+    #ff8f9c 285deg,
+    #ff77b5 310deg,
+    #ae81ff 340deg,
+    #8eb0ff 360deg
+  );
   /* Scrims behind overlays. They must DIM in both themes: `--color-ink` flips to near-white
      by night, so an ink-tinted veil lit the page up instead (Angel, 2026-09-17). */
   --scrim-soft: rgba(34, 28, 42, 0.1);
@@ -326,40 +357,7 @@ body {
     /* hairline by default; a surface can ask for more with --ring-w (the player uses 3px) */
     padding: var(--ring-w, 1.5px);
     pointer-events: none;
-    /*
-     * One turn of silk: sky and lilac for two thirds of it, then a short flare through petal,
-     * coral and apricot and back. Cool-led, because the app is mostly cool and an even spread
-     * of all five hues reads as a rainbow against true black (Angel, 2026-09-18).
-     *
-     * The ramp **mirrors** rather than looping, and that is the whole trick. Five hues cannot
-     * close a circle on their own — the palette skips green, so a one-way loop has to get from
-     * butter back to sky, and sRGB drags `#ffde68 → #8eb0ff` straight through a drab khaki
-     * (198,199,180). Going out and back has no jump to hide: every neighbour is adjacent on
-     * the wheel and every midpoint stays chromatic.
-     *
-     * Two earlier passes got this wrong in opposite directions. Four `transparent` arcs let
-     * the hairline below show through, and a colour fading to `transparent` in sRGB loses its
-     * saturation on the way out, so the bright arcs greyed at both ends too. Pale tints of the
-     * palette fixed the grey but were near-white, and they covered more of the turn than the
-     * saturated stops did. So: no transparency, no tints, no jump.
-     */
-    background:
-      conic-gradient(
-        from var(--silk-a),
-        #8eb0ff 0deg,
-        #7f9cff 40deg,
-        #9b8bff 80deg,
-        #ae81ff 120deg,
-        #d982e0 155deg,
-        #ff77b5 190deg,
-        #ff8f9c 220deg,
-        #ffa968 250deg,
-        #ff8f9c 285deg,
-        #ff77b5 310deg,
-        #ae81ff 340deg,
-        #8eb0ff 360deg
-      ),
-      linear-gradient(var(--color-line) 0 0);
+    background: var(--silk-conic), linear-gradient(var(--color-line) 0 0);
     -webkit-mask:
       linear-gradient(#000 0 0) content-box,
       linear-gradient(#000 0 0);
@@ -388,30 +386,7 @@ body {
     inset: 0;
     border-radius: inherit;
     z-index: -1;
-    /*
-     * One turn of silk: petal → apricot → butter → sky → lilac and back, with pale tints of
-     * the palette where it used to go transparent. Four transparent arcs meant the grey
-     * hairline below showed through in four places, and a colour fading to `transparent` in
-     * sRGB loses its saturation on the way out, so the bright arcs greyed at both ends too
-     * (Angel, 2026-09-18). One gap survives, at the seam, and it fades through a *transparent
-     * petal* rather than plain `transparent` so even that fade keeps its hue.
-     */
-    background:
-      conic-gradient(
-        from var(--silk-a),
-        rgb(255 208 228 / 0) 0deg,
-        #ff77b5 25deg,
-        #ffa968 65deg,
-        #ffde68 100deg,
-        #fff0bd 135deg,
-        #cfdcff 175deg,
-        #8eb0ff 215deg,
-        #ae81ff 255deg,
-        #ddd0ff 295deg,
-        #ff9bd0 330deg,
-        rgb(255 208 228 / 0) 360deg
-      ),
-      linear-gradient(var(--color-line) 0 0);
+    background: var(--silk-conic), linear-gradient(var(--color-line) 0 0);
     animation: silk-turn 8s linear infinite;
   }
 }
