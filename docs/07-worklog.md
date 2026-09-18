@@ -1579,9 +1579,14 @@ Then Angel noticed what the mark was actually saying: the stems around the
 peak are a clip's In and Out. So the timeline's **In / Out handles now wear
 the same serif feet** — inset 4 px from the ribbon's edges, a 14 px foot at
 each end. A line running off the top and bottom read as a cut _through_ the
-ribbon; a capped stem reads as the clip's edge. The playhead deliberately
-keeps its full height, which is now what distinguishes a position from a
-boundary.
+ribbon; a capped stem reads as the clip's edge. I left the playhead full
+height at first, on the theory that a position is not a boundary; Angel
+wanted them to match, and he is right — the mixed treatment read as an
+oversight, not a distinction. So the playhead and the live edge wear the feet
+too, and the selection's ink wash now starts and ends at the feet instead of
+running the ribbon's full height. Nothing vertical on the ribbon runs off its
+top or bottom any more; the playhead stays apart by weight (2 px against
+1.5 px), which is enough.
 
 Two traps worth remembering: duplicate SVG gradient `id`s in one document
 collide and the first wins (it cost a render that showed the "after" mark

@@ -996,11 +996,13 @@ function pulse(sec: number) {
 
         <!-- in/out range -->
         <g v-if="hasRange">
+          <!-- the fill stops where the feet are, so the selection is a closed shape between
+               two capped stems rather than a band cutting the whole ribbon (Angel, 2026-09-18) -->
           <rect
             :x="x(inSec!)"
-            y="0"
+            :y="4 * sy"
             :width="Math.max(1, x(outSec!) - x(inSec!))"
-            :height="H"
+            :height="H - 8 * sy"
             style="fill: var(--color-ink)"
             opacity="0.07"
             pointer-events="none"
@@ -1063,17 +1065,35 @@ function pulse(sec: number) {
         <!-- live edge: the VOD ends here and keeps coming (clamped to the drawn length, which
              is whole seconds behind the fractional edge — the marker must never blink) -->
         <g v-if="edgeSec != null" pointer-events="none">
-          <line
-            :x1="x(edgeSec)"
-            :x2="x(edgeSec)"
-            y1="0"
-            :y2="H"
+          <g
             style="stroke: var(--color-danger)"
             stroke-width="1.5"
-            stroke-dasharray="4 4"
-            vector-effect="non-scaling-stroke"
+            stroke-linecap="round"
             opacity="0.7"
-          />
+          >
+            <line
+              :x1="x(edgeSec)"
+              :x2="x(edgeSec)"
+              :y1="4 * sy"
+              :y2="H - 4 * sy"
+              stroke-dasharray="4 4"
+              vector-effect="non-scaling-stroke"
+            />
+            <line
+              :x1="x(edgeSec) - 7 * sx"
+              :x2="x(edgeSec) + 7 * sx"
+              :y1="4 * sy"
+              :y2="4 * sy"
+              vector-effect="non-scaling-stroke"
+            />
+            <line
+              :x1="x(edgeSec) - 7 * sx"
+              :x2="x(edgeSec) + 7 * sx"
+              :y1="H - 4 * sy"
+              :y2="H - 4 * sy"
+              vector-effect="non-scaling-stroke"
+            />
+          </g>
           <ellipse
             :cx="x(edgeSec)"
             :cy="H / 2"
@@ -1084,17 +1104,37 @@ function pulse(sec: number) {
             :style="{ transformOrigin: `${x(edgeSec)}px ${H / 2}px` }"
           />
         </g>
-        <line
+        <!-- the playhead wears the feet too (Angel, 2026-09-18): every vertical on the ribbon
+             now ends deliberately instead of running off its top and bottom -->
+        <g
           v-if="currentTime >= v0 && currentTime <= v1"
-          :x1="x(currentTime)"
-          :x2="x(currentTime)"
-          y1="0"
-          :y2="H"
           style="stroke: var(--color-playhead)"
           stroke-width="2"
-          vector-effect="non-scaling-stroke"
+          stroke-linecap="round"
           pointer-events="none"
-        />
+        >
+          <line
+            :x1="x(currentTime)"
+            :x2="x(currentTime)"
+            :y1="4 * sy"
+            :y2="H - 4 * sy"
+            vector-effect="non-scaling-stroke"
+          />
+          <line
+            :x1="x(currentTime) - 7 * sx"
+            :x2="x(currentTime) + 7 * sx"
+            :y1="4 * sy"
+            :y2="4 * sy"
+            vector-effect="non-scaling-stroke"
+          />
+          <line
+            :x1="x(currentTime) - 7 * sx"
+            :x2="x(currentTime) + 7 * sx"
+            :y1="H - 4 * sy"
+            :y2="H - 4 * sy"
+            vector-effect="non-scaling-stroke"
+          />
+        </g>
       </svg>
       <!-- LIVE pill at the edge: HTML, so the letters are not stretched by the ribbon's scaling -->
       <div

@@ -232,8 +232,12 @@ redirects). Grid `260px | 1fr` (stacks under `lg`):
   goes on every `<line>`, not the group). A capped stem reads as a clip's
   edge — a deliberate end — where a full-height line read as a cut through
   the ribbon, and it echoes the logo, where those stems are the same two
-  handles. The **playhead stays full height**: a position is not a boundary,
-  and the difference is now what tells them apart at a glance.
+  handles. Everything vertical on the ribbon then follows the same rule
+  (Angel, 2026-09-18): the **playhead** (2 px, the heavier stem) and the
+  **live edge** (dashed, solid feet) wear the feet too, and the selection's
+  ink wash starts and ends at the feet rather than running the ribbon's full
+  height — so a clip reads as a closed shape between two stems. No vertical
+  on the ribbon runs off its top or bottom any more.
 - Moment markers are **pins**: a 1 px hairline from the spine up through
   the peak to a filled ink dot just above it (the white dot with a border is
   retired). Hovered / active pins grow (dot r 2.6 → 4.2).
