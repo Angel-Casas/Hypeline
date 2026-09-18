@@ -572,8 +572,7 @@
     "later": "Sonra"
   },
   "vocab": {
-    "eyebrow": "Sohbet sözlüğü",
-    "title": "Bu sohbet ne demek istiyor",
+    "title": "Isı haritasını sohbetine göre ayarla",
     "scope": "Kapsam",
     "everywhere": "Her yerde",
     "onlyChannel": "Sadece {channel}",
@@ -608,6 +607,11 @@
       "empty": "Sohbetinin ne dediğini görmek için bir VOD aç.",
       "atOnce": "aynı anda kişi",
       "usersTotal": "toplam {n} kişi"
+    },
+    "most": {
+      "name": "En çok kullanılan kelimeler",
+      "help": "Aynı sohbetin düz sayımı: her kelime ve emote kaç kez gönderilmiş, kim gönderirse göndersin. Bu topluluğun sürekli yaslandığı kelimeleri görmek için iyi.",
+      "uses": "kez gönderildi"
     },
     "kind": {
       "emote": "emote",

@@ -572,8 +572,7 @@
     "later": "Später"
   },
   "vocab": {
-    "eyebrow": "Chat-Vokabular",
-    "title": "Was dieser Chat meint",
+    "title": "Pass die Heatmap an deinen Chat an",
     "scope": "Geltung",
     "everywhere": "Überall",
     "onlyChannel": "Nur {channel}",
@@ -608,6 +607,11 @@
       "empty": "Öffne ein VOD, um zu sehen, was sein Chat sagt.",
       "atOnce": "Leute gleichzeitig",
       "usersTotal": "{n} Leute insgesamt"
+    },
+    "most": {
+      "name": "Meistgenutzte Wörter",
+      "help": "Derselbe Chat, schlicht gezählt: wie oft jedes Wort und Emote gesendet wurde, egal von wem. Gut, um zu sehen, worauf sich diese Community ständig stützt.",
+      "uses": "mal gesendet"
     },
     "kind": {
       "emote": "Emote",

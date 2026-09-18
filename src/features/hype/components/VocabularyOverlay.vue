@@ -24,7 +24,14 @@ import {
   sensitivityToOptions,
   type Bucket,
 } from '../scoring';
-import { detectPacks, packsToEnable, PACKS, seenTokens, type ListKind } from '../vocabulary';
+import {
+  detectPacks,
+  packsToEnable,
+  PACKS,
+  seenTokens,
+  topTokens,
+  type ListKind,
+} from '../vocabulary';
 
 const emit = defineEmits<{ close: [] }>();
 const { t } = useI18n();
@@ -40,6 +47,19 @@ const KINDS: ListKind[] = ['important', 'reaction'];
 /** Bot-filtered once: both the token list and the baseline below want the same messages. */
 const clean = computed(() => dropBotsAndAnnouncements(messages.value));
 const seen = computed(() => seenTokens(clean.value));
+/** The companion list: what this chat says most, rather than what a crowd said at once. */
+const most = computed(() => topTokens(clean.value));
+/** Each chip wears a different slice of the one silk gradient, so a row of them reads as a set. */
+function slice(i: number): Record<string, string> {
+  return { '--silk-a': ((i * 47) % 360) + 'deg' };
+}
+function inList(kind: ListKind, token: string): boolean {
+  return mine(kind).some((w) => w.toLowerCase() === token.toLowerCase());
+}
+const columns = computed(() => [
+  { key: 'seen' as const, rows: seen.value, unit: t('vocab.seen.atOnce') },
+  { key: 'most' as const, rows: most.value, unit: t('vocab.most.uses') },
+]);
 const counts = ref<Record<string, number>>({});
 const packs = computed(() =>
   PACKS.map((p) => ({
@@ -190,14 +210,9 @@ watch(() => settings.sensitivity, computeBaseline);
       data-testid="vocab-overlay"
       @click.self="emit('close')"
     >
-      <div class="sheet w-full max-w-4xl p-4 sm:p-5">
+      <div class="sheet vocab w-full max-w-5xl p-4 sm:p-5">
         <div class="flex flex-wrap items-start justify-between gap-3">
-          <div>
-            <p class="eyebrow">{{ t('vocab.eyebrow') }}</p>
-            <h2 class="mt-0.5 font-display text-xl leading-tight text-ink">
-              {{ t('vocab.title') }}
-            </h2>
-          </div>
+          <h2 class="font-display text-xl leading-tight text-ink">{{ t('vocab.title') }}</h2>
           <div class="flex items-center gap-2">
             <span class="seg" role="group" :aria-label="t('vocab.scope')">
               <button
@@ -224,7 +239,7 @@ watch(() => settings.sensitivity, computeBaseline);
             </button>
           </div>
         </div>
-        <p class="text-muted mt-2 text-xs leading-relaxed">
+        <p class="mt-1.5 text-xs leading-relaxed text-ink">
           {{
             scope === 'global'
               ? t('vocab.scopeGlobal')
@@ -232,157 +247,159 @@ watch(() => settings.sensitivity, computeBaseline);
           }}
         </p>
 
-        <div class="mt-3 grid gap-3 lg:grid-cols-[minmax(0,1.2fr)_minmax(0,1fr)]">
-          <!-- the two lists -->
-          <div class="flex flex-col gap-3">
-            <section v-for="kind in KINDS" :key="kind" class="box" :data-list="kind">
-              <div class="flex items-baseline justify-between gap-2">
-                <h3 class="text-[13px] font-bold">{{ t(`vocab.${kind}.name`) }}</h3>
-                <span class="text-muted font-mono text-[10.5px]"
-                  >{{ liveCount(kind) }} {{ t('vocab.words') }}</span
-                >
-              </div>
-              <p class="text-muted mt-0.5 mb-2 text-[11.5px] leading-relaxed">
-                {{ t(`vocab.${kind}.help`) }}
-              </p>
-              <div class="flex flex-wrap gap-1.5">
-                <span
-                  v-for="w in DEFAULT_WORDS[kind]"
-                  :key="'d' + w"
-                  class="vchip"
-                  :class="{ off: vocab.isOff(kind, w) }"
-                >
-                  <span>{{ w }}</span>
-                  <button
-                    class="vx"
-                    :title="t(vocab.isOff(kind, w) ? 'vocab.turnOn' : 'vocab.turnOff')"
-                    @click="vocab.toggleDefault(kind, w)"
-                  >
-                    {{ vocab.isOff(kind, w) ? '+' : '×' }}
-                  </button>
-                </span>
-                <span
-                  v-for="p in packWords(kind)"
-                  :key="'p' + p.word"
-                  class="vchip"
-                  :class="{ off: vocab.isOff(kind, p.word) }"
-                >
-                  <span>{{ p.word }}</span>
-                  <em class="who">{{ p.pack }}</em>
-                  <button
-                    class="vx"
-                    :title="t(vocab.isOff(kind, p.word) ? 'vocab.turnOn' : 'vocab.turnOff')"
-                    @click="vocab.toggleDefault(kind, p.word)"
-                  >
-                    {{ vocab.isOff(kind, p.word) ? '+' : '×' }}
-                  </button>
-                </span>
-                <span v-for="w in mine(kind)" :key="'m' + w" class="vchip mine">
-                  <span>{{ w }}</span>
-                  <em class="who">{{ t('vocab.yours') }}</em>
-                  <button
-                    class="vx"
-                    :title="t('common.remove')"
-                    @click="vocab.remove(scope, kind, w)"
-                  >
-                    ×
-                  </button>
-                </span>
-              </div>
-              <form class="mt-2 flex gap-1.5" @submit.prevent="submit(kind)">
-                <input
-                  v-model="draft[kind]"
-                  class="field min-w-0 flex-1 py-1! text-xs!"
-                  :placeholder="t(`vocab.${kind}.placeholder`)"
-                  maxlength="40"
-                  :data-testid="`vocab-add-${kind}`"
-                />
-                <button type="submit" class="btn-ghost px-2.5! py-1! text-xs">
-                  {{ t('vocab.add') }}
-                </button>
-              </form>
-            </section>
-          </div>
-
-          <!-- what this VOD said, and the packs -->
-          <div class="flex flex-col gap-3">
-            <section class="box">
-              <div class="flex items-baseline justify-between gap-2">
-                <h3 class="text-[13px] font-bold">{{ t('vocab.seen.name') }}</h3>
-                <span class="text-muted font-mono text-[10.5px]">{{ t('vocab.seen.atOnce') }}</span>
-              </div>
-              <p class="text-muted mt-0.5 mb-2 text-[11.5px] leading-relaxed">
-                {{ t('vocab.seen.help') }}
-              </p>
-              <p v-if="!seen.length" class="text-muted text-xs">{{ t('vocab.seen.empty') }}</p>
-              <ul v-else class="seen">
-                <li v-for="s in seen" :key="s.token" class="seenrow">
-                  <span class="tok"
-                    ><b>{{ s.token }}</b
-                    ><em>{{ t(`vocab.kind.${s.kind}`) }}</em></span
-                  >
-                  <span class="bar"
-                    ><i :style="{ width: Math.round((s.peak / seen[0]!.peak) * 100) + '%' }"></i
-                  ></span>
-                  <span
-                    class="text-muted font-mono text-[10.5px]"
-                    :title="t('vocab.seen.usersTotal', { n: s.users })"
-                    >{{ s.peak }}</span
-                  >
-                  <span class="flex gap-1">
-                    <button
-                      v-for="kind in KINDS"
-                      :key="kind"
-                      class="mini"
-                      :class="{ done: mine(kind).includes(s.token) }"
-                      :disabled="mine(kind).includes(s.token)"
-                      @click="vocab.add(scope, kind, s.token)"
-                    >
-                      {{ t(`vocab.addTo.${kind}`) }}
-                    </button>
-                  </span>
-                </li>
-              </ul>
-            </section>
-
-            <section class="box">
-              <div class="flex items-baseline justify-between gap-2">
-                <h3 class="text-[13px] font-bold">{{ t('vocab.packs.name') }}</h3>
+        <!-- row 1: the two lists, side by side -->
+        <div class="mt-3 grid gap-3 md:grid-cols-2">
+          <section v-for="kind in KINDS" :key="kind" class="box" :data-list="kind">
+            <div class="flex items-baseline justify-between gap-2">
+              <h3 class="text-[13px] font-bold">{{ t(`vocab.${kind}.name`) }}</h3>
+              <span class="font-mono text-[10.5px] text-ink"
+                >{{ liveCount(kind) }} {{ t('vocab.words') }}</span
+              >
+            </div>
+            <p class="mt-0.5 mb-2 text-[11.5px] leading-relaxed text-ink">
+              {{ t(`vocab.${kind}.help`) }}
+            </p>
+            <div class="flex flex-wrap gap-1.5">
+              <span
+                v-for="(w, i) in DEFAULT_WORDS[kind]"
+                :key="'d' + w"
+                class="vchip silk-ring"
+                :class="{ off: vocab.isOff(kind, w) }"
+                :style="slice(i)"
+              >
+                <span>{{ w }}</span>
                 <button
-                  class="mini"
-                  data-testid="vocab-detect"
-                  @click="vocab.setPacks(packsToEnable(counts))"
+                  class="vx"
+                  :title="t(vocab.isOff(kind, w) ? 'vocab.turnOn' : 'vocab.turnOff')"
+                  @click="vocab.toggleDefault(kind, w)"
                 >
-                  {{ t('vocab.packs.detect') }}
+                  {{ vocab.isOff(kind, w) ? '+' : '×' }}
                 </button>
-              </div>
-              <p class="text-muted mt-0.5 mb-2 text-[11.5px] leading-relaxed">
-                {{ t('vocab.packs.help') }}
-              </p>
-              <div class="flex flex-wrap gap-1.5">
-                <span class="pack" aria-pressed="true">
-                  English <small>{{ t('vocab.packs.always') }}</small>
-                </span>
+              </span>
+              <span
+                v-for="(p, i) in packWords(kind)"
+                :key="'p' + p.word"
+                class="vchip silk-ring"
+                :class="{ off: vocab.isOff(kind, p.word) }"
+                :style="slice(i + 7)"
+              >
+                <span>{{ p.word }}</span>
+                <em class="who">{{ p.pack }}</em>
                 <button
-                  v-for="p in packs"
-                  :key="p.id"
-                  class="pack"
-                  :aria-pressed="p.on"
-                  @click="vocab.togglePack(p.id)"
+                  class="vx"
+                  :title="t(vocab.isOff(kind, p.word) ? 'vocab.turnOn' : 'vocab.turnOff')"
+                  @click="vocab.toggleDefault(kind, p.word)"
                 >
-                  {{ p.name }}
-                  <small>{{ p.users ? t('vocab.packs.people', { n: p.users }) : '0' }}</small>
+                  {{ vocab.isOff(kind, p.word) ? '+' : '×' }}
                 </button>
-              </div>
-            </section>
-          </div>
+              </span>
+              <span v-for="w in mine(kind)" :key="'m' + w" class="vchip mine">
+                <span>{{ w }}</span>
+                <em class="who">{{ t('vocab.yours') }}</em>
+                <button
+                  class="vx"
+                  :title="t('common.remove')"
+                  @click="vocab.remove(scope, kind, w)"
+                >
+                  ×
+                </button>
+              </span>
+            </div>
+            <form class="mt-2 flex gap-1.5" @submit.prevent="submit(kind)">
+              <input
+                v-model="draft[kind]"
+                class="field min-w-0 flex-1 py-1! text-xs!"
+                :placeholder="t(`vocab.${kind}.placeholder`)"
+                maxlength="40"
+                :data-testid="`vocab-add-${kind}`"
+              />
+              <button type="submit" class="btn-ghost px-2.5! py-1! text-xs">
+                {{ t('vocab.add') }}
+              </button>
+            </form>
+          </section>
         </div>
 
-        <!-- before / after -->
+        <!-- row 2: what the chat said, two ways -->
+        <div class="mt-3 grid gap-3 md:grid-cols-2">
+          <section v-for="col in columns" :key="col.key" class="box" :data-tokens="col.key">
+            <div class="flex items-baseline justify-between gap-2">
+              <h3 class="text-[13px] font-bold">{{ t(`vocab.${col.key}.name`) }}</h3>
+              <span class="font-mono text-[10.5px] text-ink">{{ col.unit }}</span>
+            </div>
+            <p class="mt-0.5 mb-2 text-[11.5px] leading-relaxed text-ink">
+              {{ t(`vocab.${col.key}.help`) }}
+            </p>
+            <p v-if="!col.rows.length" class="text-xs text-ink">{{ t('vocab.seen.empty') }}</p>
+            <ul v-else class="seen">
+              <li v-for="s in col.rows" :key="s.token" class="seenrow">
+                <span class="tok"
+                  ><b>{{ s.token }}</b
+                  ><em>{{ t(`vocab.kind.${s.kind}`) }}</em></span
+                >
+                <span class="bar"
+                  ><i :style="{ width: Math.round((s.peak / col.rows[0]!.peak) * 100) + '%' }"></i
+                ></span>
+                <span
+                  class="font-mono text-[10.5px] text-ink"
+                  :title="t('vocab.seen.usersTotal', { n: s.users })"
+                  >{{ s.peak }}</span
+                >
+                <span class="flex gap-1">
+                  <button
+                    v-for="kind in KINDS"
+                    :key="kind"
+                    class="mini"
+                    :class="{ done: inList(kind, s.token) }"
+                    :disabled="inList(kind, s.token)"
+                    @click="vocab.add(scope, kind, s.token)"
+                  >
+                    {{ t(`vocab.addTo.${kind}`) }}
+                  </button>
+                </span>
+              </li>
+            </ul>
+          </section>
+        </div>
+
+        <!-- row 3: the packs -->
+        <section class="box mt-3">
+          <div class="flex items-baseline justify-between gap-2">
+            <h3 class="text-[13px] font-bold">{{ t('vocab.packs.name') }}</h3>
+            <button
+              class="mini"
+              data-testid="vocab-detect"
+              @click="vocab.setPacks(packsToEnable(counts))"
+            >
+              {{ t('vocab.packs.detect') }}
+            </button>
+          </div>
+          <p class="mt-0.5 mb-2 text-[11.5px] leading-relaxed text-ink">
+            {{ t('vocab.packs.help') }}
+          </p>
+          <div class="flex flex-wrap gap-1.5">
+            <span class="pack silk-ring" :style="slice(0)" aria-pressed="true">
+              English <small>{{ t('vocab.packs.always') }}</small>
+            </span>
+            <button
+              v-for="(p, i) in packs"
+              :key="p.id"
+              class="pack silk-ring"
+              :style="slice(i + 1)"
+              :aria-pressed="p.on"
+              @click="vocab.togglePack(p.id)"
+            >
+              {{ p.name }}
+              <small>{{ p.users ? t('vocab.packs.people', { n: p.users }) : '0' }}</small>
+            </button>
+          </div>
+        </section>
+
+        <!-- row 4: before / after -->
         <div class="border-line mt-3 border-t pt-2.5">
           <div class="flex items-baseline justify-between gap-2">
             <h3 class="text-[13px] font-bold">{{ t('vocab.changes.name') }}</h3>
-            <span class="text-muted font-mono text-[10.5px]" data-testid="vocab-delta">{{
+            <span class="font-mono text-[10.5px] text-ink" data-testid="vocab-delta">{{
               lifted
                 ? t('vocab.changes.summary', { n: lifted }) + momentsNote
                 : t('vocab.changes.none')
@@ -390,7 +407,7 @@ watch(() => settings.sensitivity, computeBaseline);
           </div>
           <div class="mt-1.5 flex flex-col gap-1.5">
             <div v-for="row in rows" :key="row.key" class="strip">
-              <span class="text-muted font-mono text-[10px]">{{
+              <span class="font-mono text-[10px] text-ink">{{
                 t(`vocab.changes.${row.key}`)
               }}</span>
               <svg class="wave" viewBox="0 0 600 34" preserveAspectRatio="none" aria-hidden="true">
@@ -435,6 +452,20 @@ watch(() => settings.sensitivity, computeBaseline);
 </template>
 
 <style scoped>
+/*
+ * This panel's own surface rules (Angel, 2026-09-18):
+ *  - the boxes are a *white* film by day rather than an ink one, so they do not read grey
+ *    next to the near-white sheet; at night the same film in white at a low alpha;
+ *  - nothing here is grey text. Everything is `--color-ink`, which is near-black by day and
+ *    near-white by night; hierarchy comes from size and weight instead;
+ *  - a chosen thing is marked in **mint**, not the accent violet, because violet is what the
+ *    silk ring is made of and the two were competing.
+ *
+ * `--box-film`, `--pick` and `--pick-soft` are theme tokens in `src/style.css`. They started
+ * here, behind `:global([data-theme='dark']) .vocab`, and that compiles to `[data-theme=dark]`
+ * alone — the `.vocab` half is dropped — so the night values landed on <html> where the day
+ * rule on `.vocab` itself overrode them, and the whole panel ran day colours at night.
+ */
 .scrim {
   background: var(--sheet-scrim);
 }
@@ -442,18 +473,30 @@ watch(() => settings.sensitivity, computeBaseline);
   border: 1px solid var(--color-line);
   border-radius: 16px;
   padding: 11px 12px;
-  background: color-mix(in srgb, var(--color-ink) 3%, transparent);
+  background: var(--box-film);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+}
+/* every deletable word wears a slice of the one silk gradient, still rather than turning:
+   forty animated conic gradients on one screen is not worth the cost */
+.vchip,
+.pack {
+  --ring-w: 1.5px;
+}
+.vchip::before,
+.pack::before {
+  animation: none;
 }
 .vchip {
   display: inline-flex;
   align-items: center;
   gap: 5px;
-  border: 1px solid var(--color-line);
   border-radius: 999px;
-  padding: 3px 7px 3px 10px;
+  padding: 3px 8px 3px 10px;
   font-size: 12px;
   font-family: var(--font-mono);
-  background: var(--ghost-bg);
+  color: var(--color-ink);
+  background: var(--box-film);
   white-space: nowrap;
 }
 .vchip.off {
@@ -461,19 +504,19 @@ watch(() => settings.sensitivity, computeBaseline);
   text-decoration: line-through;
 }
 .vchip.mine {
-  border-color: color-mix(in srgb, var(--color-accent) 55%, transparent);
-  background: color-mix(in srgb, var(--color-accent) 12%, transparent);
+  border: 1.5px solid var(--pick);
+  background: var(--pick-soft);
 }
 .who {
-  font-family: var(--font-sans, inherit);
   font-style: normal;
   font-size: 9.5px;
   letter-spacing: 0.06em;
   text-transform: uppercase;
-  color: var(--color-muted);
+  color: var(--color-ink);
+  opacity: 0.75;
 }
 .vx {
-  opacity: 0.5;
+  opacity: 0.65;
   font-size: 12px;
   line-height: 1;
 }
@@ -484,7 +527,7 @@ watch(() => settings.sensitivity, computeBaseline);
   display: flex;
   flex-direction: column;
   gap: 2px;
-  max-height: 224px;
+  max-height: 210px;
   overflow-y: auto;
   padding-right: 4px;
   scrollbar-width: thin;
@@ -492,7 +535,7 @@ watch(() => settings.sensitivity, computeBaseline);
 }
 .seenrow {
   display: grid;
-  grid-template-columns: minmax(96px, 1fr) minmax(24px, 56px) 26px auto;
+  grid-template-columns: minmax(84px, 1fr) minmax(20px, 44px) 26px auto;
   align-items: center;
   gap: 7px;
   padding: 3px 5px;
@@ -522,7 +565,8 @@ watch(() => settings.sensitivity, computeBaseline);
   font-size: 9.5px;
   letter-spacing: 0.06em;
   text-transform: uppercase;
-  color: var(--color-muted);
+  color: var(--color-ink);
+  opacity: 0.7;
 }
 .bar {
   height: 5px;
@@ -542,31 +586,36 @@ watch(() => settings.sensitivity, computeBaseline);
   font-size: 11px;
   padding: 1px 7px;
   white-space: nowrap;
+  color: var(--color-ink);
 }
 .mini:hover:not(:disabled) {
   background: color-mix(in srgb, var(--color-ink) 10%, transparent);
 }
 .mini:disabled {
-  opacity: 0.45;
+  border-color: var(--pick);
+  background: var(--pick-soft);
+  opacity: 1;
 }
 .pack {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  border: 1px solid var(--color-line);
   border-radius: 999px;
   padding: 3px 10px;
   font-size: 12px;
-  background: var(--ghost-bg);
+  color: var(--color-ink);
+  background: var(--box-film);
 }
 .pack[aria-pressed='true'] {
-  border-color: color-mix(in srgb, var(--color-accent) 60%, transparent);
-  background: color-mix(in srgb, var(--color-accent) 14%, transparent);
+  border: 1.5px solid var(--pick);
+  background: var(--pick-soft);
+  font-weight: 600;
 }
 .pack small {
   font-family: var(--font-mono);
   font-size: 10px;
-  color: var(--color-muted);
+  color: var(--color-ink);
+  opacity: 0.7;
 }
 .strip {
   display: grid;

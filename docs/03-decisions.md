@@ -640,3 +640,40 @@ instead. State lives in `localStorage` under `hypeline.vocab.v1` and
 exports as a small JSON a streamer can hand to their editors. The packs are
 a starting point, not a dictionary — the honest fix for a chat we do not
 speak is the list of what it actually said.
+
+## ADR-30 — A veil lightens paper, and nothing is grey (2026-09-18)
+
+**Context.** Every overlay in the light theme made the page behind it grey:
+the settings sheet, the tour, the rail drawer and the new vocabulary panel
+all sat on a flat mid-tone that belongs to no part of the palette. Angel
+found the cause before we did — the scrims dimmed towards black in _both_
+themes. In night that is correct, because black is the ground and a veil
+should push the page away from the reader. In day it is exactly backwards:
+paper's ground is white, so dimming walks the whole page towards grey and
+stops halfway. A second, smaller version of the same mistake was inside the
+panels, where boxes lifted themselves with an ink film.
+
+**Decision.** A veil moves the page towards its own theme's ground.
+
+- Day scrims become white at 45 / 64 / 76 %; night keeps black at
+  40 / 58 / 70 %.
+- `--box-film` (a box inside a `sheet`) is white in both themes — 66 % by
+  day, 5 % by night.
+- `--color-muted` is retired as a colour: it is now ink in both themes, so
+  the hundred or so existing `text-muted` uses stop being grey without
+  being rewritten. Secondary text recedes by size, weight, mono tracking or
+  an `opacity` on ink instead. There are other ways to make text less
+  important than making it grey (Angel).
+- Selection is marked in mint (`--pick`), not the accent violet, which the
+  silk ring already owns.
+
+**Consequences.** The palette's five pastels now have nothing competing
+with them: the only neutral surfaces in the app are its own paper and its
+own black. `--color-muted` staying in place as a token, rather than being
+deleted, is deliberate — it keeps one lever should a genuinely quieter ink
+ever be wanted, and it kept this change to two lines instead of a hundred
+diffs. The tokens all live in `src/style.css`: a theme-varying token
+written in a component's scoped block does not work, because
+`:global([data-theme='dark']) .x` compiles to `[data-theme=dark]` with the
+`.x` dropped, which is how the vocabulary panel spent a build running day
+colours at night.

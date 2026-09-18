@@ -572,8 +572,7 @@
     "later": "Depois"
   },
   "vocab": {
-    "eyebrow": "Vocabulário do chat",
-    "title": "O que este chat quer dizer",
+    "title": "Adapte o mapa de calor ao seu chat",
     "scope": "Alcance",
     "everywhere": "Em tudo",
     "onlyChannel": "Só {channel}",
@@ -608,6 +607,11 @@
       "empty": "Abra um VOD para ver o que o chat dele diz.",
       "atOnce": "pessoas ao mesmo tempo",
       "usersTotal": "{n} pessoas no total"
+    },
+    "most": {
+      "name": "Palavras mais usadas",
+      "help": "O mesmo chat contado sem filtro: quantas vezes cada palavra e emote foi enviado, por quem quer que seja. Bom para ver no que esta comunidade se apoia o tempo todo.",
+      "uses": "vezes enviado"
     },
     "kind": {
       "emote": "emote",

@@ -572,8 +572,7 @@
     "later": "Plus tard"
   },
   "vocab": {
-    "eyebrow": "Vocabulaire du chat",
-    "title": "Ce que dit ce chat",
+    "title": "Adaptez la heatmap à votre chat",
     "scope": "Portée",
     "everywhere": "Partout",
     "onlyChannel": "{channel} seulement",
@@ -608,6 +607,11 @@
       "empty": "Ouvre un VOD pour voir ce que dit son chat.",
       "atOnce": "personnes à la fois",
       "usersTotal": "{n} personnes au total"
+    },
+    "most": {
+      "name": "Mots les plus utilisés",
+      "help": "Le même chat, compté simplement : combien de fois chaque mot et emote a été envoyé, peu importe par qui. Pratique pour repérer ce sur quoi cette communauté s’appuie en permanence.",
+      "uses": "fois envoyé"
     },
     "kind": {
       "emote": "emote",

@@ -23,7 +23,7 @@ only colour.
 | `ground-2`                               | `#f3eef2`                                 | subtle alt surfaces                                                 |
 | `ink`                                    | `#221c2a`                                 | text, primary buttons, the spine                                    |
 | `ink-2`                                  | `#3b3444`                                 | body copy                                                           |
-| `muted`                                  | `#6f6779`                                 | labels, captions, axes                                              |
+| `muted`                                  | `#221c2a` (= ink; night `#f3edf6`)        | labels, captions, axes — see "No grey text"                         |
 | `line`                                   | `rgba(34,28,42,.12)`                      | hairlines, dividers                                                 |
 | `petal / apricot / butter / sky / lilac` | `#ffd0e4 #ffdcc4 #fff0bd #cfdcff #ddd0ff` | tints of the thread palette for alerts and chips, never large fills |
 | `accent`                                 | `#7a4f8e`                                 | the italic word, links, playhead                                    |
@@ -536,15 +536,48 @@ Bookkeeping runs in the capture phase, because the pins stop propagation
 themselves. One finger is unchanged: tap seeks, drag brushes, a press near
 In/Out grabs that handle.
 
-## Scrims (2026-09-17)
+## Scrims (2026-09-17, rewritten 2026-09-18)
 
 Overlay veils use `--scrim-soft` / `--scrim` / `--scrim-strong`, never
 `bg-ink/xx`: `--color-ink` flips to near-white by night, so ink-tinted
 veils **lit the page up** instead of dimming it (Angel, on a phone in dark
-mode). The tokens are ink-tinted by day and pure black, a little stronger,
-by night. The rail drawer and the settings overlay take `--scrim`, the tour
+mode). The rail drawer and the settings overlay take `--scrim`, the tour
 `--scrim-strong`, the language and help sheets `--scrim-soft` (they lean on
 their blur).
+
+**A veil takes the page away from the reader, and that direction is the
+theme's own ground, not black.** Night dims towards black; day now washes
+towards **white** (45 / 64 / 76 %), where it used to dim towards black too.
+That single wrong direction is what made every light-mode overlay — the
+settings sheet, the tour, the rail drawer, the vocabulary panel — sit on a
+grey page, and grey is the one thing this palette must not produce (Angel,
+2026-09-18). Judge a veil from a screenshot of the whole screen, never from
+the panel alone: the grey was only visible _around_ the panel.
+
+## No grey text (2026-09-18)
+
+Nothing is a grey in between. `--color-muted` is now ink itself (near-black
+by day, `#f3edf6` by night), so every existing `text-muted` follows without
+being rewritten. Secondary text earns its place another way: smaller, mono,
+tracked (the `eyebrow`), lighter in weight, or — when it must actually
+recede — `opacity` on ink, which stays the ground's own hue instead of
+drifting towards grey. `--color-ink-2` remains for body copy that wants a
+touch less weight than a heading.
+
+## A box inside a sheet (2026-09-18)
+
+`--box-film` is the surface of a panel that sits _inside_ a `sheet`: white
+at 66 % by day, white at 5 % by night. Never an ink film — on paper that is
+the scrim mistake again, one step smaller. `--pick` / `--pick-soft` is the
+"you chose this" mark (`#0f8f7e` day, `#6fe0c8` night): **mint, not the
+accent violet**, because violet is what the silk ring is made of and the
+two were competing wherever a ringed chip could also be selected.
+
+**Theme-varying tokens belong in `style.css`, not in a scoped block.**
+`:global([data-theme='dark']) .vocab { … }` compiles to `[data-theme=dark]`
+alone — the `.vocab` half is dropped — so the night values landed on
+`<html>` and the day rule on `.vocab` itself overrode them by inheritance.
+The panel ran day colours at night and looked, once again, grey.
 
 ## Phone layout (2026-09-17)
 

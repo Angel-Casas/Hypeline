@@ -572,8 +572,7 @@
     "later": "Later"
   },
   "vocab": {
-    "eyebrow": "Chat vocabulary",
-    "title": "What this chat means",
+    "title": "Adapt the heatmap to your chat",
     "scope": "Scope",
     "everywhere": "Everywhere",
     "onlyChannel": "{channel} only",
@@ -608,6 +607,11 @@
       "empty": "Open a VOD to see what its chat says.",
       "atOnce": "people at once",
       "usersTotal": "{n} people in all"
+    },
+    "most": {
+      "name": "Most used words",
+      "help": "The same chat counted plainly: how often each word and emote was sent, whoever sent it. Good for spotting a word this community leans on all the time.",
+      "uses": "times sent"
     },
     "kind": {
       "emote": "emote",

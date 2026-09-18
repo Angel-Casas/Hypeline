@@ -10,7 +10,9 @@
   --color-ground-2: #f3eef2;
   --color-ink: #221c2a;
   --color-ink-2: #3b3444;
-  --color-muted: #6f6779;
+  /* Not a grey: secondary text is the same ink, and earns its quiet from size and weight
+     instead (Angel, 2026-09-18). The token stays so every `text-muted` in the app follows. */
+  --color-muted: #221c2a;
   --color-line: rgba(34, 28, 42, 0.12);
   --color-petal: #ffd0e4;
   --color-apricot: #ffdcc4;
@@ -57,15 +59,29 @@
   );
   /* Scrims behind overlays. They must DIM in both themes: `--color-ink` flips to near-white
      by night, so an ink-tinted veil lit the page up instead (Angel, 2026-09-17). */
-  --scrim-soft: rgba(34, 28, 42, 0.1);
-  --scrim: rgba(34, 28, 42, 0.32);
-  --scrim-strong: rgba(34, 28, 42, 0.45);
+  /*
+   * A veil should take the page *away from the reader*, and on paper that means towards white,
+   * not towards black. Dimming a light theme is what made every overlay — settings, the tour,
+   * the rail drawer, the vocabulary panel — sit on a grey page (Angel, 2026-09-18). Night
+   * dims towards black for the same reason: away from its own ground.
+   */
+  --scrim-soft: rgba(255, 255, 255, 0.45);
+  --scrim: rgba(255, 255, 255, 0.64);
+  --scrim-strong: rgba(255, 255, 255, 0.76);
   /* A floating panel and the scrim under it are one decision: the scrim sits *between* the
      page and the panel, so its dim is counted twice and a strong one makes the panel read as
      flat however transparent it is (Angel, 2026-09-17). Paper shows dark bleed-through far
      more readily than black shows bright, so the two themes get different numbers. */
   --sheet-bg: color-mix(in srgb, var(--color-ground) 88%, transparent);
   --sheet-scrim: var(--scrim);
+  /* A box *inside* a sheet. It has to lift away from the sheet without tinting it grey, so by
+     day it is a white film and by night a very thin white one over the black — never an ink
+     film, which is the same mistake the scrims made (Angel, 2026-09-18). */
+  --box-film: rgb(255 255 255 / 0.66);
+  /* "You chose this": mint, because the accent violet is what the silk ring is made of and the
+     two were competing. Both values clear AA against their own ground. */
+  --pick: #0f8f7e;
+  --pick-soft: color-mix(in srgb, #0f8f7e 14%, transparent);
   --font-display: 'Gloock', 'Iowan Old Style', Georgia, serif;
   --font-sans: 'Manrope', 'Helvetica Neue', Arial, sans-serif;
   --font-mono: 'JetBrains Mono', Menlo, Consolas, monospace;
@@ -97,7 +113,7 @@
   --color-ground-2: #0c0a0f;
   --color-ink: #f3edf6;
   --color-ink-2: #d6cddb;
-  --color-muted: #9b91a5;
+  --color-muted: #f3edf6;
   --color-line: rgba(255, 255, 255, 0.14);
   --color-petal: #5b2a46;
   --color-apricot: #5e3a26;
@@ -114,6 +130,9 @@
   --scrim-strong: rgba(0, 0, 0, 0.7);
   --sheet-bg: color-mix(in srgb, var(--color-ground) 76%, transparent);
   --sheet-scrim: var(--scrim-soft);
+  --box-film: rgb(255 255 255 / 0.05);
+  --pick: #6fe0c8;
+  --pick-soft: color-mix(in srgb, #6fe0c8 16%, transparent);
   --glass-bg: rgba(255, 255, 255, 0.06);
   --glass-line: rgba(255, 255, 255, 0.12);
   --glass-inset: rgba(255, 255, 255, 0.08);

@@ -1361,3 +1361,31 @@ follows — the button, the player frame, the moment chips, the tour hole.
 Checked in both themes on the real dashboard; 111 tests and the e2e suites
 that touch the ring are green. The four options Angel chose from are in
 `design/ring/silk-ring.html`.
+
+## 2026-09-18 (cont.) — The vocabulary panel, and where the grey came from
+
+**What changed.** The vocabulary overlay is now the layout Angel asked for:
+no eyebrow, titled **"Adapt the heatmap to your chat"**, with Important
+words and Reactions sharing the top row, "Seen in this VOD" beside a new
+**"Most used words"** (`topTokens` — plain frequency, the companion to the
+people-at-once ranking), then the starter packs and the before/after strip.
+Deletable words and packs all wear a still slice of the one silk gradient,
+and a chosen thing is marked mint rather than violet. Ten catalogs gained
+`vocab.most.*` and lost the unused `vocab.eyebrow`.
+
+Underneath it, ADR-30: the light theme's scrims dimmed towards black, which
+is what had been greying every overlay in the app, and `--color-muted` is
+no longer a grey. Two tokens in `src/style.css`, so settings, the tour and
+the rail drawer are fixed by the same change.
+
+**Trap worth remembering.** The panel's theme tokens were first written as
+`:global([data-theme='dark']) .vocab`, which compiles to `[data-theme=dark]`
+with the class silently dropped — the night values landed on `<html>` and
+the day rule overrode them. Night ran day colours and looked grey; the
+screenshot said so and the CSS looked innocent. Theme-varying tokens go in
+`style.css`.
+
+**Checked.** 111 unit tests, all 15 e2e suites, `check-locales` (536
+strings × 10), lint and build green; both themes reviewed from screenshots
+of the dashboard, the settings sheet and the panel, including its selected
+state. **Next:** Angel has 5 local commits to push.
