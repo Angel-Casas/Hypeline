@@ -711,12 +711,19 @@ arriving at a near-white stem simply disappeared. Sky reads against either
 theme's ink. The README carries the mark at the top, as two committed files —
 `docs/assets/logo-light.svg` and `-dark.svg`, one per ink, swapped by a
 `<picture>` with `prefers-color-scheme` (GitHub cannot render the component,
-and an SVG embedded in a README gets no CSS from the page). Keep those two in
-step with `Logo.vue` by hand; nothing checks them.
+and an SVG embedded in a README gets no CSS from the page).
 
-The PNGs were rendered from the tile SVG (mark on `#0c0a0f`, rx 16 of 64,
-silk ring 2.2) with headless Chromium; redo them the same way if the mark
-changes.
+**Every icon is generated from `Logo.vue`** (2026-09-19): `npm run icons`
+(`scripts/render-icons.mjs`) reads the component's own template and writes the
+favicon, the two PWA icons, the Apple touch icon, the maskable tile and the
+README's two SVGs; `npm run icons:check` fails if any of them has drifted.
+They used to be hand-made copies, which is why the revision above reached the
+app and left every installed icon on the old wave, yellow tip and all — Angel
+found it a day later. The tile the script draws is the one measured off those
+icons: mark at 66 % on `#0c0a0f`, silk ring 2.2 with its outer edge 0.375 in
+from the canvas, outer corner radius 16.8 of 64; the maskable tile drops the
+ring and the rounding and keeps the mark inside the 80 % safe circle. Only the
+mark itself ever moves.
 
 ## The shell (2026-09-18)
 

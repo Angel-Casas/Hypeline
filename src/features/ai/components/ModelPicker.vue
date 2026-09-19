@@ -121,7 +121,7 @@ onBeforeUnmount(() => document.removeEventListener('keydown', onKey));
 <template>
   <Teleport to="body">
     <div
-      class="scrim fixed inset-0 z-[90] flex items-start justify-center overflow-y-auto p-3 backdrop-blur-[6px] sm:items-center sm:p-6"
+      class="scrim fixed inset-0 z-[90] flex items-start justify-center overflow-y-auto overscroll-contain p-3 backdrop-blur-[6px] sm:items-center sm:p-6"
       role="dialog"
       aria-modal="true"
       :aria-label="t('ai.pickModel')"
@@ -292,9 +292,16 @@ onBeforeUnmount(() => document.removeEventListener('keydown', onKey));
   min-height: 0;
   flex: 1;
 }
+/*
+ * `min-height: 0` is what makes the list scroll (Angel, on a phone, 2026-09-19). A column flex
+ * item's automatic minimum size is its content, so without it `.models` refuses to shrink to
+ * the sheet: the list rendered 2207 px tall inside a 688 px sheet, was clipped by the sheet's
+ * own overflow, and the only thing that moved under a finger was the page behind it.
+ */
 .models {
   display: flex;
   min-width: 0;
+  min-height: 0;
   flex: 1;
   flex-direction: column;
 }
@@ -307,6 +314,9 @@ onBeforeUnmount(() => document.removeEventListener('keydown', onKey));
 .list {
   flex: 1;
   overflow-y: auto;
+  /* a flick that reaches the end of the list stops there instead of scrolling the page */
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
   padding: 8px 16px 4px;
   scrollbar-width: thin;
 }
@@ -439,6 +449,7 @@ onBeforeUnmount(() => document.removeEventListener('keydown', onKey));
 }
 .filters {
   display: none;
+  overscroll-behavior: contain;
   width: 212px;
   flex: none;
   flex-direction: column;

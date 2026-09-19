@@ -1651,3 +1651,26 @@ the VOD still listed in the rail there, click it, and land back on the desk with
 
 131 tests, 15 e2e suites, lint, build and locale parity (557 strings, `gallery.dashboard`
 retired) green.
+
+## 2026-09-19 — The icons caught up with the mark, and a list that would not scroll
+
+**What changed.** Two things Angel found.
+
+The logo revision on the 18th changed `Logo.vue` and the README, and nothing else: the favicon,
+both PWA icons, the Apple touch icon and the maskable tile were hand-made copies of the old
+mark and still carried the high peak and the yellow tip — the very tip the revision existed to
+remove. They are generated now: `scripts/render-icons.mjs` reads the component's own template,
+lifts the gradient and the paths out of it, and writes all seven files; `npm run icons:check`
+fails when any of them has drifted. The tile it draws was measured off the icons it replaces
+(ring's outer edge 0.375 in, outer radius 16.8 of 64, mark at 66 %), so the set Angel approved
+on the 17th is intact and only the wave moved. `vocab.mjs` joined the `e2e` script while I was
+in there; it had been missing since it was written.
+
+The model picker could not be scrolled on a phone: `.models` is a column flex item, and without
+`min-height: 0` its automatic minimum size is its content, so the list never shrank to the sheet
+— measured at **2207 px of list inside a 688 px sheet**, clipped by the sheet's own overflow,
+leaving the page behind as the only thing that moved under a finger. With that one line the
+list gets 481 px and scrolls; `overscroll-behavior: contain` on the list, the filters and the
+scrim stops a flick that reaches the end from taking the page with it.
+
+131 tests, 15 e2e suites, lint, build and locale parity green.

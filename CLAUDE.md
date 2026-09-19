@@ -54,6 +54,7 @@ pnpm test:watch
 pnpm e2e            # Playwright
 pnpm lint           # ESLint + type-check (vue-tsc)
 pnpm format         # Prettier write
+pnpm icons          # re-render every icon from src/ui/Logo.vue (icons:check in CI)
 ```
 
 `npm` works too (lockfile is npm's). `postinstall` copies the ffmpeg core into `public/ffmpeg/`. `pnpm e2e:fixtures` downloads 4 real segments once for the cut e2e.
