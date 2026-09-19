@@ -1736,3 +1736,23 @@ failed until the icons were re-rendered, reverting restored the exact previous f
 unhashed or 404s. iOS still costs a reinstall; that one is beyond us and is written down.
 
 131 tests, 15 e2e suites, lint, build and locale parity green.
+
+## 2026-09-19 (cont.) — The link has a face now
+
+**What changed.** Angel has started sending hypeline.live to streamers to try, and the page had
+no description and no social tags at all — just a `<title>`. Pasted into Discord, X or a group
+chat it unfurled as a bare URL: no card, no image, no line saying what it is, for a tool people
+are being asked to open on trust.
+
+`scripts/render-icons.mjs` now also renders the card (1200×630) from the same mark: night
+ground, the mark beside the Gloock wordmark, the landing's own "Turn Twitch VODs into memorable
+moments ready to clip", and the thread as a silk bar along the bottom. Fonts are embedded as
+data URIs so the render never depends on the network, and the file is content-hashed like the
+icons. `index.html` carries the copy; `vite.config.ts` injects `og:image` and `twitter:image`
+absolute, because an unfurler has no page to resolve a relative path against. Two
+`theme-color` metas so mobile browser chrome matches the theme a first visit would pick.
+
+`e2e/pwa.mjs` now also fails if the card tags are missing, if the description is gone, or if
+either social image 404s.
+
+131 tests, 15 e2e suites, lint, build and locale parity green.

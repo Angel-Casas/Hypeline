@@ -36,6 +36,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
 const ROOT = new URL('..', import.meta.url).pathname;
+const SITE = 'https://hypeline.live';
 const INK_DAY = '#221c2a';
 const INK_NIGHT = '#f3edf6';
 const TILE = '#0c0a0f';
@@ -58,6 +59,10 @@ const MARK = markFromComponent();
 if (!/linearGradient/.test(MARK) || !/M15 38/.test(MARK)) {
   throw new Error('Logo.vue did not yield a mark — has its template changed shape?');
 }
+
+/** The mark as a standalone SVG at a given pixel size, ink = currentColor's value. */
+const MARK_SVG = (px) =>
+  `<svg xmlns="http://www.w3.org/2000/svg" width="${px}" height="${px}" viewBox="0 0 64 64" fill="none" color="${INK_NIGHT}">${MARK}</svg>`;
 
 /** The mark alone, ink following the OS theme: the favicon. */
 const faviconSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none">
@@ -97,6 +102,42 @@ const appleSvg = tileSvg().replace(
   '<rect width="64" height="64" fill="#000" /><rect x=',
 );
 
+/** A local woff2 as a data URI: the card must render the same with no network. */
+function font(file) {
+  const b64 = readFileSync(join(ROOT, 'public/fonts', file)).toString('base64');
+  return `url(data:font/woff2;base64,${b64}) format('woff2')`;
+}
+
+/**
+ * The social card (1200×630, 2026-09-19). What someone sees when the link is pasted into
+ * Discord, X or a group chat — which, for a tool you are asked to try on trust, is the whole
+ * first impression. Night ground, the mark beside the wordmark, the landing's own line, and
+ * the thread as a silk bar along the bottom: the app's three ideas in one still image.
+ */
+const cardHtml = `<style>
+  @font-face { font-family: 'Gloock'; src: ${font('gloock-400-latin.woff2')}; }
+  @font-face { font-family: 'Manrope'; font-weight: 500; src: ${font('manrope-500-latin.woff2')}; }
+  html, body { margin: 0; }
+  body {
+    width: 1200px; height: 630px; box-sizing: border-box; padding: 88px 88px 0;
+    background: ${TILE}; color: ${INK_NIGHT};
+    display: flex; flex-direction: column; justify-content: center;
+    -webkit-font-smoothing: antialiased;
+  }
+  .row { display: flex; align-items: center; gap: 30px; }
+  .row svg { width: 132px; height: 132px; display: block; }
+  h1 { font-family: 'Gloock', serif; font-size: 116px; font-weight: 400; margin: 0; line-height: 1; }
+  p {
+    font-family: 'Manrope', sans-serif; font-weight: 500; font-size: 37px; line-height: 1.3;
+    margin: 36px 0 0; max-width: 27ch; color: color-mix(in srgb, ${INK_NIGHT} 78%, ${TILE});
+  }
+  .thread { position: absolute; left: 0; right: 0; bottom: 0; height: 12px;
+    background: linear-gradient(90deg, #ffa968, #ff77b5 32%, #b39cff 64%, #7f9cff); }
+</style>
+<div class="row">${MARK_SVG(132)}<h1>Hypeline</h1></div>
+<p>Turn Twitch VODs into memorable moments ready to clip</p>
+<div class="thread"></div>`;
+
 const FILES = [
   { role: 'favicon', path: 'public/icons/mark.svg', text: faviconSvg },
   { role: 'icon192', path: 'public/icons/icon-192.png', svg: tileSvg(), size: 192 },
@@ -116,6 +157,7 @@ const FILES = [
     size: 512,
     opaque: true,
   },
+  { role: 'og', path: 'public/icons/og.png', html: cardHtml, w: 1200, h: 630, opaque: true },
   // GitHub gives an embedded SVG no page CSS, so the README carries one file per ink
   { path: 'docs/assets/logo-light.svg', text: readmeSvg(INK_DAY) },
   { path: 'docs/assets/logo-dark.svg', text: readmeSvg(INK_NIGHT) },
@@ -148,11 +190,16 @@ for (const f of FILES) {
   if (f.text) {
     bytes = Buffer.from(f.text);
   } else {
-    await page.setViewportSize({ width: f.size, height: f.size });
+    const w = f.w ?? f.size;
+    const h = f.h ?? f.size;
+    await page.setViewportSize({ width: w, height: h });
     await page.setContent(
-      `<!doctype html><meta charset="utf-8"><style>html,body{margin:0;background:transparent}svg{display:block;width:${f.size}px;height:${f.size}px}</style>${f.svg}`,
+      f.html
+        ? `<!doctype html><meta charset="utf-8">${f.html}`
+        : `<!doctype html><meta charset="utf-8"><style>html,body{margin:0;background:transparent}svg{display:block;width:${w}px;height:${h}px}</style>${f.svg}`,
     );
-    await page.waitForTimeout(80);
+    await page.evaluate(() => document.fonts.ready);
+    await page.waitForTimeout(120);
     bytes = await page.screenshot({ omitBackground: !f.opaque });
   }
   const path = f.role ? hashed(f.path, bytes) : f.path;
@@ -172,6 +219,8 @@ for (const f of FILES) {
 await browser.close();
 
 const MAP = 'scripts/icons.generated.json';
+// og:image has to be absolute: an unfurler has no page to resolve a relative path against
+names.ogAbsolute = `${SITE}/${names.og}`;
 const mapText = JSON.stringify(names, null, 2) + '\n';
 if (readFileSync(join(ROOT, MAP), 'utf8').trim() !== mapText.trim()) changed.push(MAP);
 writeFileSync(dest(MAP), mapText);

@@ -37,14 +37,23 @@ const html = await (await p.request.get(BASE + '/')).text();
 const refs = [
   ...manifest.icons.map((i) => i.src.replace(/^\//, '')),
   ...[...html.matchAll(/href="\/(icons\/[^"]+)"/g)].map((m) => m[1]),
+  // the social card: absolute in the page (an unfurler has no page to resolve against), so
+  // take the path and fetch it from wherever this run is serving
+  ...[...html.matchAll(/content="https:\/\/hypeline\.live\/(icons\/[^"]+)"/g)].map((m) => m[1]),
 ];
-if (refs.length < 6) throw new Error('expected 3 manifest icons and 3 <link>s, got ' + refs.length);
+if (refs.length < 8)
+  throw new Error(
+    'expected 3 manifest icons, 3 <link>s and the 2 social images, got ' + refs.length,
+  );
+if (!/property="og:image"/.test(html) || !/name="twitter:card"/.test(html))
+  throw new Error('the social card tags are missing: a pasted link would unfurl bare');
+if (!/name="description"/.test(html)) throw new Error('no meta description');
 for (const ref of refs) {
   if (!/\.[0-9a-f]{8}\.(png|svg)$/.test(ref)) throw new Error('icon is not content-hashed: ' + ref);
   const res = await p.request.get(BASE + '/' + ref);
   if (!res.ok()) throw new Error(`icon ${ref} is referenced but missing (${res.status()})`);
 }
-console.log('icons hashed and present:', refs.length);
+console.log('icons + social card hashed and present:', refs.length);
 
 await p.goto(BASE + '/dashboard');
 await p.waitForTimeout(600);

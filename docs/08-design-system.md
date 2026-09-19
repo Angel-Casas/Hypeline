@@ -739,6 +739,17 @@ looks again, so a mark change there costs a reinstall. Never hand-edit the
 generated JSON or the icon filenames; `e2e/pwa.mjs` fails if any referenced
 icon is unhashed or missing.
 
+**The social card** (`icons/og.<hash>.png`, 1200×630, 2026-09-19) comes off the
+same script: night ground, the mark beside the Gloock wordmark, the landing's
+own line, and the thread as a silk bar along the bottom edge — the app's three
+ideas in one still image. Its fonts are embedded as data URIs so the render
+never depends on the network. `index.html` carries the copy (title,
+description, `og:*`, `twitter:card`) and the plugin injects `og:image` and
+`twitter:image` **absolute**, since an unfurler has no page to resolve a
+relative path against. The two `theme-color` metas mirror the app's own first-
+visit theme. If the tagline changes on the landing page, change it here too:
+nothing links them.
+
 ## The shell (2026-09-18)
 
 Every page _inside_ Hypeline is the same two-column grid — `lg:grid-cols-[260px_minmax(0,1fr)]`,

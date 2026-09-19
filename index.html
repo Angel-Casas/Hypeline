@@ -27,7 +27,35 @@
     </script>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Hypeline</title>
+    <title>Hypeline — Turn Twitch VODs into memorable moments ready to clip</title>
+    <meta
+      name="description"
+      content="Paste a Twitch VOD link. Hypeline reads the chat replay, finds the moments everyone reacted to, and cuts captioned vertical clips — free, in your browser, no uploads."
+    />
+    <!-- the browser chrome follows the theme the app would pick on a first visit -->
+    <meta name="theme-color" media="(prefers-color-scheme: light)" content="#fbf9fa" />
+    <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#000000" />
+    <!-- the card someone sees when the link is pasted into Discord, X or a group chat.
+         og:image is injected with the rest of the hashed icons (see vite.config.ts) -->
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Hypeline" />
+    <meta
+      property="og:title"
+      content="Hypeline — Turn Twitch VODs into memorable moments ready to clip"
+    />
+    <meta
+      property="og:description"
+      content="Paste a Twitch VOD link. Hypeline reads the chat replay, finds the moments everyone reacted to, and cuts captioned vertical clips — free, in your browser, no uploads."
+    />
+    <meta property="og:url" content="https://hypeline.live/" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta
+      property="og:image:alt"
+      content="Hypeline — Turn Twitch VODs into memorable moments ready to clip"
+    />
+    <meta name="twitter:card" content="summary_large_image" />
+    <!--social-->
     <link
       rel="preload"
       href="/fonts/gloock-400-latin.woff2"

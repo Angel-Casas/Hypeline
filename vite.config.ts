@@ -15,7 +15,7 @@ const pkg = JSON.parse(readFileSync(new URL('./package.json', import.meta.url), 
  */
 const icons = JSON.parse(
   readFileSync(new URL('./scripts/icons.generated.json', import.meta.url), 'utf8'),
-) as Record<'favicon' | 'icon192' | 'icon512' | 'apple' | 'maskable', string>;
+) as Record<'favicon' | 'icon192' | 'icon512' | 'apple' | 'maskable' | 'og' | 'ogAbsolute', string>;
 
 export default defineConfig({
   // the support sheet prefills bug reports with the version
@@ -25,14 +25,23 @@ export default defineConfig({
     {
       name: 'hypeline-icon-links',
       transformIndexHtml: (html: string) =>
-        html.replace(
-          '<!--icons-->',
-          [
-            `<link rel="icon" href="/${icons.favicon}" type="image/svg+xml" />`,
-            `<link rel="icon" href="/${icons.icon192}" type="image/png" sizes="192x192" />`,
-            `<link rel="apple-touch-icon" href="/${icons.apple}" />`,
-          ].join('\n    '),
-        ),
+        html
+          .replace(
+            '<!--icons-->',
+            [
+              `<link rel="icon" href="/${icons.favicon}" type="image/svg+xml" />`,
+              `<link rel="icon" href="/${icons.icon192}" type="image/png" sizes="192x192" />`,
+              `<link rel="apple-touch-icon" href="/${icons.apple}" />`,
+            ].join('\n    '),
+          )
+          // an unfurler has no page to resolve a relative path against: these must be absolute
+          .replace(
+            '<!--social-->',
+            [
+              `<meta property="og:image" content="${icons.ogAbsolute}" />`,
+              `<meta name="twitter:image" content="${icons.ogAbsolute}" />`,
+            ].join('\n    '),
+          ),
     },
     vue(),
     tailwindcss(),
