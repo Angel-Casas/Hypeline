@@ -3,9 +3,9 @@
   <head>
     <!-- the ground colour before any stylesheet arrives (the app CSS is loaded by the module
          script, so without this the browser paints its own white first: a "flashbang" by night) -->
-    <link rel="icon" href="/icons/mark.svg" type="image/svg+xml" />
-    <link rel="icon" href="/icons/icon-192.png" type="image/png" sizes="192x192" />
-    <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png" />
+    <!-- the icon links are injected from scripts/icons.generated.json (see vite.config.ts):
+         their filenames carry a content hash, so a new mark is a new manifest -->
+    <!--icons-->
     <style>
       html {
         background: #fbf9fa;

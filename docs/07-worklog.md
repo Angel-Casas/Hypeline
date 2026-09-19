@@ -1715,3 +1715,24 @@ whether they would use it at all, and that answer decides whether the milestone 
 Also noted for whoever builds it: the beta's `vod_offset` was landing a few seconds off the
 requested point as of 2026-01-08. For an app whose pitch is "the exact moment", that is the one
 bug it cannot ship with — spike it first.
+
+## 2026-09-19 (cont.) — Icons that an installed app will actually pick up
+
+**What changed.** Angel had to delete and reinstall the PWA to see the new mark, and asked
+whether that is simply how it is. On iOS, yes — Safari copies the icon at "add to home screen"
+and never looks again. Everywhere else it is our fault, not the platform's: an installed PWA is
+re-checked by comparing the **manifest**, and ours still said `icons/icon-512.png` before and
+after, so there was nothing to notice. Chrome on Android checks at most once a day and re-mints
+the WebAPK when the manifest differs; it never differed.
+
+The app icons are content-hashed now (`icon-512.673a0732.png`). `scripts/render-icons.mjs`
+writes the names into `scripts/icons.generated.json`, deletes the previous hashes, and
+`vite.config.ts` reads that one file for both the manifest and the `<link>` tags it injects into
+`index.html` — so the HTML and the manifest cannot disagree, and neither can be edited by hand
+into disagreeing. Verified by faking a mark change end to end: every hash moved, `icons:check`
+failed until the icons were re-rendered, reverting restored the exact previous filenames.
+
+`e2e/pwa.mjs` now fetches the manifest and the page and fails if any referenced icon is
+unhashed or 404s. iOS still costs a reinstall; that one is beyond us and is written down.
+
+131 tests, 15 e2e suites, lint, build and locale parity green.

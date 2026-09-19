@@ -18,9 +18,20 @@
  * maskable one drops the ring and the rounding (Android masks it to its own shape) and keeps
  * the mark inside the 80 % safe circle. Sizes and grounds were measured off the icons this
  * replaces, so the set stays what Angel approved on 2026-09-17 — only the wave moves.
+ *
+ * **The app icons carry a content hash in their filename** (`icon-512.a1b2c3d4.png`) and the
+ * names land in `scripts/icons.generated.json`, which `vite.config.ts` reads for the manifest
+ * and for the `<link>` tags it injects into `index.html`. That is the one lever we have over an
+ * icon that is already installed (2026-09-19): an installed PWA is re-checked by comparing the
+ * **manifest**, and a manifest that still says `icons/icon-512.png` has not changed, however
+ * different the bytes behind it are. New names mean a different manifest, which is what Chrome
+ * watches for on Android (at most one check a day, then it re-mints the WebAPK) and on the
+ * desktop, and it busts the favicon cache for free. iOS is beyond reach either way: Safari
+ * copies the icon when the user adds the app and never looks again.
  */
 import { chromium } from 'playwright';
-import { mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
+import { createHash } from 'node:crypto';
+import { mkdtempSync, readdirSync, readFileSync, unlinkSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
@@ -87,12 +98,19 @@ const appleSvg = tileSvg().replace(
 );
 
 const FILES = [
-  { path: 'public/icons/mark.svg', text: faviconSvg },
-  { path: 'public/icons/icon-192.png', svg: tileSvg(), size: 192 },
-  { path: 'public/icons/icon-512.png', svg: tileSvg(), size: 512 },
-  { path: 'public/icons/apple-touch-icon.png', svg: appleSvg, size: 180, opaque: true },
+  { role: 'favicon', path: 'public/icons/mark.svg', text: faviconSvg },
+  { role: 'icon192', path: 'public/icons/icon-192.png', svg: tileSvg(), size: 192 },
+  { role: 'icon512', path: 'public/icons/icon-512.png', svg: tileSvg(), size: 512 },
+  {
+    role: 'apple',
+    path: 'public/icons/apple-touch-icon.png',
+    svg: appleSvg,
+    size: 180,
+    opaque: true,
+  },
   // Android masks this to its own shape, so: no rounding, no ring, ground to the edge
   {
+    role: 'maskable',
     path: 'public/icons/maskable-512.png',
     svg: tileSvg({ ring: false, round: false, bg: '#000000' }),
     size: 512,
@@ -110,12 +128,21 @@ ${MARK}
 `;
 }
 
+/** `icons/icon-512.png` + bytes → `icons/icon-512.a1b2c3d4.png`. */
+function hashed(path, bytes) {
+  const h = createHash('sha256').update(bytes).digest('hex').slice(0, 8);
+  return path.replace(/\.([^.]+)$/, `.${h}.$1`);
+}
+
 const out = check ? mkdtempSync(join(tmpdir(), 'icons-')) : null;
 const dest = (p) => (check ? join(out, p.replace(/\//g, '_')) : join(ROOT, p));
 
 const browser = await chromium.launch({ executablePath: process.env.CHROMIUM });
 const page = await browser.newPage();
 const changed = [];
+/** What `vite.config.ts` reads: role → the hashed path, relative to the site root. */
+const names = {};
+const keep = new Set();
 for (const f of FILES) {
   let bytes;
   if (f.text) {
@@ -128,16 +155,37 @@ for (const f of FILES) {
     await page.waitForTimeout(80);
     bytes = await page.screenshot({ omitBackground: !f.opaque });
   }
+  const path = f.role ? hashed(f.path, bytes) : f.path;
+  if (f.role) {
+    names[f.role] = path.replace(/^public\//, '');
+    keep.add(path.split('/').pop());
+  }
   let before = null;
   try {
-    before = readFileSync(join(ROOT, f.path));
+    before = readFileSync(join(ROOT, path));
   } catch {
-    /* a new file */
+    /* a new file, or a new hash */
   }
-  if (!before || !before.equals(bytes)) changed.push(f.path);
-  writeFileSync(dest(f.path), bytes);
+  if (!before || !before.equals(bytes)) changed.push(path);
+  writeFileSync(dest(path), bytes);
 }
 await browser.close();
+
+const MAP = 'scripts/icons.generated.json';
+const mapText = JSON.stringify(names, null, 2) + '\n';
+if (readFileSync(join(ROOT, MAP), 'utf8').trim() !== mapText.trim()) changed.push(MAP);
+writeFileSync(dest(MAP), mapText);
+
+// the previous hashes are dead weight in `public/`, and a stale icon a browser could still be
+// served from an old manifest — drop them (only when writing for real)
+if (!check) {
+  for (const name of readdirSync(join(ROOT, 'public/icons'))) {
+    if (!keep.has(name)) {
+      unlinkSync(join(ROOT, 'public/icons', name));
+      changed.push('public/icons/' + name + ' (removed)');
+    }
+  }
+}
 
 if (check) {
   if (changed.length) {

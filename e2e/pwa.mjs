@@ -25,6 +25,27 @@ await ctx.addInitScript(() => {
 const p = await ctx.newPage();
 const errors = [];
 p.on('pageerror', (e) => errors.push(String(e)));
+
+/*
+ * Every icon the manifest and the page point at carries a content hash and actually exists
+ * (2026-09-19). The hash is the whole mechanism: an installed PWA is re-checked by comparing
+ * the manifest, so a mark that changes has to change these names or Android and the desktop
+ * never notice. `npm run icons` writes them; this makes sure nothing drifted since.
+ */
+const manifest = await (await p.request.get(BASE + '/manifest.webmanifest')).json();
+const html = await (await p.request.get(BASE + '/')).text();
+const refs = [
+  ...manifest.icons.map((i) => i.src.replace(/^\//, '')),
+  ...[...html.matchAll(/href="\/(icons\/[^"]+)"/g)].map((m) => m[1]),
+];
+if (refs.length < 6) throw new Error('expected 3 manifest icons and 3 <link>s, got ' + refs.length);
+for (const ref of refs) {
+  if (!/\.[0-9a-f]{8}\.(png|svg)$/.test(ref)) throw new Error('icon is not content-hashed: ' + ref);
+  const res = await p.request.get(BASE + '/' + ref);
+  if (!res.ok()) throw new Error(`icon ${ref} is referenced but missing (${res.status()})`);
+}
+console.log('icons hashed and present:', refs.length);
+
 await p.goto(BASE + '/dashboard');
 await p.waitForTimeout(600);
 console.log(

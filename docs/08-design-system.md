@@ -725,6 +725,20 @@ from the canvas, outer corner radius 16.8 of 64; the maskable tile drops the
 ring and the rounding and keeps the mark inside the 80 % safe circle. Only the
 mark itself ever moves.
 
+**The app icons are content-hashed** — `icon-512.673a0732.png` — and their
+names live in `scripts/icons.generated.json`, which `vite.config.ts` reads for
+both the manifest and the `<link>` tags it injects into `index.html`. This is
+the only lever there is over an icon that is already installed: a PWA is
+re-checked by comparing the **manifest**, and a manifest still pointing at
+`icons/icon-512.png` has not changed however different the bytes are. New
+names mean a new manifest, which Chrome on Android watches for (a check at most
+once a day, then it re-mints the WebAPK) and the desktop picks up on relaunch;
+the favicon cache is busted for free. **iOS cannot be reached either way** —
+Safari copies the icon when the user adds the app to the home screen and never
+looks again, so a mark change there costs a reinstall. Never hand-edit the
+generated JSON or the icon filenames; `e2e/pwa.mjs` fails if any referenced
+icon is unhashed or missing.
+
 ## The shell (2026-09-18)
 
 Every page _inside_ Hypeline is the same two-column grid — `lg:grid-cols-[260px_minmax(0,1fr)]`,

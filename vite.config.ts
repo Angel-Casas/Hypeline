@@ -8,11 +8,32 @@ import { readFileSync } from 'node:fs';
 const pkg = JSON.parse(readFileSync(new URL('./package.json', import.meta.url), 'utf8')) as {
   version: string;
 };
+/**
+ * The app icons carry a content hash in their name so that changing the mark changes the
+ * **manifest** — which is the only thing an already-installed PWA re-checks (see
+ * `scripts/render-icons.mjs`). Written by `npm run icons`; never edit by hand.
+ */
+const icons = JSON.parse(
+  readFileSync(new URL('./scripts/icons.generated.json', import.meta.url), 'utf8'),
+) as Record<'favicon' | 'icon192' | 'icon512' | 'apple' | 'maskable', string>;
 
 export default defineConfig({
   // the support sheet prefills bug reports with the version
   define: { __APP_VERSION__: JSON.stringify(pkg.version) },
   plugins: [
+    // the icon <link>s carry the same hashes as the manifest, from the same one file
+    {
+      name: 'hypeline-icon-links',
+      transformIndexHtml: (html: string) =>
+        html.replace(
+          '<!--icons-->',
+          [
+            `<link rel="icon" href="/${icons.favicon}" type="image/svg+xml" />`,
+            `<link rel="icon" href="/${icons.icon192}" type="image/png" sizes="192x192" />`,
+            `<link rel="apple-touch-icon" href="/${icons.apple}" />`,
+          ].join('\n    '),
+        ),
+    },
     vue(),
     tailwindcss(),
     VitePWA({
@@ -26,14 +47,9 @@ export default defineConfig({
         background_color: '#000000',
         display: 'standalone',
         icons: [
-          { src: 'icons/icon-192.png', sizes: '192x192', type: 'image/png' },
-          { src: 'icons/icon-512.png', sizes: '512x512', type: 'image/png' },
-          {
-            src: 'icons/maskable-512.png',
-            sizes: '512x512',
-            type: 'image/png',
-            purpose: 'maskable',
-          },
+          { src: icons.icon192, sizes: '192x192', type: 'image/png' },
+          { src: icons.icon512, sizes: '512x512', type: 'image/png' },
+          { src: icons.maskable, sizes: '512x512', type: 'image/png', purpose: 'maskable' },
         ],
       },
       workbox: {
