@@ -1674,3 +1674,22 @@ list gets 481 px and scrolls; `overscroll-behavior: contain` on the list, the fi
 scrim stops a flick that reaches the end from taking the page with it.
 
 131 tests, 15 e2e suites, lint, build and locale parity green.
+
+## 2026-09-19 (cont.) — The tour ran under the settings overlay
+
+**What changed.** Re-taking the tour from Settings left the settings overlay open on a phone
+about two times in three, so the spotlight pointed at a step nobody could see (Angel).
+
+It was a race I introduced when Settings moved into `LibraryRail`: the dashboard's
+`tour.requested` watcher runs before the rail's (a parent registers its watchers before its
+child's), it calls `tour.start()`, and `start()` clears `requested` — so the rail's watcher read
+`false` and did nothing. It only worked when the example VOD was not ready yet, which is the one
+case that leaves the flag set.
+
+The fix is a condition rather than an ordering: the overlay renders on `showSettings &&
+!tour.active`, so no sequence of flags can put it over the tour, and the watcher now takes both
+`requested` and `active` so the state is cleared either way. `tour.mjs` asserts the overlay is
+gone on the phone pass — it reproduced the bug on the first run, which is how I knew it was this
+and not the drawer.
+
+131 tests, 15 e2e suites, lint, build and locale parity green.

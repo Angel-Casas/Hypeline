@@ -1086,3 +1086,13 @@ home button is the way back. `cut.mjs` walks from the desk to the gallery throug
 Clips link and back through the rail's library, which is the loop Angel described. The tour
 still targets `data-tour="rail"`, which now lives in the component — anything else that wants
 the rail gets it by mounting one, and should not copy it.
+
+**Amended 2026-09-19.** Moving Settings into the rail moved the watcher that closes it when the
+tour is asked for, and that turned an ordering into a race: the page's own `tour.requested`
+watcher runs first (a parent's setup registers before its child's), calls `tour.start()`, and
+`start()` clears `requested` — so the rail's watcher saw `false` and left the overlay up, over
+the tour, on two phones in three. The rule now is declarative rather than ordered: the settings
+overlay renders on `showSettings && !tour.active`, so it cannot paint over the tour whatever any
+flag does in whatever order. `tour.mjs` asserts it on the phone pass. Anything else a page tells
+the rail to do while something else is starting deserves the same treatment — a condition, not a
+callback.

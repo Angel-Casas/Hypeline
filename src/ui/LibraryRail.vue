@@ -99,13 +99,19 @@ const showSettings = ref(false);
 watch(showSettings, (open) => {
   if (!open) void refresh();
 });
-// "Show the tour again" lives in Settings, and the tour cannot run under its own overlay
-watch(
-  () => tour.requested,
-  (r) => {
-    if (r) showSettings.value = false;
-  },
-);
+/*
+ * The tour cannot run under the overlay it is started from, and on a phone that overlay covers
+ * the whole screen (Angel, 2026-09-19: "the settings page was blocking the view", two times in
+ * three). Watching `tour.requested` alone was a race I lost: the page's own watcher runs first,
+ * calls `tour.start()`, and `start()` clears `requested` — so by the time this one ran the flag
+ * was false again and the overlay stayed. Hence both, and hence `settingsOpen` below: while the
+ * tour is on, the overlay is not rendered at all, whatever any flag says.
+ */
+watch([() => tour.requested, () => tour.active], ([requested, active]) => {
+  if (requested || active) showSettings.value = false;
+});
+/** Never over the tour — the one state that outranks "the user opened Settings". */
+const settingsOpen = computed(() => showSettings.value && !tour.active);
 function onKey(e: KeyboardEvent) {
   if (e.key === 'Escape' && showSettings.value) showSettings.value = false;
 }
@@ -268,7 +274,7 @@ void props;
   <Teleport to="body">
     <Transition name="modal">
       <div
-        v-if="showSettings"
+        v-if="settingsOpen"
         class="scrim fixed inset-0 z-[70] grid place-items-center overflow-y-auto p-4 backdrop-blur-md"
         @click.self="showSettings = false"
       >
@@ -276,6 +282,7 @@ void props;
           class="modal relative w-full max-w-[560px]"
           role="dialog"
           aria-modal="true"
+          data-testid="settings-overlay"
           :aria-label="t('common.settings')"
         >
           <button

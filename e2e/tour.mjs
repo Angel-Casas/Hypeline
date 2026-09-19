@@ -119,6 +119,10 @@ console.log(
   back,
 );
 if (back >= 0) throw new Error('the rail drawer stayed open over the tour');
+// ...and the settings overlay itself, which the tour is started from, has to go with it
+if (await p.locator('[data-testid="settings-overlay"]').count())
+  throw new Error('the settings overlay stayed open over the tour');
+console.log('settings overlay closed with it');
 const [hole, heat] = await p.evaluate(() =>
   [
     document.querySelector('.hole').getBoundingClientRect(),
