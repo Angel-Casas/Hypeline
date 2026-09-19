@@ -545,6 +545,42 @@ On a **dev origin** (`localhost:5173`) the total also counts every other
 project ever run on that port: `indexedDB.databases()` and `caches.keys()`
 reveal them, and Settings lists and clears them as "other data".
 
+## Posting a clip back to Twitch (checked 2026-09-19)
+
+Angel asked whether Hypeline could post its clips to Twitch. Two separate things, and the
+distinction is the whole answer:
+
+**You cannot upload video to Twitch.** There is no API for putting a file on the platform —
+not a clip, not a VOD, not a highlight. Our captioned 9:16 export can therefore never _become_
+a Twitch clip. That wall is permanent as far as the public API goes.
+
+**You can ask Twitch to cut its own clip**, and since December there are two endpoints:
+
+- `POST /helix/clips` (the old one) — live only: "You may only capture clips if the broadcaster
+  is streaming." It grabs from the recent live buffer and returns an edit URL. The famous
+  60 seconds is the **clip length** cap, not a recency window: "from 5 seconds in length to
+  60 seconds in length."
+- **Create Clip From VOD** — announced 2025-12-20 in open beta, and now in the API reference
+  marked NEW ("Creates a clip from the broadcaster's VOD"). Takes `video_id`, `vod_offset` and
+  `duration`, plus an optional `title`, and returns the clip with an edit URL. This is the
+  shape Hypeline already has: we know the VOD id and the second the moment starts.
+
+The gate is **authorization, not capability**: `channel:manage:clips` as the broadcaster, or
+`editor:manage:clips` as an editor of that channel. So a streamer can do this on their own
+VODs; someone clipping a streamer they don't work for cannot, and that is a large share of our
+users. It would also need a **write scope** at sign-in, where ours is deliberately read-only
+(ADR-19) — a product decision, not a feature flag.
+
+Unverified, and worth a spike before anyone builds on this: the beta had acknowledged
+**timing-offset problems** as of 2026-01-08 (`vod_offset` landing a few seconds off the
+requested point), which for a tool whose pitch is "the exact moment" is the one bug that
+matters; and the docs do not state how far back in a VOD you may clip, nor whether the
+5–60 s cap applies to the VOD variant.
+
+Sources: <https://dev.twitch.tv/docs/api/reference/#create-clip>,
+<https://dev.twitch.tv/docs/api/clips/>,
+<https://discuss.dev.twitch.com/t/introducing-clip-api-improvements-and-clip-from-vod-in-open-beta/64492>.
+
 ## A fixed blended layer repaints badly on Android (2026-09-17)
 
 Angel: scrolling back to the top of the dashboard on Android (Brave) left

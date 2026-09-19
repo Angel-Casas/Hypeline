@@ -1693,3 +1693,25 @@ gone on the phone pass — it reproduced the bug on the first run, which is how 
 and not the drawer.
 
 131 tests, 15 e2e suites, lint, build and locale parity green.
+
+## 2026-09-19 (cont.) — Could we post clips to Twitch? (research only)
+
+**What changed.** Nothing in the app. Angel asked whether Hypeline could post its clips to
+Twitch; the answer is written down in `docs/05-research.md` and parked on the roadmap before it
+goes stale.
+
+Short version: you cannot upload video to Twitch at all, so our captioned export can never
+_become_ a Twitch clip — but **Create Clip From VOD** (beta since 2025-12-20, now in the
+reference) takes `video_id` + `vod_offset` + `duration`, which is exactly what we hold. One
+browser → Helix call, no relay, no ffmpeg, no upload: it fits the no-backend rule better than
+anything else we could add. The gate is authorization — own channel or an editor of it, and a
+write scope where ADR-19 keeps us read-only.
+
+It is parked, not scheduled, and the reason is Angel's rather than mine: **most clips streamers
+post do not go to Twitch.** They go to X, TikTok and Instagram, where an audience that has not
+heard of them is. A Twitch clip reaches people already on Twitch. He is asking a few streamers
+whether they would use it at all, and that answer decides whether the milestone exists.
+
+Also noted for whoever builds it: the beta's `vod_offset` was landing a few seconds off the
+requested point as of 2026-01-08. For an app whose pitch is "the exact moment", that is the one
+bug it cannot ship with — spike it first.

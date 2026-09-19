@@ -207,6 +207,31 @@ design are done:
 - [ ] Captions: exact word timing (Elevenlabs-STT or chunked STT); style editor.
 - [ ] Search: chat signal in the prompt; finer chunks (30 s) for tighter hits.
 
+## Parked: "Clip on Twitch" (asked 2026-09-19, not scheduled)
+
+Twitch's **Create Clip From VOD** endpoint (beta since 2025-12-20, now in the reference) would
+let Hypeline turn a moment into a real `twitch.tv/clip/…` — `video_id` + `vod_offset` +
+`duration`, one browser → Helix call, no relay, no ffmpeg, no upload. It fits the no-backend
+rule perfectly and gives something our `.mp4` cannot: a clip that lives on the channel with
+Twitch's player, its view count and its feed. Facts and caveats in `docs/05-research.md`
+(2026-09-19).
+
+**Why it is parked rather than next.** Two reasons, and the second is the real one:
+
+1. It only works on your own channel, or one you are an editor of (`channel:manage:clips` /
+   `editor:manage:clips`), and it needs a write scope where our sign-in is deliberately
+   read-only (ADR-19).
+2. **The clips streamers care about mostly do not go to Twitch.** Angel, 2026-09-19: the posts
+   that grow a channel go to X, TikTok and Instagram, because that is where an audience that
+   has not heard of them is. A Twitch clip is for people already on Twitch. He is asking a few
+   streamers whether they would use this at all before we spend anything on it — **that answer
+   decides whether this milestone exists.**
+
+If it does get built: a second button beside Export, own-channel only, reusing the In/Out
+already set, clamped to Twitch's 5–60 s; the captioned vertical export stays exactly as it is,
+because it is the one that goes where the growth is. Spike first — the beta's `vod_offset` was
+landing a few seconds off in January, which is the one bug this app cannot ship with.
+
 ## Parking lot
 
 Ideas we like but aren't scheduling: Tauri desktop build, browser extension
