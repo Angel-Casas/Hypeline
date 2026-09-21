@@ -376,12 +376,25 @@ export function peakBar(
   return Math.min(minHeight * axisScale(s, axis), minRelative * own);
 }
 
-/** The taller pole's curve at a second, in the same units as `peakBar`. */
+/**
+ * The taller pole's curve at a second, in the same units as `peakBar`.
+ *
+ * Interpolated between bucket *centres*, the way the ribbon samples it. Rounding to the
+ * nearest bucket index instead put the reading up to half a bucket — 45 s on a quiet
+ * channel — away from the second being asked about, which is enough to slide off a swell.
+ */
 export function moodHeightAt(s: EmotionSeries, axis: AxisKey, t: number): number {
   const a = axisOf(axis);
-  const i = Math.max(0, Math.min(s.count - 1, Math.round(t / s.bucketSec)));
-  return Math.max(s.poles[a.up.key].curve[i] ?? 0, s.poles[a.down.key].curve[i] ?? 0);
+  const at = t / s.bucketSec - 0.5;
+  const i = Math.floor(at);
+  const f = at - i;
+  const pick = (j: number) => {
+    const k = Math.max(0, Math.min(s.count - 1, j));
+    return Math.max(s.poles[a.up.key].curve[k] ?? 0, s.poles[a.down.key].curve[k] ?? 0);
+  };
+  return pick(i) + (pick(i + 1) - pick(i)) * f;
 }
+
 
 /**
  * How many mood peaks may surface at once. Deliberately generous and *not* the sensitivity
@@ -439,7 +452,11 @@ export function emotionMoments(
       if (cnt < minChatters) continue;
       const at = near.reduce((b, j) => (d.cnt[j]! > d.cnt[b]! ? j : b), i);
       found.push({
-        t: at * s.bucketSec,
+        // the bucket's *centre*, not its start. On a quiet channel a bucket is ninety
+        // seconds wide, and its start is three quarters of a minute before the thing that
+        // happened; the middle of the window is the better estimate of when chat reacted,
+        // and it is where the ribbon draws the bucket, so the curve and the moment agree.
+        t: Math.round((at + 0.5) * s.bucketSec),
         pole: p.key,
         cnt,
         users: s.chatters[at]!,

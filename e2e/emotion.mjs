@@ -247,15 +247,18 @@ const ghost = await p
 console.log('thread underneath:', ghost);
 if (!/grayscale/.test(ghost)) throw new Error('the thread kept its colour under the layer');
 
-// the pins on the ribbon belong to the mood now; the rate peaks stay in the list, dimmed
+// the pins on the ribbon belong to the mood now; the rate peaks stay in the list, dimmed.
+// Every row is one of exactly two kinds: the mood's (bright, pinned) or the heatmap's (dim).
 const pinCount = await p.locator('.pin-dot').count();
 const dimmed = await p.locator('ol.chips li.is-dim').count();
 const emoCount = await emoChips.count();
+const bright = await p.locator('ol.chips li:not(.is-dim)').count();
 console.log(
-  `pins on the ribbon: ${pinCount} (mood moments ${emoCount}) · rate chips dimmed: ${dimmed}`,
+  `pins on the ribbon: ${pinCount} (mood moments ${emoCount}) · bright ${bright} · dimmed ${dimmed}`,
 );
 if (pinCount !== emoCount)
   throw new Error(`the rate peaks still have pins: ${pinCount} pins for ${emoCount} moments`);
+if (bright !== emoCount) throw new Error(`bright ${bright} but mood moments ${emoCount}`);
 if (dimmed !== flat.length)
   throw new Error(`expected ${flat.length} dimmed rate chips, got ${dimmed}`);
 // dimmed, not gone, and still clickable. Polled rather than read once: the dim is a 140ms
@@ -298,13 +301,19 @@ const chip = p.locator('ol.chips li', { hasText: raidAt }).first();
 await chip.waitFor({ state: 'visible', timeout: 10000 });
 const raidLabel = await chip.getAttribute('aria-label');
 const raidDim = await chip.evaluate((el) => el.classList.contains('is-dim'));
+const raidIsMood = (await chip.locator('[data-testid="moment-emo"]').count()) === 1;
 const hypePins = await p.locator('.pin-dot').count();
 const hypeMoods = await emoChips.count();
-console.log(`raid chip @${raidAt}: dimmed=${raidDim} · "${raidLabel}"`);
-console.log(`hype↔letdown · pins ${hypePins} · mood-tagged or mood-born chips ${hypeMoods}`);
+const hypeBright = await p.locator('ol.chips li:not(.is-dim)').count();
+console.log(`raid chip @${raidAt}: dimmed=${raidDim} mood-chip=${raidIsMood} · "${raidLabel}"`);
+console.log(`hype↔letdown · pins ${hypePins} · mood chips ${hypeMoods} · bright chips ${hypeBright}`);
 if (raidDim) throw new Error('the raid was dimmed — the mood claimed it, it is not context');
+if (!raidIsMood) throw new Error('the raid the mood claimed is not shown as a mood moment');
 if (!/hyped/.test(raidLabel ?? ''))
   throw new Error('the raid chip does not say the room was hyped: ' + raidLabel);
+// the whole rule in one line: with a mood chosen, bright rows and pinned peaks are one set
+if (hypeBright !== hypeMoods || hypePins !== hypeMoods)
+  throw new Error(`bright ${hypeBright}, mood ${hypeMoods}, pins ${hypePins} — these must agree`);
 // its pin has to be on the ribbon: a peak you can see is a peak you can click
 if (hypePins < 1) throw new Error('the raid peak has no pin on the ribbon');
 // and it is the *only* pin: the other rate peak was not a mood peak, so it steps aside

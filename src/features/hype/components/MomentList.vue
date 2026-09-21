@@ -167,9 +167,9 @@ const chips = computed(() => {
           : mult
             ? `${mult}×`
             : t('moments.chattersShort', { n: m.users }),
-      // dimmed means the mood is quiet here — not "this one missed the cut". A moment the
-      // mood claimed, or one merely standing on a swell, is about the chosen mood either way
-      dim: mood && !m.source && !m.pole && !m.onMood,
+      // with a mood chosen there are two kinds of row: the mood's, bright, and the
+      // heatmap's, dimmed. AI hits are the user's own and stay as they are.
+      dim: mood && !m.source,
       colour: silkAt(at, false, 0),
       // an emotion moment's strength is a lift, not a rate score: ~3 is a strong one
       heat: ai ? m.score / 5 : emo ? Math.min(1, m.score / 3) : m.score / max,

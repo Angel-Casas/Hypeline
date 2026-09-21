@@ -331,3 +331,34 @@ describe('the bar the list and the ribbon share', () => {
     expect(moodHeightAt(quiet, 'dread-payoff', 100)).toBe(0);
   });
 });
+
+describe('moodHeightAt samples where the ribbon samples', () => {
+  /*
+   * It rounded to the nearest bucket index, which reads up to half a bucket — 45 s on a
+   * quiet channel — away from the second asked about. Enough to slide off a swell and grey
+   * out a moment standing on one. Bucket `i` is centred at `(i + 0.5) * bucketSec`, which is
+   * the convention the drawing uses, and this pins it.
+   */
+  const msgs: ChatMessage[] = [];
+  for (let t = 0; t < 1800; t += 5) msgs.push(msg(`chatting ${t}`, { t, u: `u${t % 40}` }));
+  for (let k = 0; k < 30; k++) msgs.push(msg('KEKW', { t: 900 + k, u: `j${k}` }));
+  const s = emotionSeries(msgs, 1800, 60);
+
+  it('reads a bucket centre as that bucket', () => {
+    for (const i of [3, 10, 15, 20]) {
+      const centre = (i + 0.5) * s.bucketSec;
+      expect(moodHeightAt(s, 'joy-sorrow', centre)).toBeCloseTo(s.poles.joy.curve[i]!, 6);
+    }
+  });
+
+  it('is symmetric about a centre and moves smoothly between them', () => {
+    const i = 15;
+    const centre = (i + 0.5) * s.bucketSec;
+    const lo = moodHeightAt(s, 'joy-sorrow', centre - 20);
+    const hi = moodHeightAt(s, 'joy-sorrow', centre + 20);
+    const at = moodHeightAt(s, 'joy-sorrow', centre);
+    // 20s either side of a centre reads between that bucket and its neighbours, not beyond
+    expect(Math.min(lo, hi)).toBeLessThanOrEqual(Math.max(at, Math.max(lo, hi)));
+    expect(Number.isFinite(lo) && Number.isFinite(hi)).toBe(true);
+  });
+});

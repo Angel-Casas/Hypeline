@@ -478,8 +478,7 @@ const visibleMoments = computed(() =>
     (m) =>
       m.t >= v0.value &&
       m.t < v1.value &&
-      // a rate peak the mood also claimed keeps its pin: it is a mood moment as well
-      (!emoOn.value || m.source === 'emotion' || !!m.pole || m.source === 'ai'),
+      (!emoOn.value || m.source === 'emotion' || m.source === 'ai'),
   ),
 );
 /**

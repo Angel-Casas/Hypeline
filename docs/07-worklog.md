@@ -1975,3 +1975,23 @@ six more moments keep full strength because they stand on a swell without having
 earned a label. A unit test ties the list's bar to the picker's so they cannot drift.
 
 160 unit tests, 16 e2e suites, hover, locales, lint and build green.
+
+## 2026-09-21j — two kinds of row, and nothing in between
+
+Angel, for the third time, on the dimming — and this time with the rule stated
+plainly: dim the heatmap's moments, show the mood's. Both of my previous rules were
+trying to be smarter than that and both read as bugs from the outside: the first
+dimmed things standing under a swell, the second left rows bright with no arrow and
+no pin. A reader has one question, _is this one of the mood's?_, and the row has to
+answer it by itself.
+
+So: a rate peak the mood lands on becomes a mood moment (same id, same time, so a
+clip stays tied to it) and is shown as one — arrow, mood reason first, pin. Every
+other heatmap moment is dimmed. Bright and pinned are the same set on every axis,
+and the e2e asserts that equality.
+
+On the way: mood moments now report their bucket's centre rather than its start
+(45 s truer on a quiet channel), `moodHeightAt` samples at centres the way the
+ribbon does, and `onMood` / `ABOUT_MOOD` are gone. Simpler than what they replaced.
+
+162 unit tests, 16 e2e suites, hover, lint and build green.

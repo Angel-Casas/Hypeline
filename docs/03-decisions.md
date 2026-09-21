@@ -1270,20 +1270,27 @@ scoped rule beats it whatever the specificity, so a component cannot simply add 
 utility class and expect it to win — it reads the token instead of copying nine hex
 values.
 
-_Dimming asks the ribbon, not our own bookkeeping_ (Angel, 2026-09-21). It first
-meant "this moment did not win a mood peak", which is a fact about the thinning
-and invisible to a reader: a moment standing right under a visible swell could be
-greyed out because a slightly stronger peak sat a minute away. It now means what it
-looks like it means — the mood curve is low here, so this moment is not about the
-mood you chose — and it is measured with the same `peakBar` and `moodHeightAt` the
-picker uses, with a test tying the two together. A moment on a swell keeps full
-strength whether or not it also earned a label.
+_With a mood chosen, the list has exactly two kinds of row_ (Angel, 2026-09-21, after
+two cleverer rules in a row both read as bugs). The mood's own moments, bright and
+pinned; the heatmap's, dimmed. No third state. The first rule dimmed whatever had
+not won a mood peak, which greyed out moments standing under a visible swell. The
+second kept a rate moment bright if the curve was up nearby, which produced bright
+rows with no arrow and no pin — "the mood is sort of here" — and Angel could not
+see why some heatmap moments were bright and others not. He was right: a reader
+has one question, _is this one of the mood's?_, and the answer has to be visible
+in the row itself. So a rate peak that a mood peak lands on **becomes** a mood
+moment — same id and time, so a clip tied to it stays tied, but the arrow, the
+mood's reason first, full strength, a pin. Bright and pinned are one set, and the
+e2e asserts that equality on every axis.
 
-The mood budget came off the sensitivity slider at the same time. `top` governs the
-rate peaks; mood peaks are thinned by `minGapSec`, which the slider also sets, so
-the slider still controls their density — but through the honest control, since two
-peaks a minute apart are one moment whatever the budget. A hard count of 25 was
-leaving real swells unclaimed on a six-hour VOD that had 31 of them.
+The mood budget came off the sensitivity slider at the same time. `top` governs
+the rate peaks; mood peaks are thinned by `minGapSec`, which the slider also sets,
+so the slider still controls their density — but through the honest control, since
+two peaks a minute apart are one moment whatever the budget. A hard count of 25 was
+leaving real swells unclaimed on a six-hour VOD that had 31 of them. And a mood
+moment's time is its bucket's _centre_, not its start: on a quiet channel a bucket
+is ninety seconds wide, and the middle of the window is both where chat reacted and
+where the ribbon draws it.
 
 _Colour is validated, and it is not the only cue._ The two poles use steps of
 the thread's own ends, checked against each ground for colour-vision separation

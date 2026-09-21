@@ -17,8 +17,6 @@ import {
   AXIS_KEYS,
   emotionMoments,
   emotionSeries,
-  moodHeightAt,
-  peakBar,
   reasonFor,
   type AxisKey,
   type EmotionMoment,
@@ -201,19 +199,23 @@ export const useVodStore = defineStore('vod', () => {
       });
     }
     /*
-     * Dimming asks about the *ribbon*, not about our own bookkeeping (Angel, 2026-09-21).
-     * It used to mean "this moment did not win a mood peak", which quietly dimmed moments
-     * sitting right under a visible swell — they had simply lost the thinning to a stronger
-     * peak a minute away, which is invisible and means nothing to a reader. It now means
-     * what it looks like it means: the mood curve is low here, so this moment is not about
-     * the mood you chose. A moment standing on a swell keeps its full strength whether or
-     * not it also earned a label.
+     * With a mood chosen, the list has exactly two kinds of row (Angel, 2026-09-21, after two
+     * cleverer rules both read as bugs): the mood's own moments, bright, and the heatmap's,
+     * dimmed. No third state. A rate peak that a mood peak lands on therefore *becomes* a
+     * mood moment — it keeps its id and its time, so a clip already tied to it stays tied,
+     * but it is presented as the mood's: the arrow, the mood's reason first, full strength,
+     * a pin on the ribbon. Bright and pinned are the same set, which is the whole rule.
      */
-    const bar = peakBar(s, axis);
     const merged = rate.map((r) => {
       const m = tag.get(r.id);
-      if (m) return { ...r, pole: m.pole, reasons: [reasonFor(m), ...r.reasons] };
-      return moodHeightAt(s, axis, r.t) >= bar ? { ...r, onMood: true } : r;
+      if (!m) return r;
+      return {
+        ...r,
+        source: 'emotion' as const,
+        pole: m.pole,
+        score: m.height,
+        reasons: [reasonFor(m), ...r.reasons],
+      };
     });
     return [...merged, ...extra].sort((a, b) => a.t - b.t);
   }
