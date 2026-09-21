@@ -1208,6 +1208,21 @@ heatmap. A pin hangs towards the lobe it belongs to, below the spine for a lower
 pole: a marker for "chat was gutted" pointing at empty sky was the tell that the
 first version had been reasoned about rather than looked at.
 
+_The curve is smooth by construction, not by resolution_ (Angel, 2026-09-21).
+The first pass interpolated raw buckets linearly and read as a polygon. The fix
+had three parts, each found by measuring the second difference of the drawn path
+— for a smooth function that is f''·h², small and evenly spread, while a corner
+spikes it whatever the sampling. Linear interpolation between bucket centres
+scored 2.74; evaluating a gaussian kernel at the sampled second instead of
+blurring the array and joining the results with lines brought it to 1.31;
+doubling the sample count to 480 brought it to 0.82; and dropping the percentile
+clamp — which gave every real peak a flat top and two corners — brought it to
+0.20, against 0.22 predicted for a pure gaussian at that amplitude and step. The
+clamp was the same mistake the thread itself made and fixed on 2026-09-14, so the
+mood ribbon now scales to the tallest point of its own smoothed curve, and
+blurring rather than clipping is what protects it from a single freak bucket. The
+e2e keeps that number under 0.45.
+
 _Colour is validated, and it is not the only cue._ The two poles use steps of
 the thread's own ends, checked against each ground for colour-vision separation
 (ΔE ≈ 26 protan and tritan) and contrast; night is its own choice, not a flip of

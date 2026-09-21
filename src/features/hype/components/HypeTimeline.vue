@@ -314,9 +314,12 @@ function ribbonPath(from: number, to: number, height: number, scale: number): st
  * and a bucket where chat is both hysterical and gutted — the best kind there is — would
  * render as a flat line.
  *
- * Scaled to the 98th percentile of the axis's two poles rather than to their maximum, so one
- * freak bucket cannot flatten the other eleven hours, and rather than to the *visible*
- * window, so zooming in does not make a small feeling look like a big one.
+ * Scaled to the tallest point of the *smoothed* curve, across both poles and the whole VOD.
+ * Not the visible window, so zooming in cannot make a small feeling look like a big one; and
+ * not a percentile with the rest clipped, which is the mistake the thread already made and
+ * fixed on 2026-09-14 — clipping gives the peak a flat top and two corners, which is most of
+ * what made this ribbon look like a polygon. Blurring is what protects against a single
+ * freak bucket now, and it does it without a straight edge anywhere.
  */
 const emoAxis = computed(() => (props.emotion && props.emotionAxis ? axisOf(props.emotionAxis) : null));
 const emoOn = computed(() => emoAxis.value != null);
@@ -325,36 +328,94 @@ const emoScale = computed(() => {
   const s = props.emotion;
   const a = emoAxis.value;
   if (!s || !a) return 1;
-  const all = [...s.poles[a.up.key].share, ...s.poles[a.down.key].share]
-    .filter((v) => v > 0)
-    .sort((x, y) => x - y);
-  if (!all.length) return 1;
-  const p98 = all[Math.min(all.length - 1, Math.floor(all.length * 0.98))]!;
-  return p98 > 0 ? p98 : 1;
+  const sm = emoSmooth.value;
+  if (!sm) return 1;
+  let peak = 0;
+  for (const v of sm.up) if (v > peak) peak = v;
+  for (const v of sm.down) if (v > peak) peak = v;
+  return peak > 0 ? peak : 1;
 });
 
 /**
- * A pole's share at a second, interpolated between bucket centres rather than read off the
- * bucket it lands in. A staircase was honest about the resolution and wrong about the app:
- * the thread is a curve, so the mood has to be one too (Angel, 2026-09-21).
+ * Gaussian blur over the bucket series, the way `buildSeries` smooths the thread's.
+ *
+ * Interpolating raw buckets linearly gave straight runs meeting at corners — a polyline, not
+ * silk (Angel, 2026-09-21). The design system already answered this for the thread: the raw
+ * bucket series is too jagged to read, so it is drawn as a smooth swell per moment. The mood
+ * ribbon cannot borrow that machinery directly — `seriesFromPeaks` normalises each series to
+ * its own maximum, which would make a small sorrow lobe look as tall as a big joy one and
+ * destroy the very comparison the mirror exists for — so it takes the same *treatment*
+ * instead: blur the buckets, keep one shared scale across the axis.
+ */
+const SMOOTH_SIGMA = 1.25; // in buckets
+
+function blur(v: readonly number[], sigma: number): number[] {
+  const r = Math.max(1, Math.ceil(sigma * 3));
+  const k: number[] = [];
+  let ks = 0;
+  for (let i = -r; i <= r; i++) {
+    const w = Math.exp(-(i * i) / (2 * sigma * sigma));
+    k.push(w);
+    ks += w;
+  }
+  return v.map((_, i) => {
+    let acc = 0;
+    for (let j = -r; j <= r; j++) acc += (v[Math.max(0, Math.min(v.length - 1, i + j))] ?? 0) * k[j + r]!;
+    return acc / ks;
+  });
+}
+
+/** The two poles of the chosen axis, raw — the continuous kernel below does the smoothing. */
+const emoRaw = computed<{ up: readonly number[]; down: readonly number[] } | null>(() => {
+  const s = props.emotion;
+  const a = emoAxis.value;
+  if (!s || !a) return null;
+  return { up: s.poles[a.up.key].share, down: s.poles[a.down.key].share };
+});
+/** Blurred copies, for the scale only: the drawn curve never reads from these. */
+const emoSmooth = computed<{ up: number[]; down: number[] } | null>(() => {
+  const r = emoRaw.value;
+  return r ? { up: blur(r.up, SMOOTH_SIGMA), down: blur(r.down, SMOOTH_SIGMA) } : null;
+});
+
+/**
+ * A pole's share at a second, as a continuous function.
+ *
+ * Blurring the bucket array and then joining the results with straight lines still leaves a
+ * corner at every bucket centre — smaller corners, but a polyline all the same, which is
+ * what Angel could still see. Evaluating the gaussian at the sampled second instead makes
+ * the curve smooth everywhere by construction rather than by resolution: there is no
+ * underlying polygon to catch the light. It costs ~9 multiply-adds per sample.
  */
 function shareAt(pole: 'up' | 'down', sec: number): number {
   const s = props.emotion;
-  const a = emoAxis.value;
-  if (!s || !a) return 0;
-  const series = s.poles[pole === 'up' ? a.up.key : a.down.key].share;
-  const at = sec / s.bucketSec - 0.5; // bucket i is centred half a bucket in
-  const i = Math.floor(at);
-  const f = at - i;
-  const lo = series[Math.min(s.count - 1, Math.max(0, i))] ?? 0;
-  const hi = series[Math.min(s.count - 1, Math.max(0, i + 1))] ?? 0;
-  return lo + (hi - lo) * f;
+  const raw = emoRaw.value;
+  if (!s || !raw) return 0;
+  const series = raw[pole];
+  const sigma = SMOOTH_SIGMA * s.bucketSec;
+  const at = sec / s.bucketSec - 0.5; // in bucket units, centres on the half
+  // 4σ, not 3σ: the window is recomputed per sample, so a bucket entering or leaving it
+  // steps the sum by its edge weight — a tiny corner at every bucket boundary. At 3σ that
+  // weight is 1.1 %, which was still measurable in the path; at 4σ it is 0.03 %.
+  const r = Math.ceil(SMOOTH_SIGMA * 4);
+  const lo = Math.max(0, Math.floor(at) - r);
+  const hi = Math.min(series.length - 1, Math.ceil(at) + r);
+  let acc = 0;
+  let wsum = 0;
+  for (let j = lo; j <= hi; j++) {
+    const d = (sec - (j + 0.5) * s.bucketSec) / sigma;
+    const w = Math.exp(-0.5 * d * d);
+    acc += (series[j] ?? 0) * w;
+    wsum += w;
+  }
+  return wsum > 0 ? acc / wsum : 0;
 }
 
 /** How far off the spine a pole reaches at `sec`, in viewBox units. */
 function emoAmp(pole: 'up' | 'down', sec: number): number {
   const room = (H / 2 - 5) * 0.9;
-  return Math.min(1, shareAt(pole, sec) / emoScale.value) * room;
+  // no clamp: the scale is the curve's own maximum, so nothing can exceed the room
+  return (shareAt(pole, sec) / emoScale.value) * room;
 }
 
 /**
@@ -365,7 +426,10 @@ function emoAmp(pole: 'up' | 'down', sec: number): number {
  */
 const emoRibbon = computed(() => {
   if (!emoOn.value) return '';
-  const N = 240;
+  // twice the thread's sample count: the thread is a handful of wide swells, while a mood
+  // curve can turn inside one bucket, and at 240 the polygon behind it was still catching
+  // the light (Angel, 2026-09-21)
+  const N = 480;
   const mid = H / 2;
   const top: string[] = [];
   const bot: string[] = [];

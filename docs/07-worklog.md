@@ -1881,3 +1881,24 @@ selectable. Polling for the dim rather than reading it once: it is a 140 ms fade
 and the first version of the assertion was racing it.
 
 150 unit tests, 16 e2e suites, hover, locales, lint and build green.
+
+## 2026-09-21f — the mood ribbon is a curve now, and provably so
+
+Angel: it still looked like lines rather than curves. He was right, and the fix
+was three separate causes hiding behind one symptom. The measure that found them
+was the second difference of the drawn path — smooth curves spread it thinly,
+corners spike it.
+
+Linear interpolation between bucket centres: 2.74. Evaluating the gaussian at the
+sampled second instead — smoothing the _function_ rather than the array and then
+joining the results with straight lines — brought it to 1.31. Doubling the sample
+count to 480: 0.82. And the one I would not have found by reading the code: the
+scale clamped at the 98th percentile, so every real peak was clipped into a flat
+top with a corner at each end. Dropping it gave 0.20, against 0.22 predicted for
+a pure gaussian. That clamp was the same mistake `seriesFromPeaks` made and fixed
+on 2026-09-14 — the note was right there in the file.
+
+The e2e now asserts that number stays under 0.45, so the ribbon cannot quietly go
+back to being a polygon.
+
+150 unit tests, 16 e2e suites, hover, lint and build green.

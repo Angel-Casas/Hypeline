@@ -188,6 +188,21 @@ const mid = 60; // H / 2
 const up = mid - Math.min(...ys);
 const down = Math.max(...ys) - mid;
 console.log(`ribbon reach — up ${up.toFixed(1)}, down ${down.toFixed(1)} (viewBox units)`);
+
+/*
+ * It has to be a *curve*, not a polyline (Angel, 2026-09-21). The second difference of the
+ * top edge measures that directly: for a smooth function sampled evenly it is f''·h², small
+ * and evenly spread, while a corner spikes it whatever the sampling. This exact number is
+ * how the three causes were found and killed — linear interpolation between bucket centres
+ * (2.74), then the sampling density (1.31), then clipping the peak flat at a percentile
+ * (0.82). A true gaussian at this amplitude and step predicts 0.22; we measure 0.20.
+ */
+const top = ys.slice(0, 481);
+let kink = 0;
+for (let i = 1; i < top.length - 1; i++)
+  kink = Math.max(kink, Math.abs(top[i - 1] - 2 * top[i] + top[i + 1]));
+console.log('sharpest turn in the curve:', kink.toFixed(3), '(a polyline scored 2.74)');
+if (kink > 0.45) throw new Error(`the ribbon has corners in it: ${kink.toFixed(3)}`);
 if (up < 5 || down < 5) throw new Error(`a pole is flat: up ${up} down ${down}`);
 if (Math.abs(up - down) < 1) throw new Error('the ribbon is symmetric — poles are not separate');
 
