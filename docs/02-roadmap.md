@@ -211,6 +211,29 @@ design are done:
 - [ ] Captions: exact word timing (Elevenlabs-STT or chunked STT); style editor.
 - [ ] Search: chat signal in the prompt; finer chunks (30 s) for tighter hits.
 
+## M7 — Emotion axes on the heatmap (spiked 2026-09-21, not yet scheduled)
+
+S7 says the idea works: emotion share is independent of volume (r ≈ 0), and on a
+big chat it surfaces dozens of moments the rate scorer is blind to — "W MOM" from
+90 of 130 chatters with no volume spike at all. Findings, tables and the caveats
+in `docs/05-research.md`; the throwaway is `spikes/s7-sentiment/`.
+
+- [ ] Re-cut the lexicon into poles (the app's `grief`/`shock` split across axes).
+- [ ] Channel-adaptive bucket width for the emotion layer: widen until a bucket
+      holds ~12 distinct chatters (15 s on caseoh_, 60–90 s on a small channel).
+      **This is the make-or-break** — at 15 s the two small fixtures found nothing.
+- [ ] Ship **joy ↔ sorrow**; offer **hype ↔ letdown**. Do not build dread ↔ relief:
+      relief has no vocabulary (0 qualifying buckets on all three fixtures).
+- [ ] Mirror on the heatmap, warm above / cool below, **never subtracted**; the
+      hype thread recedes while the layer is on. Centre-anchored drawing means the
+      zoom strip and the In/Out handle feet follow.
+- [ ] Moments list: a second source alongside the rate peaks, labelled by pole;
+      "chat did not know whether to laugh or cry" when both poles are high.
+- [ ] Optional, one cheap AI call per VOD: classify the channel's own unknown
+      emotes into poles, which is the per-channel drift problem solved for a
+      fraction of a cent while everything else stays keyless.
+- [ ] ADR before building.
+
 ## Parked: "Clip on Twitch" (asked 2026-09-19, not scheduled)
 
 Twitch's **Create Clip From VOD** endpoint (beta since 2025-12-20, now in the reference) would

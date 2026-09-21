@@ -626,3 +626,68 @@ kept-alive connection**. Fired 900 requests in parallel and not one was refused,
 because they came from a rotating pool of egress IPs across several colos, and
 the limit is per IP. Worth remembering before concluding from a burst test that a
 rate limit is missing: distributed traffic is exactly what it does not stop.
+
+## S7 — emotion axes in chat (spike, 2026-09-21)
+
+Angel's idea: a second layer on the heatmap, one emotion drawn above the centre
+and its opposite below, behind a toggle and an axis dropdown. `spikes/s7-sentiment/`
+answers the only question that decides whether it is worth building — **is an
+emotion curve anything other than a fatter copy of the volume curve?** Method:
+15 s buckets, the app's own ±600 s rolling-median baseline, bot badges dropped,
+and every pole counted in **distinct users** rather than messages, so one person
+spamming PepeHands forty times is one vote (the S3b lesson).
+
+**1. Emotion is independent of volume.** Correlation between a pole's share of
+the people talking and the bucket's message count: **−0.14 to +0.19** across
+three fixtures and six poles. Not a re-skin. The share of chat feeling something
+is simply a different quantity from how much chat is saying.
+
+**2. It finds moments the scorer cannot see, and they are real.** Buckets where a
+pole sits well above its own baseline while volume sits at or below its own:
+caseoh_ gives 76 for joy, 97 for hype, 60 for letdown, 16 for sorrow. The two
+best are worth quoting, because they are exactly the clips a human would cut:
+
+- `00:24:30` — **90 of 130 chatters** posting "W MOM", volume at −0.1× baseline.
+- `02:04:15` — **66 of 101 chatters** posting "L DAD", volume at 0.0×.
+
+Chat delivering a unanimous verdict without a rate spike. The current heatmap is
+blind to both. `spikes/s7-sentiment/curves.png` shows it: read down the dashed
+lines, the volume panel is flat where the emotion panel peaks.
+
+**3. Small chats need a wider window — this is the make-or-break.** Median
+distinct users per 15 s bucket: caseoh_ **97**, tokyosims **3**, popkreep_ **2**.
+At 15 s the two small fixtures found *literally nothing* on every pole, not
+because their chat had no feelings but because four people cannot agree inside
+fifteen seconds when only three are talking. Widening the bucket until it holds
+~12 users (tokyosims → 60 s, popkreep_ → 90 s) recovered real moments on both.
+So the emotion layer needs its own, channel-adaptive time resolution; the hype
+heatmap can stay at 15 s, because it only needs messages and one person supplies
+those. Corollary: `lift` saturates at log2(1.02/0.02) ≈ 5.7 when the baseline
+share is zero, so on sparse data a single user produces a maximal lift — the
+crowd floor, not the lift threshold, is what keeps this honest.
+
+**4. Only one axis is universal; one does not exist at all.**
+
+| axis | caseoh_ | tokyosims | popkreep_ | verdict |
+| --- | --- | --- | --- | --- |
+| joy ↔ sorrow | 448 / 98 buckets | 24 / 0 | 4 / 0 | ship it |
+| hype ↔ letdown | 537 / 142 | 3 / 0 | 2 / 0 | offer it; it is W/L culture, and big chats have it |
+| dread ↔ relief | 11 / 0 | 0 / 0 | 0 / 0 | **do not build** |
+
+Relief never cleared the threshold on any fixture: 140 tagged users in 110k
+messages, zero qualifying buckets. Chat does not *say* relief, it goes quiet or
+laughs. Dread exists but is thin, and all three fixtures are Just Chatting — a
+horror or competitive VOD would likely show it. Park the axis, do not ship it.
+
+**5. Asymmetry vindicates not subtracting.** Joy outnumbers sorrow 4–5 : 1. Drawn
+as separate curves the sorrow lobe is thin and stands out when it appears; as a
+difference it would be erased in every bucket by the louder pole. Angel's mirror
+was right and the arithmetic underneath it was the part that needed changing.
+
+**6. The app's existing `Mood` classes are cut wrong for this.** `scoring.ts`
+already has `MOOD_WORDS`, per-bucket mood and distinct-user counting — most of the
+machinery — but `grief` mixes sorrow (sadge, pepehands, rip) with defeat (L,
+copium, aware), and `shock` mixes dread (monkaS) with surprise (wtf, omg). Those
+split across different axes, so the lexicon has to be re-cut rather than reused,
+and `mood` should probably become a projection of the new poles rather than a
+second, disagreeing classifier.

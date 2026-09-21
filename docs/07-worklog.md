@@ -1779,3 +1779,26 @@ Twitch's segments in the CDN cache. ADR-42 proposes the $5 plan and names the
 free alternative. Angel decides.
 
 Next: sentiment axes on the heatmap — spike first on the three fixtures.
+
+## 2026-09-21b — S7: the emotion layer is real, with one condition
+
+Spiked Angel's sentiment idea before building any of it. Three fixtures, poles
+counted in distinct users, compared against the app's own baseline method.
+
+It works. Emotion share correlates with volume at roughly zero, and on caseoh_ it
+turns up 76 joy / 97 hype / 60 letdown buckets that the rate scorer cannot see.
+The showpiece: 90 of 130 chatters posting "W MOM" while volume sat *below*
+baseline. That is a clip, and today we miss it.
+
+The condition is density. Median chatters per 15 s bucket: caseoh_ 97, tokyosims
+3, popkreep_ 2 — and at 15 s both small fixtures found nothing at all on every
+pole. Widening to 60–90 s recovered them. So the layer needs a channel-adaptive
+window of its own while the heatmap keeps 15 s.
+
+Also settled by data rather than taste: dread ↔ relief should not be built —
+relief has no vocabulary, 0 qualifying buckets anywhere. And the app's existing
+`Mood` classes cut across the axes, so the lexicon gets re-cut rather than reused.
+
+Roadmap now carries M7 with the findings; nothing in `src/` has moved.
+
+Next: ADR for M7, then the lexicon and the adaptive bucket.
