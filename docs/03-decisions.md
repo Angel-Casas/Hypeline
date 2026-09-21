@@ -1114,7 +1114,7 @@ one they forbid. The Developer Platform's own terms add nothing about
 media, only a general clause letting Cloudflare throttle anything that
 puts "an undue burden" on the network.
 
-Two details keep this from being a clean pass. The clause says *Paid*
+Two details keep this from being a clean pass. The clause says _Paid_
 Services, and `relay.hypeline.live` is on the free plan. And our worker
 sets `cf: { cacheEverything: true, cacheTtl: 300 }`, which deliberately
 puts Twitch's segments into Cloudflare's CDN cache — the CDN is exactly
@@ -1138,8 +1138,8 @@ once. The alternative, at no cost, is to drop `cacheEverything` and let
 the worker be a pure pass-through with nothing of Twitch's resident in
 the CDN — cheaper, and slower for everyone.
 
-**Consequences.** If we take the plan, Hypeline stops being free *to
-run* — about $60 a year, borne by whoever operates the deploy — while
+**Consequences.** If we take the plan, Hypeline stops being free _to
+run_ — about $60 a year, borne by whoever operates the deploy — while
 staying free to use, which is the promise that matters and the one in
 the README. Nothing in the app changes and no user sees a difference.
 If we take the one-line change instead, record it here as a reversal
@@ -1147,3 +1147,67 @@ rather than an edit. Either way this is a reading of terms by a
 non-lawyer: it is a judgement about what is clearly fine, not advice.
 Re-check if the relay ever carries real traffic, because "undue burden"
 is measured, not defined.
+
+## ADR-43 — Emotion is a share of the room, drawn mirrored and never subtracted (2026-09-21)
+
+**Context.** The heatmap measures volume. S7 (docs/05-research.md) showed that
+misses two whole categories of moment: chat agreeing completely without typing
+any more than usual — 90 of 130 chatters posting "W MOM" with the rate _below_
+baseline — and chat reacting to tension by going **quieter**, which a rate
+scorer cannot see by construction, because it is looking for the opposite sign.
+Angel's proposal was a toggle and a dropdown: one emotion above the centre line,
+its opposite below.
+
+**Decision.**
+
+_The quantity is a share of the people talking, not a count of messages._ That
+is what makes the layer independent of the heatmap (r ≈ 0.0–0.35 depending on
+chat size) rather than a fatter copy of it. Poles are counted in **distinct
+chatters**, so one person spamming PepeHands forty times is one vote — the S3b
+crowd-confidence lesson.
+
+_The poles are never subtracted._ Angel proposed the mirror and was right; the
+arithmetic underneath it was the part that needed changing. Joy outnumbers
+sorrow four or five to one, so a difference would erase the rare pole in every
+bucket it appeared in, and a bucket where chat is both hysterical and gutted —
+the most interesting kind there is — would render as a flat line. Both curves
+are drawn; only the _ranking_ of a moment collapses to one number.
+
+_The emotion layer gets its own bucket width, and it adapts._ A big chat has ~97
+distinct chatters per 15 s; a small one has 2, and at 15 s the small fixtures
+produced **nothing** on every pole — four people cannot agree inside fifteen
+seconds when three are talking. The window widens until it holds about twelve
+chatters, and the control says so when it has. The heatmap keeps 15 s: it only
+needs messages, and one person supplies those.
+
+_Three axes: joy ↔ sorrow, hype ↔ letdown, dread ↔ payoff._ One at a time — two
+mirrored pairs about one spine is four overlapping lobes and unreadable. The
+third axis is **not** "dread ↔ relief": relief-from-fear barely exists in chat
+(`phew`, `survived` are near zero even in 241k messages), while its lower pole
+is carried by `finally` — "FINALLY JAIL RP" — which is the wait paying off. The
+axis is named for what it measures rather than for the symmetry we expected.
+
+_Emotion moments merge into the one ranked list_ (Angel, 2026-09-21), labelled
+by pole, and a rate peak wins any tie: if the heatmap already found the moment,
+a duplicate row only costs trust. Only rate-scored moments are numbered, because
+a rank across three different scales would be a lie.
+
+_Colour is validated, and it is not the only cue._ The two poles use steps of
+the thread's own ends, checked against each ground for colour-vision separation
+(ΔE ≈ 26 protan and tritan) and contrast; night is its own choice, not a flip of
+day. The poles are named on the chart and the chips carry an arrow as well as a
+colour, so nothing depends on seeing hue. While the layer is on the hype thread
+is greyed as well as dimmed — two colour encodings over one strip is one too
+many, and in silk its lower half reads as the lower pole.
+
+**Consequences.** `features/hype/emotion.ts` is pure and tested against the real
+fixtures, including the claim the feature rests on (share is not volume) — if a
+lexicon edit breaks that, the suite says so. The layer is off by default and
+costs one extra pass over the messages only when switched on.
+
+The lexicon is English and ADR-29's language problem is inherited: per-language
+packs are still owed. And a token's pole must be checked against a big reactive
+chat before it is trusted — `ez` sat on the relief pole until one VOD showed
+2,801 uses of it as a taunt (S7c). Finally, `mood` in `scoring.ts` still
+classifies with its own, differently-cut categories; it should become a
+projection of these poles rather than a second classifier that disagrees.

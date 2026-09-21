@@ -211,34 +211,39 @@ design are done:
 - [ ] Captions: exact word timing (Elevenlabs-STT or chunked STT); style editor.
 - [ ] Search: chat signal in the prompt; finer chunks (30 s) for tighter hits.
 
-## M7 — Emotion axes on the heatmap (spiked 2026-09-21, not yet scheduled)
+## M7 — Emotion axes on the heatmap (built 2026-09-21, ADR-43)
 
 S7 says the idea works: emotion share is independent of volume (r ≈ 0), and on a
 big chat it surfaces dozens of moments the rate scorer is blind to — "W MOM" from
 90 of 130 chatters with no volume spike at all. Findings, tables and the caveats
 in `docs/05-research.md`; the throwaway is `spikes/s7-sentiment/`.
 
-- [ ] Re-cut the lexicon into poles (the app's `grief`/`shock` split across axes).
-- [ ] Channel-adaptive bucket width for the emotion layer: widen until a bucket
+- [x] Re-cut the lexicon into poles (the app's `grief`/`shock` split across axes).
+- [x] Channel-adaptive bucket width for the emotion layer: widen until a bucket
       holds ~12 distinct chatters (15 s on caseoh_, 60–90 s on a small channel).
       **This is the make-or-break** — at 15 s the two small fixtures found nothing.
-- [ ] Ship **joy ↔ sorrow**; offer **hype ↔ letdown**; **dread survives** (S7c) — on a
-      353-messages-a-minute chat it found moments where chat tenses up and says *less*
+- [x] Ship **joy ↔ sorrow**; offer **hype ↔ letdown**; **dread survives** (S7c) — on a
+      353-messages-a-minute chat it found moments where chat tenses up and says _less_
       (15 of 41 on `ohno` at half baseline), which is precisely what a rate scorer
       cannot see. But its partner is wrong: "relief" is carried by the word `finally`
       and means impatience resolved, not fear released. Draw dread unpaired, or rename
       the axis **Dread ↔ Payoff**. Decide in the ADR.
-- [ ] Validate every pole token against a big reactive chat before trusting it: `ez`
+- [x] Validate every pole token against a big reactive chat before trusting it: `ez`
       sat in relief and is 2,801 taunts in one VOD (S7c). Applies to language packs too.
-- [ ] Mirror on the heatmap, warm above / cool below, **never subtracted**; the
+- [x] Mirror on the heatmap, warm above / cool below, **never subtracted**; the
       hype thread recedes while the layer is on. Centre-anchored drawing means the
       zoom strip and the In/Out handle feet follow.
-- [ ] Moments list: a second source alongside the rate peaks, labelled by pole;
+- [x] Moments list: a second source alongside the rate peaks, labelled by pole;
       "chat did not know whether to laugh or cry" when both poles are high.
+- [ ] **Still owed:** per-language pole packs. The lexicon is English; a German
+      chat is nearly invisible to it (S7b), exactly as ADR-29 found for the hype
+      vocabulary.
+- [ ] **Still owed:** fold `scoring.ts`'s `mood` into these poles — it currently
+      classifies the same messages with differently-cut categories.
 - [ ] Optional, one cheap AI call per VOD: classify the channel's own unknown
       emotes into poles, which is the per-channel drift problem solved for a
       fraction of a cent while everything else stays keyless.
-- [ ] ADR before building.
+- [x] ADR before building — ADR-43.
 
 ## Parked: "Clip on Twitch" (asked 2026-09-19, not scheduled)
 

@@ -657,5 +657,30 @@
       "summary": "{n}개 구간 상승",
       "moments": "{n}개 모먼트가 바뀜"
     }
+  },
+  "emotion": {
+    "title": "채팅 분위기",
+    "off": "끄기",
+    "hint": "채팅이 무엇을 느꼈는지 선 위아래에 그립니다. 채팅량과는 별개의 신호입니다.",
+    "aria": "채팅 분위기 레이어",
+    "widened": "{sec}초 단위 — 이 채팅은 15초로 보기엔 너무 한산합니다",
+    "axis": {
+      "joy-sorrow": "웃음 ↔ 슬픔",
+      "hype-letdown": "열광 ↔ 실망",
+      "dread-payoff": "긴장 ↔ 안도"
+    },
+    "pole": {
+      "joy": "폭소",
+      "sorrow": "침울",
+      "hype": "열광",
+      "letdown": "포기 선언",
+      "dread": "긴장",
+      "payoff": "안도"
+    },
+    "reason": {
+      "plain": "채팅이 {what} — {of}명 중 {n}명",
+      "quiet": "말수는 줄었지만 {what} — {of}명 중 {n}명",
+      "both": "웃어야 할지 울어야 할지 — {of}명 중 {n}명"
+    }
   }
 }

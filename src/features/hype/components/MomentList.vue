@@ -13,6 +13,7 @@
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import type { Moment } from '../scoring';
+import { POLE_KEY, isUpper, type PoleKey } from '../emotion';
 import { formatHms } from '@/lib/twitch/vodUrl';
 import { frameBackground, type Storyboard } from '@/lib/twitch/storyboard';
 import { silkAt } from '@/ui/thread/silk';
@@ -128,12 +129,16 @@ function baselineMult(reasons: string[]): string | undefined {
 }
 
 const chips = computed(() => {
-  // chat moments rank among themselves; AI hits carry their confidence (1–5) instead
-  const chat = props.moments.filter((m) => m.source !== 'ai');
+  // Rate-scored moments rank among themselves. AI hits carry their confidence (1–5), and
+  // emotion moments (ADR-43) carry a lift — three different scales, so only the first kind
+  // is ranked and only its scores set the heat. Mixing them would make the numbering lie.
+  const chat = props.moments.filter((m) => !m.source);
   const max = Math.max(1e-6, ...chat.map((m) => m.score));
   const byScore = [...chat].sort((a, b) => b.score - a.score);
   return props.moments.map((m) => {
     const ai = m.source === 'ai';
+    const emo = m.source === 'emotion';
+    const pole = emo ? (m.pole as PoleKey | undefined) : undefined;
     const at = props.lengthSeconds ? m.t / props.lengthSeconds : 0;
     const frame = props.storyboard ? frameBackground(props.storyboard, m.t) : null;
     const mult = baselineMult(m.reasons);
@@ -141,11 +146,23 @@ const chips = computed(() => {
     return {
       m,
       ai,
+      emo,
+      pole,
+      poleLabel: pole ? t(POLE_KEY[pole]) : '',
+      poleUp: pole ? isUpper(pole) : false,
       time: formatHms(m.t),
-      mult: ai ? `${m.score}/5` : mult ? `${mult}×` : t('moments.chattersShort', { n: m.users }),
+      mult:
+        ai || emo
+          ? ai
+            ? `${m.score}/5`
+            : t('moments.chattersShort', { n: m.users })
+          : mult
+            ? `${mult}×`
+            : t('moments.chattersShort', { n: m.users }),
       colour: silkAt(at, false, 0),
-      heat: ai ? m.score / 5 : m.score / max,
-      rank: ai ? 0 : byScore.indexOf(m) + 1,
+      // an emotion moment's strength is a lift, not a rate score: ~3 is a strong one
+      heat: ai ? m.score / 5 : emo ? Math.min(1, m.score / 3) : m.score / max,
+      rank: ai || emo ? 0 : byScore.indexOf(m) + 1,
       frame,
       why: ai
         ? m.query
@@ -172,6 +189,7 @@ const chips = computed(() => {
           'is-hot': c.m.id === hoverId,
           'has-frame': !!c.frame,
           'is-ai': c.ai,
+          'is-emo': c.emo,
           dark: settings.dark,
         }"
         :style="{ '--c': c.colour, '--h': c.heat }"
@@ -187,6 +205,16 @@ const chips = computed(() => {
           aria-hidden="true"
         ></span>
         <span v-if="c.ai" class="aitag absolute top-[6px] left-[6px]">AI</span>
+        <!-- the pole, by shape as well as by colour: an arrow up for the warm pole, down for
+             the cool one, so the chip is readable without colour vision or a legend -->
+        <span
+          v-else-if="c.emo"
+          class="motag absolute top-[6px] left-[6px]"
+          :class="c.poleUp ? 'up' : 'down'"
+          :title="c.poleLabel"
+          data-testid="moment-emo"
+          >{{ c.poleUp ? '▲' : '▼' }}</span
+        >
         <span v-else class="dial absolute top-[6px] left-[6px]"
           ><i>{{ c.rank }}</i></span
         >
@@ -269,6 +297,32 @@ const chips = computed(() => {
 </template>
 
 <style scoped>
+/*
+ * The emotion tag. Same size and seat as the rank dial it replaces, so a mixed list still
+ * scans down one column. Colours are the validated pole pair; the arrow carries the same
+ * information, which is what makes the chip work in greyscale.
+ */
+.motag {
+  display: grid;
+  place-items: center;
+  width: 15px;
+  height: 15px;
+  border-radius: 5px;
+  font-size: 9px;
+  line-height: 1;
+  color: #fff;
+  background: #c2661a;
+}
+.motag.down {
+  background: #5a6fd6;
+}
+:global(html[data-theme='dark']) .motag {
+  background: #cf7020;
+}
+:global(html[data-theme='dark']) .motag.down {
+  background: #6b7fe0;
+}
+
 /* A phone scrolls the page, which is the right scroll there. On a desktop the grid takes
    whatever height its column has and scrolls only past that — a fixed cap left the chips
    huddled at the top of a tall, empty card (Angel, 2026-09-17). `max-content` rows keep a

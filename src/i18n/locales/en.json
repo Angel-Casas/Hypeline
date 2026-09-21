@@ -657,5 +657,30 @@
       "summary": "{n} buckets lifted",
       "moments": "{n} different moments"
     }
+  },
+  "emotion": {
+    "title": "Chat mood",
+    "off": "Off",
+    "hint": "Draws what chat felt, above and below the line — separately from how loud it was.",
+    "aria": "Chat mood layer",
+    "widened": "{sec}s steps — this chat is too quiet for 15s",
+    "axis": {
+      "joy-sorrow": "Joy ↔ Sorrow",
+      "hype-letdown": "Hype ↔ Letdown",
+      "dread-payoff": "Dread ↔ Payoff"
+    },
+    "pole": {
+      "joy": "laughing",
+      "sorrow": "gutted",
+      "hype": "hyped",
+      "letdown": "calling it a loss",
+      "dread": "on edge",
+      "payoff": "relieved"
+    },
+    "reason": {
+      "plain": "chat was {what} — {n} of {of}",
+      "quiet": "chat said less, but was {what} — {n} of {of}",
+      "both": "chat didn't know whether to laugh or cry — {n} of {of}"
+    }
   }
 }

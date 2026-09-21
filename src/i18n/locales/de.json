@@ -657,5 +657,30 @@
       "summary": "{n} Abschnitte angehoben",
       "moments": "{n} andere Momente"
     }
+  },
+  "emotion": {
+    "title": "Chat-Stimmung",
+    "off": "Aus",
+    "hint": "Zeichnet, was der Chat gefühlt hat – über und unter der Linie, unabhängig davon, wie laut er war.",
+    "aria": "Ebene Chat-Stimmung",
+    "widened": "{sec}s-Schritte – dieser Chat ist für 15s zu ruhig",
+    "axis": {
+      "joy-sorrow": "Freude ↔ Trauer",
+      "hype-letdown": "Hype ↔ Enttäuschung",
+      "dread-payoff": "Anspannung ↔ Erlösung"
+    },
+    "pole": {
+      "joy": "am Lachen",
+      "sorrow": "am Boden",
+      "hype": "gehyped",
+      "letdown": "enttäuscht",
+      "dread": "angespannt",
+      "payoff": "erleichtert"
+    },
+    "reason": {
+      "plain": "Chat war {what} – {n} von {of}",
+      "quiet": "Chat schrieb weniger, war aber {what} – {n} von {of}",
+      "both": "Chat wusste nicht, ob lachen oder weinen – {n} von {of}"
+    }
   }
 }

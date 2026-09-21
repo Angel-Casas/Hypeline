@@ -24,6 +24,7 @@ import type { Storyboard } from '@/lib/twitch/storyboard';
 import { frameAt } from '@/lib/twitch/storyboard';
 import { formatHms } from '@/lib/twitch/vodUrl';
 import { peaksFromMoments, seriesFromPeaks } from '@/ui/thread/series';
+import { axisOf, POLE_KEY, type AxisKey, type EmotionSeries } from '../emotion';
 
 const props = withDefaults(
   defineProps<{
@@ -53,6 +54,12 @@ const props = withDefaults(
     /** A VOD still recording: where it ends right now (a beating dot at the ribbon's edge). */
     liveEdge?: number | null;
     /**
+     * The emotion layer (ADR-43): what chat felt, mirrored about the spine — the warm pole
+     * above, the cool one below. Null when the layer is off, which is the default.
+     */
+    emotion?: EmotionSeries | null;
+    emotionAxis?: AxisKey | null;
+    /**
      * The transcript: chunks already transcribed (an accent band under the ribbon, so you
      * can see what the AI can search) and, while a whole-VOD transcription runs, the target
      * range and the chunk being worked on (a scanning light over the ribbon).
@@ -75,6 +82,8 @@ const props = withDefaults(
     activeId: null,
     loading: null,
     liveEdge: null,
+    emotion: null,
+    emotionAxis: null,
     transcript: null,
   },
 );
@@ -290,6 +299,64 @@ function ribbonPath(from: number, to: number, height: number, scale: number): st
   }
   return top.join(' ') + ' ' + bot.reverse().join(' ') + ' Z';
 }
+/**
+ * The emotion layer, mirrored about the same spine the ribbon already uses.
+ *
+ * The two poles are drawn as two curves and **never subtracted**: joy outnumbers sorrow four
+ * or five to one, so a difference would erase the rare pole in every bucket it appeared in,
+ * and a bucket where chat is both hysterical and gutted — the best kind there is — would
+ * render as a flat line.
+ *
+ * Scaled to the 98th percentile of the axis's two poles rather than to their maximum, so one
+ * freak bucket cannot flatten the other eleven hours, and rather than to the *visible*
+ * window, so zooming in does not make a small feeling look like a big one.
+ */
+const emoAxis = computed(() => (props.emotion && props.emotionAxis ? axisOf(props.emotionAxis) : null));
+const emoOn = computed(() => emoAxis.value != null);
+
+const emoScale = computed(() => {
+  const s = props.emotion;
+  const a = emoAxis.value;
+  if (!s || !a) return 1;
+  const all = [...s.poles[a.up.key].share, ...s.poles[a.down.key].share]
+    .filter((v) => v > 0)
+    .sort((x, y) => x - y);
+  if (!all.length) return 1;
+  const p98 = all[Math.min(all.length - 1, Math.floor(all.length * 0.98))]!;
+  return p98 > 0 ? p98 : 1;
+});
+
+function shareAt(pole: 'up' | 'down', sec: number): number {
+  const s = props.emotion;
+  const a = emoAxis.value;
+  if (!s || !a) return 0;
+  const i = Math.floor(sec / s.bucketSec);
+  if (i < 0 || i >= s.count) return 0;
+  return s.poles[pole === 'up' ? a.up.key : a.down.key].share[i] ?? 0;
+}
+
+/** One pole as a filled area hanging off the spine; `dir` is -1 up, +1 down. */
+function emoPath(pole: 'up' | 'down', dir: number): string {
+  const N = 240;
+  const mid = H / 2;
+  const room = (H / 2 - 5) * 0.88;
+  const pts: string[] = [`M0 ${mid}`];
+  for (let k = 0; k <= N; k++) {
+    const sec = v0.value + (k / N) * span.value;
+    const v = Math.min(1, shareAt(pole, sec) / emoScale.value);
+    pts.push(`L${((k / N) * W).toFixed(1)} ${(mid + dir * v * room).toFixed(2)}`);
+  }
+  pts.push(`L${W} ${mid} Z`);
+  return pts.join(' ');
+}
+const emoUp = computed(() => (emoOn.value ? emoPath('up', -1) : ''));
+const emoDown = computed(() => (emoOn.value ? emoPath('down', 1) : ''));
+/** The pole names, for the labels that keep identity off colour alone. */
+const emoLabels = computed(() => {
+  const a = emoAxis.value;
+  return a ? { up: t(POLE_KEY[a.up.key]), down: t(POLE_KEY[a.down.key]) } : null;
+});
+
 const ribbon = computed(() => ribbonPath(v0.value, v1.value, H, 1));
 const miniRibbon = computed(() => ribbonPath(0, total.value, MH, -1)); // raw series
 const gid = `hl${Math.random().toString(36).slice(2, 7)}`;
@@ -740,10 +807,22 @@ function pulse(sec: number) {
         <!-- the ribbon: a soft halo, the fill, a whisper of horizontal threads. While loading,
              only the covered stretches are drawn in full; the rest is a ghost. -->
         <path v-if="isLoading" :d="ribbon" :fill="`url(#${gid})`" opacity="0.14" />
-        <g :mask="isLoading ? `url(#${gid}c)` : undefined">
+        <g
+          :mask="isLoading ? `url(#${gid}c)` : undefined"
+          :class="{ 'thread-muted': emoOn }"
+          :opacity="emoOn ? 0.3 : 1"
+        >
           <path :d="ribbon" :fill="`url(#${gid})`" opacity="0.5" :filter="`url(#${gid}b)`" />
           <path :d="ribbon" :fill="`url(#${gid})`" opacity="0.92" />
           <path :d="ribbon" :fill="`url(#${gid}s)`" opacity="0.7" />
+        </g>
+        <!-- the emotion layer (ADR-43): the warm pole above the spine, the cool one below,
+             each its own curve. The thread recedes behind it rather than competing — two
+             rainbows over one strip is a mess, and the question here is the shape. -->
+        <g v-if="emoOn" class="emo" pointer-events="none">
+          <path :d="emoUp" class="emo-up" />
+          <path :d="emoDown" class="emo-down" />
+          <line x1="0" :y1="H / 2" :x2="W" :y2="H / 2" class="emo-spine" vector-effect="non-scaling-stroke" />
         </g>
         <!-- lane fronts: a hairline in ink with a small dot riding the spine (same language as
              the pins), instead of a light -->
@@ -1137,6 +1216,17 @@ function pulse(sec: number) {
         </g>
       </svg>
       <!-- LIVE pill at the edge: HTML, so the letters are not stretched by the ribbon's scaling -->
+      <!-- the poles, named. The colours are validated for colour-vision deficiency, but a
+           chart that needs colour to say which lobe is which is a chart half the readers
+           cannot use, so the names sit on it. Text, not SVG: the SVG is stretched. -->
+      <template v-if="emoLabels">
+        <div class="emo-label pointer-events-none absolute top-1.5 left-2.5" data-testid="emo-up">
+          {{ emoLabels.up }}
+        </div>
+        <div class="emo-label emo-label-down pointer-events-none absolute bottom-1.5 left-2.5" data-testid="emo-down">
+          {{ emoLabels.down }}
+        </div>
+      </template>
       <div
         v-if="edgeSec != null"
         class="live-pill pointer-events-none absolute top-2 font-mono text-[10px] font-bold tracking-[0.12em]"
@@ -1269,6 +1359,59 @@ function pulse(sec: number) {
 </template>
 
 <style scoped>
+/*
+ * The emotion poles. Two hues from the thread's own ends, stepped until each cleared a
+ * six-check validation against its own ground — CVD ΔE ≈ 26 (protan and tritan), contrast
+ * above 3:1 in both themes. Night is a separate choice rather than a flip of day.
+ */
+.emo {
+  --emo-up: #c2661a;
+  --emo-down: #5a6fd6;
+}
+:global(html[data-theme='dark']) .emo {
+  --emo-up: #cf7020;
+  --emo-down: #6b7fe0;
+}
+/*
+ * While the mood layer is on, the thread gives up its colour as well as its weight. Two
+ * colour encodings over one strip is one too many: with the thread still in silk, its lower
+ * half reads as the lower pole, which is exactly the misreading the labels are there to
+ * prevent. Greyed, it goes back to being context.
+ */
+.thread-muted {
+  filter: grayscale(1);
+}
+.emo-up {
+  fill: var(--emo-up);
+  fill-opacity: 0.82;
+}
+.emo-down {
+  fill: var(--emo-down);
+  fill-opacity: 0.82;
+}
+.emo-label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: lowercase;
+  color: #c2661a;
+  z-index: 10;
+}
+.emo-label-down {
+  color: #5a6fd6;
+}
+:global(html[data-theme='dark']) .emo-label {
+  color: #cf7020;
+}
+:global(html[data-theme='dark']) .emo-label-down {
+  color: #6b7fe0;
+}
+.emo-spine {
+  stroke: var(--color-ink);
+  stroke-width: 1;
+  opacity: 0.28;
+}
+
 .pin-dot,
 .pin-stem {
   transition:

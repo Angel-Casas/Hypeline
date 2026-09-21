@@ -657,5 +657,30 @@
       "summary": "{n} trechos elevados",
       "moments": "{n} momentos diferentes"
     }
+  },
+  "emotion": {
+    "title": "Clima do chat",
+    "off": "Desativado",
+    "hint": "Desenha o que o chat sentiu, acima e abaixo da linha — separado do volume de mensagens.",
+    "aria": "Camada de clima do chat",
+    "widened": "Passos de {sec}s — este chat é tranquilo demais para 15s",
+    "axis": {
+      "joy-sorrow": "Riso ↔ Tristeza",
+      "hype-letdown": "Hype ↔ Decepção",
+      "dread-payoff": "Tensão ↔ Alívio"
+    },
+    "pole": {
+      "joy": "morrendo de rir",
+      "sorrow": "arrasado",
+      "hype": "empolgado",
+      "letdown": "dando como perdido",
+      "dread": "tenso",
+      "payoff": "aliviado"
+    },
+    "reason": {
+      "plain": "o chat estava {what} — {n} de {of}",
+      "quiet": "o chat falou menos, mas estava {what} — {n} de {of}",
+      "both": "o chat não sabia se ria ou chorava — {n} de {of}"
+    }
   }
 }

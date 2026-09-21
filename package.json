@@ -20,7 +20,7 @@
     "format": "prettier --write .",
     "icons": "node scripts/render-icons.mjs",
     "icons:check": "node scripts/render-icons.mjs --check",
-    "e2e": "node e2e/smoke.mjs && node e2e/cut.mjs && node e2e/ai.mjs && node e2e/search.mjs && node e2e/quota.mjs && node e2e/import.mjs && node e2e/live.mjs && node e2e/home.mjs && node e2e/subonly.mjs && node e2e/i18n.mjs && node e2e/support.mjs && node e2e/tour.mjs && node e2e/pinch.mjs && node e2e/pwa.mjs && node e2e/vocab.mjs",
+    "e2e": "node e2e/smoke.mjs && node e2e/cut.mjs && node e2e/ai.mjs && node e2e/search.mjs && node e2e/quota.mjs && node e2e/import.mjs && node e2e/live.mjs && node e2e/home.mjs && node e2e/subonly.mjs && node e2e/i18n.mjs && node e2e/support.mjs && node e2e/tour.mjs && node e2e/pinch.mjs && node e2e/pwa.mjs && node e2e/vocab.mjs && node e2e/emotion.mjs",
     "postinstall": "node scripts/copy-ffmpeg-core.mjs",
     "e2e:fixtures": "node scripts/fetch-e2e-segments.mjs"
   },

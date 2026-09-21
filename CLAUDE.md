@@ -37,6 +37,10 @@ Read `docs/00-vision.md` before touching product decisions.
   has its own language problem, solved separately: the user's chat
   vocabulary (ADR-29, `features/hype/vocabulary.ts`) — editable word lists,
   per-language starter packs and detection from the VOD's own chat.
+- The chat-mood layer (ADR-43, `features/hype/emotion.ts`): what chat _felt_,
+  as a share of the people talking, mirrored about the heatmap's spine and
+  never subtracted. Off by default; its buckets widen on a quiet channel. Its
+  lexicon is English and still owes per-language packs.
 - Installable PWA with an update toast, never a silent reload (ADR-22,
   `src/lib/pwa.ts`); NanoGPT referral = a 5 % discount for the user (ADR-23)
 - Deployed as static files (GitHub Pages / Cloudflare Pages);

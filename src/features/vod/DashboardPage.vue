@@ -17,6 +17,7 @@ import VodInput from './components/VodInput.vue';
 import TwitchPlayer from './components/TwitchPlayer.vue';
 import SubOnlyNotice from './components/SubOnlyNotice.vue';
 import HypeTimeline from '@/features/hype/components/HypeTimeline.vue';
+import EmotionControl from '@/features/hype/components/EmotionControl.vue';
 import MomentList from '@/features/hype/components/MomentList.vue';
 import VocabularyOverlay from '@/features/hype/components/VocabularyOverlay.vue';
 import { useVocabStore } from '@/features/hype/vocabStore';
@@ -581,10 +582,17 @@ watch(
               </div>
             </div>
           </div>
+          <EmotionControl
+            v-if="phase === 'ready' && buckets.length"
+            v-model="settings.emotionAxis"
+            :bucket-sec="store.emotion?.bucketSec ?? null"
+          />
           <HypeTimeline
             v-if="buckets.length || phase === 'loading-chat'"
             :buckets="buckets"
             :moments="allMoments"
+            :emotion="store.emotion"
+            :emotion-axis="store.emotionAxis"
             :length-seconds="lengthSeconds"
             :current-time="currentTime"
             :in-sec="inSec"

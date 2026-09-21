@@ -657,5 +657,30 @@
       "summary": "{n} segments relevés",
       "moments": "{n} moments différents"
     }
+  },
+  "emotion": {
+    "title": "Humeur du chat",
+    "off": "Désactivé",
+    "hint": "Trace ce que le chat a ressenti, au-dessus et en dessous de la ligne, indépendamment de son volume.",
+    "aria": "Calque humeur du chat",
+    "widened": "Pas de {sec}s — ce chat est trop calme pour 15s",
+    "axis": {
+      "joy-sorrow": "Rire ↔ Tristesse",
+      "hype-letdown": "Hype ↔ Déception",
+      "dread-payoff": "Tension ↔ Soulagement"
+    },
+    "pole": {
+      "joy": "mort de rire",
+      "sorrow": "effondré",
+      "hype": "à fond",
+      "letdown": "qui n'y croit plus",
+      "dread": "tendu",
+      "payoff": "soulagé"
+    },
+    "reason": {
+      "plain": "le chat était {what} — {n} sur {of}",
+      "quiet": "le chat écrivait moins, mais était {what} — {n} sur {of}",
+      "both": "le chat ne savait pas s'il fallait rire ou pleurer — {n} sur {of}"
+    }
   }
 }

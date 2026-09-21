@@ -17,6 +17,8 @@ interface Persisted {
   theme: Theme;
   /** How many moments to surface: 1 (only the loudest) … 5 (everything that stirs). */
   sensitivity: number;
+  /** Which emotion axis the heatmap mirrors, '' for off (ADR-43). */
+  emotionAxis: string;
 }
 
 const DEFAULTS: Persisted = {
@@ -28,6 +30,7 @@ const DEFAULTS: Persisted = {
   sttModel: 'Whisper-Large-V3',
   theme: 'system',
   sensitivity: 3,
+  emotionAxis: '',
 };
 
 function load(): Persisted {
@@ -61,6 +64,12 @@ export const useSettingsStore = defineStore('settings', () => {
   const sttModel = ref(initial.sttModel);
   const theme = ref<Theme>(initial.theme);
   const sensitivity = ref(Math.min(5, Math.max(1, Number(initial.sensitivity) || 3)));
+  /**
+   * The emotion axis the heatmap mirrors, '' when the layer is off (ADR-43). A plain string
+   * rather than the `AxisKey` union so an axis retired in a later version degrades to "off"
+   * instead of throwing on a stored value nothing recognises.
+   */
+  const emotionAxis = ref(String(initial.emotionAxis ?? ''));
   const mq = typeof matchMedia === 'function' ? matchMedia('(prefers-color-scheme: dark)') : null;
   const systemDark = ref(mq?.matches ?? false);
   mq?.addEventListener?.('change', (e) => (systemDark.value = e.matches));
@@ -105,7 +114,17 @@ export const useSettingsStore = defineStore('settings', () => {
   }
 
   watch(
-    [shimUrl, preferredHeight, aiApiKey, aiBaseUrl, chatModel, sttModel, theme, sensitivity],
+    [
+      shimUrl,
+      preferredHeight,
+      aiApiKey,
+      aiBaseUrl,
+      chatModel,
+      sttModel,
+      theme,
+      sensitivity,
+      emotionAxis,
+    ],
     () => {
       try {
         const p: Persisted = {
@@ -117,6 +136,7 @@ export const useSettingsStore = defineStore('settings', () => {
           sttModel: sttModel.value,
           theme: theme.value,
           sensitivity: sensitivity.value,
+          emotionAxis: emotionAxis.value,
         };
         localStorage.setItem(KEY, JSON.stringify(p));
       } catch {
@@ -135,6 +155,7 @@ export const useSettingsStore = defineStore('settings', () => {
     sttModel,
     theme,
     sensitivity,
+    emotionAxis,
     dark,
     toggleTheme,
   };

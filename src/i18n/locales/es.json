@@ -657,5 +657,30 @@
       "summary": "{n} tramos elevados",
       "moments": "{n} momentos distintos"
     }
+  },
+  "emotion": {
+    "title": "Ánimo del chat",
+    "off": "Desactivado",
+    "hint": "Dibuja lo que sintió el chat, por encima y por debajo de la línea, aparte de lo ruidoso que fue.",
+    "aria": "Capa de ánimo del chat",
+    "widened": "Pasos de {sec}s — este chat es demasiado tranquilo para 15s",
+    "axis": {
+      "joy-sorrow": "Risa ↔ Tristeza",
+      "hype-letdown": "Hype ↔ Decepción",
+      "dread-payoff": "Tensión ↔ Alivio"
+    },
+    "pole": {
+      "joy": "muerto de risa",
+      "sorrow": "destrozado",
+      "hype": "a tope",
+      "letdown": "dándolo por perdido",
+      "dread": "en tensión",
+      "payoff": "aliviado"
+    },
+    "reason": {
+      "plain": "el chat estaba {what} — {n} de {of}",
+      "quiet": "el chat escribió menos, pero estaba {what} — {n} de {of}",
+      "both": "el chat no sabía si reír o llorar — {n} de {of}"
+    }
   }
 }

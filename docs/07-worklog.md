@@ -1774,7 +1774,7 @@ the research doc.
 That leaves ADR-16's last clause, the Cloudflare terms, which had genuinely not
 been checked. Section 2.8 is retired; the rule is service-based now and Workers
 is on the allowed list, so the relay's shape is right. Two loose ends — the free
-plan against a clause that says *paid*, and our own `cacheEverything`, which puts
+plan against a clause that says _paid_, and our own `cacheEverything`, which puts
 Twitch's segments in the CDN cache. ADR-42 proposes the $5 plan and names the
 free alternative. Angel decides.
 
@@ -1787,7 +1787,7 @@ counted in distinct users, compared against the app's own baseline method.
 
 It works. Emotion share correlates with volume at roughly zero, and on caseoh_ it
 turns up 76 joy / 97 hype / 60 letdown buckets that the rate scorer cannot see.
-The showpiece: 90 of 130 chatters posting "W MOM" while volume sat *below*
+The showpiece: 90 of 130 chatters posting "W MOM" while volume sat _below_
 baseline. That is a clip, and today we miss it.
 
 The condition is density. Median chatters per 15 s bucket: caseoh_ 97, tokyosims
@@ -1828,3 +1828,32 @@ Caveat recorded: joy's correlation with volume is 0.34 here versus ~0.05 on the
 smaller fixtures, so S7's "independent of volume" is size-dependent.
 
 Next: the M7 ADR.
+
+## 2026-09-21d — M7 built: the chat-mood layer
+
+`features/hype/emotion.ts` (pure, 19 tests against the real fixtures), the
+mirrored layer on the timeline, the axis control, emotion moments folded into the
+one ranked list, and ten locales. ADR-43 has the reasoning; two decisions were
+Angel's: the third axis ships as **Dread ↔ Payoff** rather than pretending relief
+is dread's opposite, and emotion moments merge into the existing list rather than
+getting their own.
+
+The e2e is the part worth keeping. Its fixture is a chat so quiet the rate scorer
+scores every bucket zero and finds **no moments at all**; the only thing that
+changes all hour is what chat says, and in two windows the room tenses up and
+_halves_ its message rate. With the layer off: 0 moments. With it on: three on
+joy ↔ sorrow, two on dread ↔ payoff, both reading "chat said less, but was on
+edge — 6 of 6". Every moment it finds is one the app could not have found
+yesterday, and it exercises bucket widening on the way (90s steps, and the
+control says so).
+
+Two things fixed by looking rather than reasoning. The first fixture was a pure
+emote wall, which the _existing_ mood term already catches — the test was proving
+nothing until it got quieter. And in the first render the thread kept its silk
+while the layer was on, so its lower half read as the lower pole, directly under a
+label saying otherwise; it is greyed now.
+
+150 unit tests, 16 e2e suites, hover, locales (574 × 10), icons, lint and build
+all green.
+
+Next: per-language pole packs, and folding `scoring.ts`'s `mood` into the poles.

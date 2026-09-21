@@ -79,8 +79,11 @@ export const CHAT_LAG_SEC = 10;
  * The second to build a clip range around for a moment: chat moments are shifted back for
  * the lag inside `selectAround`; a transcript hit (AI) is already at the words, so it is
  * pushed forward by the same lag and the range lands on them.
+ *
+ * An emotion moment (ADR-43) is a chat moment — chat reacted, with the same lag — so it
+ * takes the chat branch, which is why the test is for 'ai' rather than against 'chat'.
  */
-export function clipAnchor(m: { t: number; source?: 'ai' }): number {
+export function clipAnchor(m: { t: number; source?: 'ai' | 'emotion' }): number {
   return m.source === 'ai' ? m.t + CHAT_LAG_SEC : m.t;
 }
 

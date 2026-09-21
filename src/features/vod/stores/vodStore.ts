@@ -6,7 +6,21 @@ import { joinChat, toChatMessage, type IrcState } from '@/lib/twitch/irc';
 import { fetchChatReplay, type ChatFetchProgress } from '@/lib/twitch/chat';
 import { checkPlaybackAccess, type PlaybackAccess } from '@/lib/twitch/hls';
 import { ChatImportError, infoFromImport, parseChatExport } from '@/lib/twitch/chatImport';
-import { analyse, sensitivityToOptions, type Bucket, type Moment } from '@/features/hype/scoring';
+import {
+  analyse,
+  dropBotsAndAnnouncements,
+  sensitivityToOptions,
+  type Bucket,
+  type Moment,
+} from '@/features/hype/scoring';
+import {
+  AXIS_KEYS,
+  emotionMoments,
+  emotionSeries,
+  reasonFor,
+  type AxisKey,
+  type EmotionSeries,
+} from '@/features/hype/emotion';
 import type { SpeechChunk } from '@/features/hype/speech';
 import { useSettingsStore } from '@/features/settings/settingsStore';
 import { useVocabStore } from '@/features/hype/vocabStore';
@@ -94,6 +108,37 @@ export const useVodStore = defineStore('vod', () => {
     speech.value = chunks;
     if (phase.value === 'ready') rescore();
   }
+  /**
+   * The emotion layer's series (ADR-43), or null when the layer is off. Kept beside the
+   * buckets rather than inside them: it has its own bucket width, which is wider than the
+   * heatmap's on a small channel, so the two do not share an index.
+   */
+  const emotion = shallowRef<EmotionSeries | null>(null);
+  /** The message count the series was built from — rebuilding is the expensive part. */
+  let emotionBuiltFor = -1;
+
+  /** Is the stored axis one this version still draws? An unknown value reads as off. */
+  const emotionAxis = computed<AxisKey | null>(() =>
+    (AXIS_KEYS as string[]).includes(settings.emotionAxis)
+      ? (settings.emotionAxis as AxisKey)
+      : null,
+  );
+
+  function refreshEmotion(force = false) {
+    if (!emotionAxis.value || !info.value) {
+      emotion.value = null;
+      emotionBuiltFor = -1;
+      return;
+    }
+    // one pass over every message: worth skipping when nothing has arrived since last time
+    if (!force && emotionBuiltFor === messages.value.length) return;
+    emotionBuiltFor = messages.value.length;
+    emotion.value = emotionSeries(
+      dropBotsAndAnnouncements(messages.value),
+      info.value.lengthSeconds,
+    );
+  }
+
   function rescore() {
     if (!info.value) return;
     const { top, opts } = sensitivityToOptions(settings.sensitivity);
@@ -107,9 +152,45 @@ export const useVodStore = defineStore('vod', () => {
       vocab.vocabulary,
     );
     buckets.value = r.buckets;
-    moments.value = r.moments;
     dropped.value = r.dropped;
+    refreshEmotion();
+    moments.value = withEmotion(r.moments, info.value.id, opts.minPeakGapSec, top);
   }
+
+  /**
+   * Fold the emotion moments into the ranked list (Angel, 2026-09-21: one list, labelled,
+   * not two). A rate peak wins any tie — if the heatmap already found the moment, the
+   * emotion layer has nothing to add there and a duplicate row would only cost trust. What
+   * survives is exactly what this layer contributes.
+   */
+  function withEmotion(rate: Moment[], vodId: string, gapSec: number, top: number): Moment[] {
+    const s = emotion.value;
+    const axis = emotionAxis.value;
+    if (!s || !axis) return rate;
+    const extra: Moment[] = [];
+    for (const m of emotionMoments(s, axis, { minGapSec: gapSec, top })) {
+      if (rate.some((r) => Math.abs(r.t - m.t) < gapSec)) continue;
+      if (extra.some((e) => Math.abs(e.t - m.t) < gapSec)) continue;
+      extra.push({
+        id: `${vodId}:e${m.t}`,
+        t: m.t,
+        // the layer's own strength, on the same 0-ish..n footing as a rate score
+        score: m.lift,
+        n: 0,
+        users: m.users,
+        reasons: [reasonFor(m)],
+        source: 'emotion',
+        pole: m.pole,
+      });
+    }
+    return [...rate, ...extra].sort((a, b) => a.t - b.t);
+  }
+
+  // switching axis (or turning the layer off) re-picks the moments; it never re-fetches,
+  // and it only rebuilds the series when the layer was off and is now on
+  watch(emotionAxis, () => {
+    if (phase.value === 'ready') rescore();
+  });
   // the slider re-picks the peaks (the buckets' scores don't change, only how many surface)
   watch(
     () => settings.sensitivity,
@@ -440,6 +521,8 @@ export const useVodStore = defineStore('vod', () => {
     progress,
     buckets,
     moments,
+    emotion,
+    emotionAxis,
     dropped,
     fromCache,
     seekTarget,

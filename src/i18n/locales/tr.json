@@ -657,5 +657,30 @@
       "summary": "{n} aralık yükseldi",
       "moments": "{n} farklı an"
     }
+  },
+  "emotion": {
+    "title": "Sohbet havası",
+    "off": "Kapalı",
+    "hint": "Sohbetin ne hissettiğini çizginin üstünde ve altında gösterir — ne kadar yazdığından bağımsız olarak.",
+    "aria": "Sohbet havası katmanı",
+    "widened": "{sec}sn adımlar — bu sohbet 15sn için fazla sakin",
+    "axis": {
+      "joy-sorrow": "Kahkaha ↔ Hüzün",
+      "hype-letdown": "Hype ↔ Hayal kırıklığı",
+      "dread-payoff": "Gerilim ↔ Rahatlama"
+    },
+    "pole": {
+      "joy": "kahkahada",
+      "sorrow": "yıkılmış",
+      "hype": "coşkulu",
+      "letdown": "pes etmiş",
+      "dread": "gergin",
+      "payoff": "rahatlamış"
+    },
+    "reason": {
+      "plain": "sohbet {what} — {of} kişiden {n}'i",
+      "quiet": "sohbet azaldı ama {what} — {of} kişiden {n}'i",
+      "both": "sohbet gülsün mü ağlasın mı bilemedi — {of} kişiden {n}'i"
+    }
   }
 }
