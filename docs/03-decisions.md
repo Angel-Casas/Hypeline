@@ -1097,7 +1097,7 @@ flag does in whatever order. `tour.mjs` asserts it on the phone pass. Anything e
 the rail to do while something else is starting deserves the same treatment — a condition, not a
 callback.
 
-## ADR-42 — The relay belongs on the Workers paid plan (proposed, 2026-09-21)
+## ADR-42 — The relay stays on the free plan until it hurts (2026-09-21)
 
 **Context.** ADR-16 left one thing open: re-check Cloudflare's terms on
 pushing video bytes through a Worker before launch. Checked 2026-09-21,
@@ -1121,7 +1121,15 @@ puts Twitch's segments into Cloudflare's CDN cache — the CDN is exactly
 the surface that clause is about, so it is the one part of our path that
 invites the question at all.
 
-**Decision (proposed — Angel's call).** Move the relay to the Workers
+**Decision (Angel, 2026-09-21).** Nothing changes today. The relay stays
+on the free plan with `cacheEverything` intact, and the $5/month Workers
+paid plan is kept as a lever we pull if real users ever run into a
+problem — a throttle, a warning, or the relay being disabled. We have no
+users yet, so we are buying insurance against a risk we cannot measure;
+better to wait until there is traffic to protect. What follows is the
+option, written down so the next person does not have to re-derive it.
+
+**The option.** Move the relay to the Workers
 paid plan, $5/month. It puts us unambiguously inside the named-service
 allowance, and it keeps the segment cache, which is worth keeping: two
 people trimming the same popular moment hit the cache instead of
