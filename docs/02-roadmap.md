@@ -222,8 +222,10 @@ in `docs/05-research.md`; the throwaway is `spikes/s7-sentiment/`.
 - [ ] Channel-adaptive bucket width for the emotion layer: widen until a bucket
       holds ~12 distinct chatters (15 s on caseoh_, 60–90 s on a small channel).
       **This is the make-or-break** — at 15 s the two small fixtures found nothing.
-- [ ] Ship **joy ↔ sorrow**; offer **hype ↔ letdown**. Do not build dread ↔ relief:
-      relief has no vocabulary (0 qualifying buckets on all three fixtures).
+- [ ] Ship **joy ↔ sorrow**; offer **hype ↔ letdown**. Hold dread ↔ relief: relief
+      produced 0 qualifying buckets on four fixtures, but none of them is a live,
+      English, reactive horror chat, so it is untested rather than disproven (S7b).
+      Needs a VOD above ~30 messages a minute before it is worth another hour.
 - [ ] Mirror on the heatmap, warm above / cool below, **never subtracted**; the
       hype thread recedes while the layer is on. Centre-anchored drawing means the
       zoom strip and the In/Out handle feet follow.
