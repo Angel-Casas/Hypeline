@@ -186,8 +186,11 @@ clip with two clicks and a visible cost.
       AI/search panels, empty states.
 - [x] Mobile (2026-09-14): portrait landing (vertical thread, ADR-15) and the
       dashboard as top bar + Library drawer + pinned player + tabs.
-- [ ] Before launch: `VITE_SHIM_URL` in the build, `ALLOWED_ORIGINS` +
-      rate limit on the worker, re-check Cloudflare terms (ADR-16).
+- [x] Before launch (probed against the live relay, 2026-09-21):
+      `VITE_SHIM_URL` is baked into the Pages build (`relay.hypeline.live`);
+      a foreign origin gets 403; the limiter bites at 120/min per IP. All
+      three verified from outside, not read off the config. Cloudflare's
+      terms: ADR-42 — one open question, a $5 plan or a one-line change.
 - [ ] Mobile leftovers: URL pill placeholder on narrow screens; touch
       gestures on the timeline (pinch is wheel-only today).
 - [ ] Motion: reveal the real thread when a VOD finishes loading; hover on

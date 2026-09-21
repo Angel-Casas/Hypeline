@@ -595,3 +595,34 @@ now removed) adds another compositing boundary. Under `@media (hover: none)`
 the grain drops the blend mode (plain opacity at 55 %) and the mesh stops
 animating; desktop is untouched. Not reproducible in headless Chromium, so
 this is a mitigation, not a proven fix — recheck on the device.
+
+## Cloudflare's terms on video through a Worker (checked 2026-09-21)
+
+For ADR-16's open question. What is true today, with dates, because this is the
+kind of thing that drifts:
+
+- **Section 2.8 is gone.** The "no disproportionate non-HTML content through the
+  CDN" rule that everyone quoted was retired in Cloudflare's 2023 terms rewrite.
+  Quoting it now is quoting a dead clause.
+- **The restriction became service-based.** It moved into the CDN's
+  service-specific terms: specific paid services "(e.g., the Developer Platform,
+  Images, and Stream)" are what you must use "in order to serve video and other
+  large files via the CDN", and Cloudflare reserves the right to disable CDN
+  access for serving video without them. So what matters is no longer *what* the
+  bytes are but *which service* carries them.
+- **Workers is on the allowed list.** The Developer Platform is named. Its own
+  service-specific terms say nothing about media; the only relevant clause lets
+  Cloudflare limit storage or requests that "would put an undue burden on the
+  Cloudflare network" — a throttle, not a prohibition.
+- **The two loose ends** are that the clause says *Paid* services (we are on the
+  free plan) and that our worker opts segments into the CDN cache
+  (`cacheEverything`), which is the surface the clause governs. See ADR-42.
+
+Also measured the same day, against the deployed relay rather than the config:
+health endpoint answers; `Origin: https://hypeline.live` is allowed and a foreign
+origin gets `403 origin not allowed`; `ALLOW_LOCAL` still passes localhost. The
+limiter answers `429 rate limited` on the 118th request — but **only on a single
+kept-alive connection**. Fired 900 requests in parallel and not one was refused,
+because they came from a rotating pool of egress IPs across several colos, and
+the limit is per IP. Worth remembering before concluding from a burst test that a
+rate limit is missing: distributed traffic is exactly what it does not stop.

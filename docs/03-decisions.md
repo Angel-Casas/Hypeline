@@ -1096,3 +1096,46 @@ overlay renders on `showSettings && !tour.active`, so it cannot paint over the t
 flag does in whatever order. `tour.mjs` asserts it on the phone pass. Anything else a page tells
 the rail to do while something else is starting deserves the same treatment — a condition, not a
 callback.
+
+## ADR-42 — The relay belongs on the Workers paid plan (proposed, 2026-09-21)
+
+**Context.** ADR-16 left one thing open: re-check Cloudflare's terms on
+pushing video bytes through a Worker before launch. Checked 2026-09-21,
+and the ground has moved since we wrote that. The old blanket rule —
+section 2.8, "no non-HTML content through the CDN" — was retired in
+Cloudflare's 2023 rewrite. The restriction did not disappear; it became
+**service-based** rather than content-based, and now lives in the CDN's
+own service-specific terms: you must use one of the named services "in
+order to serve video and other large files via the CDN", and Cloudflare
+may disable CDN access for anyone serving video without them. The
+Developer Platform — Workers — is on that named list, which is the good
+news: a Worker relaying video is the shape they point you at, not the
+one they forbid. The Developer Platform's own terms add nothing about
+media, only a general clause letting Cloudflare throttle anything that
+puts "an undue burden" on the network.
+
+Two details keep this from being a clean pass. The clause says *Paid*
+Services, and `relay.hypeline.live` is on the free plan. And our worker
+sets `cf: { cacheEverything: true, cacheTtl: 300 }`, which deliberately
+puts Twitch's segments into Cloudflare's CDN cache — the CDN is exactly
+the surface that clause is about, so it is the one part of our path that
+invites the question at all.
+
+**Decision (proposed — Angel's call).** Move the relay to the Workers
+paid plan, $5/month. It puts us unambiguously inside the named-service
+allowance, and it keeps the segment cache, which is worth keeping: two
+people trimming the same popular moment hit the cache instead of
+Twitch's CDN, and a user re-trimming the same clip pays for the segments
+once. The alternative, at no cost, is to drop `cacheEverything` and let
+the worker be a pure pass-through with nothing of Twitch's resident in
+the CDN — cheaper, and slower for everyone.
+
+**Consequences.** If we take the plan, Hypeline stops being free *to
+run* — about $60 a year, borne by whoever operates the deploy — while
+staying free to use, which is the promise that matters and the one in
+the README. Nothing in the app changes and no user sees a difference.
+If we take the one-line change instead, record it here as a reversal
+rather than an edit. Either way this is a reading of terms by a
+non-lawyer: it is a judgement about what is clearly fine, not advice.
+Re-check if the relay ever carries real traffic, because "undue burden"
+is measured, not defined.

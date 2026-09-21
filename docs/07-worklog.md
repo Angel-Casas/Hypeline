@@ -1756,3 +1756,26 @@ absolute, because an unfurler has no page to resolve a relative path against. Tw
 either social image 404s.
 
 131 tests, 15 e2e suites, lint, build and locale parity green.
+
+## 2026-09-21 — the pre-launch item was already done
+
+Angel said he had exported fine from his phone, which did not match my claim that
+the video relay was unwired. He was right and the roadmap was stale. Probed the
+live site and the live relay instead of reading config: `hypeline.live`'s bundle
+carries `https://relay.hypeline.live` as the baked default, a foreign origin is
+refused 403, and the limiter cuts in at 120/min per IP. Ticked the item with the
+method, so the next person does not re-doubt it.
+
+The burst test nearly produced a second wrong claim: 900 parallel requests drew
+no 429 at all, because our egress rotates across half a dozen IPs and the limit is
+per IP. Only a single kept-alive connection showed the limiter working. Noted in
+the research doc.
+
+That leaves ADR-16's last clause, the Cloudflare terms, which had genuinely not
+been checked. Section 2.8 is retired; the rule is service-based now and Workers
+is on the allowed list, so the relay's shape is right. Two loose ends — the free
+plan against a clause that says *paid*, and our own `cacheEverything`, which puts
+Twitch's segments in the CDN cache. ADR-42 proposes the $5 plan and names the
+free alternative. Angel decides.
+
+Next: sentiment axes on the heatmap — spike first on the three fixtures.
