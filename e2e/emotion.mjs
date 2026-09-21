@@ -259,6 +259,13 @@ console.log(
 if (pinCount !== emoCount)
   throw new Error(`the rate peaks still have pins: ${pinCount} pins for ${emoCount} moments`);
 if (bright !== emoCount) throw new Error(`bright ${bright} but mood moments ${emoCount}`);
+// and bright means *warm*: a mood chip carries its height as heat (0..1). A stale divisor
+// once left every one of them at a tenth of its colour, undimmed and yet dark.
+const heats = await p
+  .locator('ol.chips li:not(.is-dim)')
+  .evaluateAll((els) => els.map((e) => Number(e.style.getPropertyValue('--h'))));
+console.log('mood chip heat:', heats.map((h) => h.toFixed(2)).join(' '));
+if (Math.max(...heats) < 0.6) throw new Error('mood chips are cold: ' + heats.join(' '));
 if (dimmed !== flat.length)
   throw new Error(`expected ${flat.length} dimmed rate chips, got ${dimmed}`);
 // dimmed, not gone, and still clickable. Polled rather than read once: the dim is a 140ms

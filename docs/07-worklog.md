@@ -1995,3 +1995,14 @@ On the way: mood moments now report their bucket's centre rather than its start
 ribbon does, and `onMood` / `ABOUT_MOOD` are gone. Simpler than what they replaced.
 
 162 unit tests, 16 e2e suites, hover, lint and build green.
+
+## 2026-09-21k — the mood chips had gone cold
+
+Angel: every chip looked dimmed, even the mood's. They were not opacity-dimmed —
+they had lost their _heat_. The previous commit changed a mood moment's score from
+a lift (~1–5) to its ribbon height (0–1) and left the chip colour formula dividing
+by 3, so every mood chip rendered at a tenth of its warmth: undimmed, and yet dark.
+One-line fix; the e2e now reads each bright chip's `--h` and fails if the mood
+chips are cold, so a score-scale change cannot do this silently again.
+
+162 unit tests, 16 e2e suites green.

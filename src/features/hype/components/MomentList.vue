@@ -171,8 +171,10 @@ const chips = computed(() => {
       // heatmap's, dimmed. AI hits are the user's own and stay as they are.
       dim: mood && !m.source,
       colour: silkAt(at, false, 0),
-      // an emotion moment's strength is a lift, not a rate score: ~3 is a strong one
-      heat: ai ? m.score / 5 : emo ? Math.min(1, m.score / 3) : m.score / max,
+      // a mood moment's score is its height on the ribbon, already 0..1 — it was a lift
+      // (~1–5) once, and a stale "/ 3" here left every mood chip at a tenth of its warmth
+      // after the change (Angel, 2026-09-21)
+      heat: ai ? m.score / 5 : emo ? Math.min(1, m.score) : m.score / max,
       rank: ai || emo ? 0 : byScore.indexOf(m) + 1,
       frame,
       why: ai
