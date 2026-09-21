@@ -30,8 +30,21 @@ const props = withDefaults(
     title?: string;
     /** Width of the panel; the options list is comfortable at the default. */
     wide?: boolean;
+    /**
+     * Wear the animated silk instead of the quiet ghost pill. For the one control on a
+     * panel that is an invitation rather than a setting — it is the same ramp `btn-silk`
+     * uses, so a page never shows two different silks.
+     */
+    silk?: boolean;
   }>(),
-  { label: undefined, options: undefined, modelValue: undefined, title: undefined, wide: false },
+  {
+    label: undefined,
+    options: undefined,
+    modelValue: undefined,
+    title: undefined,
+    wide: false,
+    silk: false,
+  },
 );
 const emit = defineEmits<{ 'update:modelValue': [string | number] }>();
 // two roots (the pill and the teleported menu), so attributes have to be placed by hand
@@ -108,7 +121,8 @@ onBeforeUnmount(() => {
   <button
     ref="btn"
     type="button"
-    class="pick hover-frost"
+    class="pick"
+    :class="silk ? 'is-silk' : 'hover-frost'"
     v-bind="$attrs"
     :title="title"
     aria-haspopup="menu"
@@ -178,6 +192,45 @@ onBeforeUnmount(() => {
 
 .pick:disabled {
   opacity: 0.45;
+}
+/*
+ * The silk pill. Same ramp and cadence as `btn-silk`, read from the token rather than copied,
+ * and sized as a pill rather than a button. The ink is fixed dark in both themes because the
+ * pastel ground is the same in both: a night-mode ink would vanish into the butter.
+ */
+.pick.is-silk {
+  border-color: transparent;
+  color: #221c2a;
+  background: var(--silk-btn-bg);
+  background-size: 300% 100%;
+  animation: silk-drift 7s linear infinite;
+  box-shadow:
+    0 6px 18px rgba(174, 129, 255, 0.22),
+    inset 0 1px 0 rgba(255, 255, 255, 0.6);
+  transition:
+    transform 0.2s cubic-bezier(0.2, 0.7, 0.2, 1),
+    box-shadow 0.2s;
+}
+.pick.is-silk:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow:
+    0 10px 24px rgba(174, 129, 255, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.7);
+}
+.pick.is-silk .pick-k {
+  color: rgba(34, 28, 42, 0.6);
+}
+.pick.is-silk .pick-caret {
+  opacity: 0.65;
+}
+.pick.is-silk:disabled {
+  animation: none;
+  box-shadow: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  .pick.is-silk {
+    animation: none;
+  }
 }
 .pick-k {
   font-family: var(--font-mono);

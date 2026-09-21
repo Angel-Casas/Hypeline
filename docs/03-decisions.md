@@ -1252,6 +1252,24 @@ and the rate pin was hidden because a mood was on, so a visible swell ended up w
 nothing on it. Tagged, it keeps its rank and its pin, is never dimmed, and leads
 with the mood's reason — both things are true of it.
 
+_The control is a `MenuButton`, wearing the silk_ (Angel, 2026-09-21). It was a
+native `<select>`, which is the one piece of chrome in the app that belongs to the
+browser rather than to us. It is now the same paper menu the clip panel's pills
+open (ADR-27) — teleported past `overflow: hidden`, closing on Escape and on an
+outside click, arrow keys walking the list — so the app has one dropdown and not
+two, and the mood menu inherited that keyboard behaviour rather than reimplementing
+it.
+
+The pill wears the animated pastel ramp, which no other _dropdown_ does. That is
+deliberate and it is the difference between a setting and an offer: nobody arrives
+at this panel looking for SIZE or SHAPE the way they arrive looking for a mood they
+have never heard of, and a feature nobody finds may as well not exist. To make that
+possible without a second silk, the ramp moved out of `btn-silk` into a
+`--silk-btn-bg` token: Tailwind puts `@utility` output in a layer, and an unlayered
+scoped rule beats it whatever the specificity, so a component cannot simply add the
+utility class and expect it to win — it reads the token instead of copying nine hex
+values.
+
 _Colour is validated, and it is not the only cue._ The two poles use steps of
 the thread's own ends, checked against each ground for colour-vision separation
 (ΔE ≈ 26 protan and tritan) and contrast; night is its own choice, not a flip of

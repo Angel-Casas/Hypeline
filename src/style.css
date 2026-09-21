@@ -517,6 +517,26 @@ body {
 }
 /* the silk button: a slowly drifting pastel gradient for the one action worth drawing the
    eye to (Angel, 2026-09-15: "Transcribe VOD"). Ink text on pastel in both themes. */
+/*
+ * The animated pastel ramp, as a token rather than a literal inside `btn-silk`. A scoped
+ * component style cannot borrow the utility — Tailwind layers `@utility` output and an
+ * unlayered scoped rule wins over it regardless of specificity — so anything that wants this
+ * silk reads the token instead of copying nine hex values (2026-09-21).
+ */
+:root {
+  --silk-btn-bg: linear-gradient(
+    110deg,
+    #cfdcff,
+    #ddd0ff,
+    #ffd0e4,
+    #ffdcc4,
+    #fff0bd,
+    #ffdcc4,
+    #ffd0e4,
+    #ddd0ff,
+    #cfdcff
+  );
+}
 @utility btn-silk {
   position: relative;
   border: 0;
@@ -530,18 +550,7 @@ body {
      same one (Angel spotted the jump, 2026-09-18). Mirrored, for the same reason the ring is:
      butter → sky in sRGB goes through a drab khaki, and going back the way it came has no
      jump to hide. */
-  background: linear-gradient(
-    110deg,
-    #cfdcff,
-    #ddd0ff,
-    #ffd0e4,
-    #ffdcc4,
-    #fff0bd,
-    #ffdcc4,
-    #ffd0e4,
-    #ddd0ff,
-    #cfdcff
-  );
+  background: var(--silk-btn-bg);
   background-size: 300% 100%;
   animation: silk-drift 7s linear infinite;
   box-shadow:

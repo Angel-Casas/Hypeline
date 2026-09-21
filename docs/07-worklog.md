@@ -1935,3 +1935,24 @@ gained a raid that is both a volume spike and a mood peak, and asserts it is pin
 undimmed, and says the room was hyped.
 
 156 unit tests, 16 e2e suites, hover, locales, lint and build green.
+
+## 2026-09-21h — the mood control is ours, and it is silk
+
+The axis picker was a native `<select>` — the only browser chrome left on that
+panel. It is now a `MenuButton` (ADR-27), the same component the clip pills use, so
+there is one dropdown in the app rather than two, and it inherited the teleporting,
+the Escape and outside-click close and the arrow-key walk for free.
+
+The pill wears the animated pastel ramp. No other dropdown does, on purpose: SIZE
+and SHAPE are settings people arrive looking for, and a mood axis is an offer of a
+second way to read the stream that nobody knows to look for. To share the ramp
+without a second copy of it, it moved out of `btn-silk` into a `--silk-btn-bg`
+token — a scoped component style cannot borrow a Tailwind `@utility`, because that
+output is layered and an unlayered scoped rule wins over it regardless of
+specificity. `silk` is a prop on `MenuButton`, so any future pill can ask for it.
+
+The e2e now clicks the pill and picks from the menu like a person, which means every
+run exercises the teleport, the close and the label, and it asserts the pill is
+announced as a menu.
+
+156 unit tests, 16 e2e suites, hover, locales, lint and build green.

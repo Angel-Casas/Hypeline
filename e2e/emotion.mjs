@@ -150,12 +150,38 @@ await p.waitForFunction(() => /\d+ moments/.test(document.body.innerText), null,
 
 const axis = p.locator('[data-testid="emotion-axis"]');
 const emoChips = p.locator('[data-testid="moment-emo"]');
+
+/*
+ * The control is a MenuButton (ADR-27), not a `<select>`: a silk pill that opens the same
+ * paper menu the clip pills use. So the test clicks it like a person would, which also means
+ * every run exercises the teleported menu, the outside-click close and the pill's own label.
+ */
+const LABEL = {
+  '': 'Off',
+  'joy-sorrow': 'Joy ↔ Sorrow',
+  'hype-letdown': 'Hype ↔ Letdown',
+  'dread-payoff': 'Dread ↔ Payoff',
+};
+const axisValue = async () => (await axis.locator('.pick-v').innerText()).trim();
+async function chooseAxis(key) {
+  await axis.click();
+  const menu = p.locator('[data-testid="pick-menu"]');
+  await menu.waitFor({ state: 'visible', timeout: 5000 });
+  await menu.locator('[role="menuitemradio"]', { hasText: LABEL[key] }).first().click();
+  await menu.waitFor({ state: 'hidden', timeout: 5000 });
+  await p.waitForTimeout(700);
+}
 const times = async () =>
   (await p.locator('ol.chips li b').allInnerTexts()).map((s) => s.trim()).sort();
 
 // --- 1. off by default, and the flat hour gives the rate scorer nothing to say ----------
 await axis.waitFor({ state: 'visible', timeout: 20000 });
-if ((await axis.inputValue()) !== '') throw new Error('the layer should start off');
+if ((await axisValue()) !== LABEL['']) throw new Error('the layer should start off');
+// it is our own pill, and it says so to a screen reader
+if ((await axis.getAttribute('aria-haspopup')) !== 'menu')
+  throw new Error('the mood control is not announced as a menu');
+if ((await axis.getAttribute('aria-expanded')) !== 'false')
+  throw new Error('the menu claims to be open before it is');
 if ((await emoChips.count()) !== 0) throw new Error('mood chips before the layer is on');
 const flat = await times();
 console.log('layer off · moments:', flat.length, '·', flat.join(' '));
@@ -168,8 +194,7 @@ if ((await p.locator('[data-testid="emo-ribbon"]').count()) !== 0)
   throw new Error('mood ribbon drawn while off');
 
 // --- 2. joy ↔ sorrow: the laughter and the grief appear, labelled -----------------------
-await axis.selectOption('joy-sorrow');
-await p.waitForTimeout(700);
+await chooseAxis('joy-sorrow');
 if ((await p.locator('[data-testid="emo-ribbon"]').count()) !== 1)
   throw new Error('no mood ribbon drawn');
 // it wears the thread's own three layers, not a flat fill
@@ -267,8 +292,7 @@ await p.waitForFunction(() => /\d+ moments/.test(document.body.innerText), null,
   timeout: 90000,
 });
 await axis.waitFor({ state: 'visible', timeout: 20000 });
-await axis.selectOption('hype-letdown');
-await p.waitForTimeout(1200);
+await chooseAxis('hype-letdown');
 const raidAt = '0:55:00';
 const chip = p.locator('ol.chips li', { hasText: raidAt }).first();
 await chip.waitFor({ state: 'visible', timeout: 10000 });
@@ -288,8 +312,7 @@ if (hypePins !== 1)
   throw new Error(`expected just the raid pinned on the mood ribbon, got ${hypePins}`);
 
 // --- 3. the case the heatmap cannot see: chat tensed up and said *less* -----------------
-await axis.selectOption('dread-payoff');
-await p.waitForTimeout(700);
+await chooseAxis('dread-payoff');
 const dread = await times();
 console.log('dread↔payoff · moments:', dread.length, '·', dread.join(' '));
 const reasons = await p.locator('ol.chips li').evaluateAll((els) =>
@@ -309,13 +332,12 @@ await p.waitForFunction(() => /\d+ moments/.test(document.body.innerText), null,
   timeout: 90000,
 });
 await axis.waitFor({ state: 'visible', timeout: 20000 });
-const kept = await axis.inputValue();
-console.log('after reload the axis is:', kept || '(off)');
-if (kept !== 'dread-payoff') throw new Error('the axis was not remembered: ' + kept);
+const kept = await axisValue();
+console.log('after reload the pill reads:', kept);
+if (kept !== LABEL['dread-payoff']) throw new Error('the axis was not remembered: ' + kept);
 
 // --- 5. turning it off leaves the app exactly as it was --------------------------------
-await axis.selectOption('');
-await p.waitForTimeout(600);
+await chooseAxis('');
 if ((await p.locator('.emo-up').count()) !== 0) throw new Error('lobes left behind');
 const back = await times();
 console.log('layer off again · moments:', back.length);
