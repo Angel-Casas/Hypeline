@@ -62,7 +62,7 @@ const AXES = [
     up: {
       key: 'hype',
       words: `pog poggers pogchamp pogu pogcrazy letsgo lfg gg hype goat wooo sheesh
-              insane clutch cracked 🔥 w ww www dub actualgamer`,
+              insane clutch cracked 🔥 w ww www dub actualgamer ez ezclap`,
     },
     down: {
       key: 'letdown',
@@ -79,7 +79,9 @@ const AXES = [
     },
     down: {
       key: 'relief',
-      words: `phew ezclap ez saved safe finally relief exhale thankgod whew survived`,
+      // "ez"/"ezclap" were here and are wrong: in practice they are a taunt, not relief
+      // (2,801 uses in the xqc VOD, essentially all gloating). Moved to hype, 2026-09-21.
+      words: `phew saved safe finally relief exhale thankgod whew survived`,
     },
   },
 ];

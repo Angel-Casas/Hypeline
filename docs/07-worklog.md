@@ -1802,3 +1802,29 @@ relief has no vocabulary, 0 qualifying buckets anywhere. And the app's existing
 Roadmap now carries M7 with the findings; nothing in `src/` has moved.
 
 Next: ADR for M7, then the lexicon and the adaptive bucket.
+
+## 2026-09-21c — S7c: dread lives, relief was mislabelled
+
+Angel sent an xqc VOD (GTA, not horror — he corrected me while it was
+downloading). 241,195 messages over 11.5 hours, 353 a minute, 71 chatters per
+15 s bucket: our densest fixture by a wide margin, and the first one where the
+crowd floor is never the binding constraint.
+
+Dread is real. 11 volume-invisible buckets, the best of them 15 of 41 chatters
+posting `ohno` while volume sat at **half** its baseline. That is the layer's
+strongest case so far: some emotions make chat quieter, and a rate scorer is
+structurally blind to those.
+
+Relief is real too, and is not what I called it. The pole is almost entirely the
+word `finally` — "FINALLY JAIL RP", 15 of 147 — which is impatience resolved,
+not fear released. Right signal, wrong pairing; the ADR decides whether dread
+goes unpaired or the axis becomes Dread ↔ Payoff.
+
+Also found and fixed a lexicon bug with a general moral: `ez` was in relief and
+is 2,801 taunts in this VOD alone. Tokens need checking against a big reactive
+chat before they are trusted, language packs included.
+
+Caveat recorded: joy's correlation with volume is 0.34 here versus ~0.05 on the
+smaller fixtures, so S7's "independent of volume" is size-dependent.
+
+Next: the M7 ADR.

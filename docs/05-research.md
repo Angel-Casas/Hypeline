@@ -731,3 +731,52 @@ English-language horror or competitive VOD with a *live* chat above roughly 30
 messages a minute. The fixture is kept as `spikes/s7-sentiment/hasgarson_2877241107.jsonl.gz`
 — not to prove the axis, but as the low-density, non-English, conversational
 counter-example, which is exactly the case our three original fixtures lacked.
+
+### S7c — dread survives; "relief" turns out to be something else (2026-09-21)
+
+The dread question, settled on the densest chat we have. `twitch.tv/videos/2879641133`
+(xqc): **241,195 human messages over 11 h 31 m — 353 a minute**, median **71** distinct
+chatters per 15 s bucket, so the crowd floor is cleared in 2,766 of 2,767 buckets and the
+bucket never had to be widened. Note this is **GTA, not horror** (Angel corrected me
+mid-run), which makes it a test of ordinary tension — chases, arrests — rather than
+sustained fear. That cuts in our favour: whatever dread does here, a horror VOD should do
+more of.
+
+**Dread is real and volume-invisible.** 759 chatters tagged, 26 buckets carrying four or
+more of them, 11 of those above the pole's baseline while volume sat at or below its own:
+
+- `01:14:00` — 15 of 41 chatters posting `ohno`, **volume at half baseline** (rate −1.0).
+- `06:39:00` — 7 of 31 on `Scared` / `PauseChamp`, rate −0.9.
+
+Both are moments where chat tenses up and *says less*. That is the opposite of what a
+rate-based scorer can detect, and it is the strongest argument yet for the layer: some
+emotions make chat quieter.
+
+**Relief is also real — but it is not the opposite of dread.** 637 tagged, 37 qualifying
+buckets, more than dread. Except the pole is carried almost entirely by one word,
+`finally`, and the moments read like this: "FINALLY JAIL RP" (15 of 147 chatters),
+"Finally HE'S GOING HOME" (12 of 123). That is not tension released, it is **impatience
+resolved** — chat had been waiting for something and got it. A real, useful, clip-worthy
+signal, and the wrong partner for dread. `phew` / `whew` / `survived` — actual
+relief-from-fear — remain near zero even here.
+
+So the pairing is wrong, not the poles. Dread's true mirror is probably nothing (fear
+resolves into laughter, and joy already has a pole), while "finally" belongs on an
+anticipation axis of its own. Options for M7: draw dread unpaired, or rename the axis for
+what it measures — **Dread ↔ Payoff** is closer to the truth than Dread ↔ Relief.
+
+**A lexicon bug this VOD caught, worth generalising.** `ez` and `ezclap` were in the relief
+pole. In this chat `ez` appears **2,801 times** and is essentially always a taunt: "EZ
+loot", "EZ YOINK". Moved to hype. The lesson is procedural — **a token's pole must be
+checked against a big reactive chat before it is trusted**, because a plausible-sounding
+word can carry thousands of uses meaning the opposite. Any per-language pack we write for
+M7 needs the same check.
+
+**One honest caveat.** Joy's correlation with volume rose to **0.34** here, against ≈0.05
+on the earlier fixtures. Independence weakens as a chat gets very large — with 71 people
+per bucket, laughter and volume start to co-move. Still far from redundant, but the "r ≈ 0"
+headline from S7 should be read as "0.0–0.35 depending on chat size", not a flat zero.
+
+Fixture kept as `spikes/s7-sentiment/xqc_2879641133.jsonl.gz` (3.8 MB): the high-density,
+highly reactive English counterpart to the hasgarson one, and the only fixture that
+exercises dread, relief and the crowd floor at once.

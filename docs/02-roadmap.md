@@ -222,10 +222,14 @@ in `docs/05-research.md`; the throwaway is `spikes/s7-sentiment/`.
 - [ ] Channel-adaptive bucket width for the emotion layer: widen until a bucket
       holds ~12 distinct chatters (15 s on caseoh_, 60–90 s on a small channel).
       **This is the make-or-break** — at 15 s the two small fixtures found nothing.
-- [ ] Ship **joy ↔ sorrow**; offer **hype ↔ letdown**. Hold dread ↔ relief: relief
-      produced 0 qualifying buckets on four fixtures, but none of them is a live,
-      English, reactive horror chat, so it is untested rather than disproven (S7b).
-      Needs a VOD above ~30 messages a minute before it is worth another hour.
+- [ ] Ship **joy ↔ sorrow**; offer **hype ↔ letdown**; **dread survives** (S7c) — on a
+      353-messages-a-minute chat it found moments where chat tenses up and says *less*
+      (15 of 41 on `ohno` at half baseline), which is precisely what a rate scorer
+      cannot see. But its partner is wrong: "relief" is carried by the word `finally`
+      and means impatience resolved, not fear released. Draw dread unpaired, or rename
+      the axis **Dread ↔ Payoff**. Decide in the ADR.
+- [ ] Validate every pole token against a big reactive chat before trusting it: `ez`
+      sat in relief and is 2,801 taunts in one VOD (S7c). Applies to language packs too.
 - [ ] Mirror on the heatmap, warm above / cool below, **never subtracted**; the
       hype thread recedes while the layer is on. Centre-anchored drawing means the
       zoom strip and the In/Out handle feet follow.
