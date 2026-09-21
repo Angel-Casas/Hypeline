@@ -274,11 +274,9 @@ const chips = computed(() => {
             data-testid="moment-emo"
           >
             <title>{{ c.poleLabel }}</title>
-            <!-- the crest twice: a wide ink halo, then the pastel. The halo is what lets a
-               pastel stroke survive a chip of its own hue — apricot on an apricot chip
-               vanished on the first sheet — and the two pastels are the thread's own ends,
-               so the warm and cool poles read apart at a glance (Angel, 2026-09-21). -->
-            <path :d="c.wave" fill="none" class="halo" stroke-width="4.6" stroke-linecap="round" />
+            <!-- one stroke, in the chip's ink — black by day, white by night — like the rank
+               dial beside it. A pastel-with-halo version came and went the same evening: the
+               halo read as a smudge (Angel, 2026-09-21). The direction carries the pole. -->
             <path
               :d="c.wave"
               fill="none"
@@ -417,28 +415,14 @@ const chips = computed(() => {
 /*
  * The mood mark. Same seat as the rank dial it replaces, so a mixed list still scans down
  * one column; a little larger than the old square, since a stroke needs the room a filled
- * glyph did not. Pastel, in the pole's colour, so rising and falling read apart at a glance
- * (Angel, 2026-09-21) — but the chip beneath it can be any heat, including the mark's own
- * hue, so an ink halo sits under the stroke and keeps it legible on a same-coloured chip.
+ * glyph did not. Ink, not the pole colour: the chip beneath it can be any heat, and a
+ * pastel stroke (with or without a halo) either vanished on a chip of its own hue or read
+ * as a smudge (Angel, 2026-09-21). The direction — crest up, crest down — carries the pole.
  */
 .motag {
   width: 18px;
   height: 18px;
   display: block;
-  /* the thread's own two ends: apricot rising, sky falling */
-  color: #ffa968;
-}
-.motag.down {
-  color: #7f9cff;
-}
-.motag .halo {
-  stroke: #221c2a;
-  opacity: 0.55;
-}
-/* on day paper the pastels are the light thing, so the halo goes dark and a touch stronger */
-:global(html[data-theme='light']) .motag .halo,
-:global(html:not([data-theme='dark'])) .motag .halo {
-  opacity: 0.62;
 }
 
 /* A phone scrolls the page, which is the right scroll there. On a desktop the grid takes

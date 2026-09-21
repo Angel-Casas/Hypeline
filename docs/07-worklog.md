@@ -2052,3 +2052,14 @@ Still owed for M7: per-language pole packs; fold `scoring.ts` `mood` into the po
 
 162 unit tests, 16 e2e suites, hover, lint, locales and build green.
 
+## 2026-09-21o — ink mark, and the mood menu stops previewing "off" on its own
+
+The wave mark is a single ink stroke again (the pastel-and-halo version bothered
+Angel). From his screen recording: opening the mood menu made the mood vanish
+before any hover — `MenuButton`'s open-focus selector list picked the first entry,
+"Off", not the checked one — and closing from the pill left that preview on; the
+thread's grey also flipped as a class while the opacity eased, so the colour
+snapped. All three fixed, each with an e2e assertion.
+
+162 unit tests, 16 e2e suites, hover, lint and build green.
+

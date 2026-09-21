@@ -258,7 +258,8 @@ if (Math.abs(up - down) < 1) throw new Error('the ribbon is symmetric — poles 
 
 // the thread is still there, as a ghost, and it has given up its colour
 const ghost = await p
-  .locator('.thread-muted')
+  .locator('svg g.thread')
+  .first()
   .evaluate((el) => [el.getAttribute('opacity'), getComputedStyle(el).filter].join(' '));
 console.log('thread underneath:', ghost);
 if (!/grayscale/.test(ghost)) throw new Error('the thread kept its colour under the layer');
@@ -423,6 +424,16 @@ const d0 = await ribbonD();
 await axis.click();
 const menu = p.locator('[data-testid="pick-menu"]');
 await menu.waitFor({ state: 'visible', timeout: 5000 });
+// merely opening the menu previews nothing: focus lands on the *chosen* entry, and the
+// ribbon stays what it was. (It used to land on the first entry, "Off", and the mood
+// vanished the moment the menu opened — Angel, 2026-09-21, video.)
+await p.waitForTimeout(700);
+const focused = await p.evaluate(() => document.activeElement?.textContent?.trim() ?? '');
+const openLabel = (await p.locator('[data-testid="emo-up"]').innerText()).trim();
+console.log(`menu open: focus on "${focused}" · ribbon still "${openLabel}"`);
+if (!focused.startsWith(LABEL['joy-sorrow'])) throw new Error('focus did not land on the choice');
+if (openLabel !== 'laughing') throw new Error('opening the menu changed the ribbon');
+if ((await ribbonD()) !== d0) throw new Error('opening the menu moved the ribbon');
 await menu.locator('[role="menuitemradio"]', { hasText: LABEL['hype-letdown'] }).first().hover();
 await p.waitForTimeout(140);
 const dMid = await ribbonD();
@@ -452,6 +463,34 @@ console.log(
 if (backLabel !== 'laughing')
   throw new Error('the ribbon did not return to the choice: ' + backLabel);
 if ((await p.locator('.pin.is-aside').count()) !== 0) throw new Error('pins still aside');
+// previewing "off" greys the thread back to colour on the same tween as its opacity: caught
+// mid-way, the grey is partial. It used to be a class that flipped at once (Angel, video).
+const threadGrey = async () =>
+  Number(
+    (
+      await p
+        .locator('svg g.thread')
+        .first()
+        .evaluate((el) => el.style.filter)
+    ).match(/grayscale\(([\d.]+)\)/)?.[1] ?? NaN,
+  );
+await axis.click();
+await menu.waitFor({ state: 'visible', timeout: 5000 });
+await menu.locator('[role="menuitemradio"]', { hasText: LABEL[''] }).first().hover();
+await p.waitForTimeout(200);
+const greyMid = await threadGrey();
+await p.waitForTimeout(700);
+const greyOff = await threadGrey();
+console.log(`previewing off · grey mid-tween ${greyMid.toFixed(2)} · settled ${greyOff}`);
+if (!(greyMid > 0.05 && greyMid < 0.95)) throw new Error('the grey snapped instead of easing');
+if (!Number.isNaN(greyOff)) throw new Error('the thread is still filtered with the layer off');
+// closing the menu from the pill itself ends the preview: the choice comes back
+await axis.click();
+await menu.waitFor({ state: 'hidden', timeout: 5000 });
+await p.waitForTimeout(800);
+const pillBack = (await p.locator('[data-testid="emo-up"]').innerText()).trim();
+console.log(`closed from the pill · ribbon "${pillBack}"`);
+if (pillBack !== 'laughing') throw new Error('closing from the pill left the preview on');
 
 // --- 3. the case the heatmap cannot see: chat tensed up and said *less* -----------------
 await chooseAxis('dread-payoff');

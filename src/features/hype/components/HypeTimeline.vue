@@ -984,11 +984,15 @@ function pulse(sec: number) {
           </linearGradient>
         </defs>
         <!-- the ribbon: a soft halo, the fill, a whisper of horizontal threads. While loading,
-             only the covered stretches are drawn in full; the rest is a ghost. -->
+             only the covered stretches are drawn in full; the rest is a ghost. Under a mood it
+             fades *and* greys, both on the same tween — the grey used to be a class that
+             flipped at once while the opacity eased, and the colour visibly snapped
+             (Angel, 2026-09-21, video). -->
         <path v-if="isLoading" :d="ribbon" :fill="`url(#${gid})`" opacity="0.14" />
         <g
           :mask="isLoading ? `url(#${gid}c)` : undefined"
-          :class="{ 'thread-muted': emoVisible }"
+          class="thread"
+          :style="emoVisible ? { filter: `grayscale(${emoAlpha.toFixed(3)})` } : undefined"
           :opacity="1 - 0.87 * emoAlpha"
         >
           <path :d="ribbon" :fill="`url(#${gid})`" opacity="0.5" :filter="`url(#${gid}b)`" />
@@ -1583,9 +1587,6 @@ function pulse(sec: number) {
 .pin.is-aside {
   opacity: 0;
   pointer-events: none;
-}
-.thread-muted {
-  filter: grayscale(1);
 }
 .emo-label {
   font-size: 10px;

@@ -74,14 +74,24 @@ function place() {
   pos.value = { top: r.bottom + 6, left, width: w };
 }
 function toggle() {
-  open.value = !open.value;
-  if (!open.value) return;
+  if (open.value) {
+    // the pill closes its own menu too, and a preview must not outlive the menu
+    close(false);
+    return;
+  }
+  open.value = true;
   place();
-  void nextTick(() =>
-    menu.value
-      ?.querySelector<HTMLElement>('[aria-checked="true"], input, button')
-      ?.focus({ preventScroll: true }),
-  );
+  void nextTick(() => {
+    const m = menu.value;
+    if (!m) return;
+    // the *chosen* entry first. A selector list ("[aria-checked=true], button") returns the
+    // first match in document order — the first entry, whatever is chosen — and focusing
+    // that previewed "off" the moment the mood menu opened (Angel, 2026-09-21, video).
+    const el =
+      m.querySelector<HTMLElement>('[aria-checked="true"]') ??
+      m.querySelector<HTMLElement>('input, button');
+    el?.focus({ preventScroll: true });
+  });
 }
 function close(refocus = true) {
   open.value = false;

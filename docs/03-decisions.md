@@ -1303,12 +1303,11 @@ turning the layer on grows it out of the spine, turning it off folds it back in,
 lag. The series is built on the first hover so a preview never waits.
 
 _The mood mark is a wave crest_, rising for the warm pole and falling for the cool
-one, chosen by Angel from ten candidates (`design/mood-marks.html`). The first
-sheet drew it in the pole colour and it vanished on a chip of the same hue, so it
-shipped in ink; Angel then asked for the poles to be told apart by colour too
-(2026-09-21), so it is now a pastel stroke — apricot rising, sky falling, the
-thread's own ends — over a wider ink halo. The halo is what survives a chip of the
-mark's own hue; the direction still carries the pole for anyone the colour fails.
+one, chosen by Angel from ten candidates (`design/mood-marks.html`). It is one
+stroke in the chip's ink — black by day, white by night — like the rank dial beside
+it; the direction carries the pole. Two colour versions were tried and dropped the
+same evening: the pole colour alone vanished on a chip of its own hue, and a pastel
+over an ink halo read as a smudge (Angel, 2026-09-21, "the halo is bothering me").
 
 _The list keeps its active chip in view by scrolling the grid, never the page_
 (Angel, 2026-09-21: "when I select an option from the dropdown it sometimes moves
@@ -1337,6 +1336,17 @@ chip excludes `.chip-leave-active`. The toggle also made the moments header too
 wide for a phone (the tour caught it: the layout viewport grew and the sheet fell
 off screen), so the header wraps now — title and order on one line, the slider on
 the next.
+
+_Opening the menu previews nothing, and closing it ends any preview_ (Angel,
+2026-09-21, video). `MenuButton` focused the first entry on open — a selector list
+returns the first match in document order, not the checked one — so the mood menu
+previewed "off" the instant it opened, and closing it from the pill left that
+preview standing. Focus now lands on the chosen entry, and every way out of the
+menu (Escape, outside click, the pill, a choice) clears the preview. The thread's
+grey is on the same tween as its opacity: it was a class that flipped at once while
+the opacity eased, so the colour snapped mid-fade. The e2e opens the menu and
+asserts the ribbon is untouched, catches the grey mid-tween (0.27), and closes from
+the pill expecting the choice back.
 
 _Colour is validated, and it is not the only cue._ The two poles use steps of
 the thread's own ends, checked against each ground for colour-vision separation
