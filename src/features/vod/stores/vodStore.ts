@@ -17,6 +17,8 @@ import {
   AXIS_KEYS,
   emotionMoments,
   emotionSeries,
+  moodHeightAt,
+  peakBar,
   reasonFor,
   type AxisKey,
   type EmotionMoment,
@@ -176,7 +178,10 @@ export const useVodStore = defineStore('vod', () => {
     if (!s || !axis) return rate;
     const tag = new Map<string, EmotionMoment>();
     const extra: Moment[] = [];
-    for (const m of emotionMoments(s, axis, { minGapSec: gapSec, top })) {
+    // `top` governs the rate peaks; mood peaks are thinned by the gap instead (see
+    // MAX_MOOD_MOMENTS) — capping them at the slider's count left real swells unclaimed
+    void top;
+    for (const m of emotionMoments(s, axis, { minGapSec: gapSec })) {
       const hit = rate.find((r) => Math.abs(r.t - m.t) < gapSec && !tag.has(r.id));
       if (hit) {
         tag.set(hit.id, m);
@@ -195,9 +200,20 @@ export const useVodStore = defineStore('vod', () => {
         pole: m.pole,
       });
     }
+    /*
+     * Dimming asks about the *ribbon*, not about our own bookkeeping (Angel, 2026-09-21).
+     * It used to mean "this moment did not win a mood peak", which quietly dimmed moments
+     * sitting right under a visible swell — they had simply lost the thinning to a stronger
+     * peak a minute away, which is invisible and means nothing to a reader. It now means
+     * what it looks like it means: the mood curve is low here, so this moment is not about
+     * the mood you chose. A moment standing on a swell keeps its full strength whether or
+     * not it also earned a label.
+     */
+    const bar = peakBar(s, axis);
     const merged = rate.map((r) => {
       const m = tag.get(r.id);
-      return m ? { ...r, pole: m.pole, reasons: [reasonFor(m), ...r.reasons] } : r;
+      if (m) return { ...r, pole: m.pole, reasons: [reasonFor(m), ...r.reasons] };
+      return moodHeightAt(s, axis, r.t) >= bar ? { ...r, onMood: true } : r;
     });
     return [...merged, ...extra].sort((a, b) => a.t - b.t);
   }

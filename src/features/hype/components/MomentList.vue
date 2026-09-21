@@ -167,8 +167,9 @@ const chips = computed(() => {
           : mult
             ? `${mult}×`
             : t('moments.chattersShort', { n: m.users }),
-      // a rate moment the mood also claimed is not context, it is an answer: never dimmed
-      dim: mood && !m.source && !m.pole,
+      // dimmed means the mood is quiet here — not "this one missed the cut". A moment the
+      // mood claimed, or one merely standing on a swell, is about the chosen mood either way
+      dim: mood && !m.source && !m.pole && !m.onMood,
       colour: silkAt(at, false, 0),
       // an emotion moment's strength is a lift, not a rate score: ~3 is a strong one
       heat: ai ? m.score / 5 : emo ? Math.min(1, m.score / 3) : m.score / max,

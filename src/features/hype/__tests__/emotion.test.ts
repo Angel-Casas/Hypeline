@@ -27,6 +27,8 @@ import {
   emotionMoments,
   emotionSeries,
   isUpper,
+  moodHeightAt,
+  peakBar,
   pickBucketSec,
   polesOf,
   tokensOf,
@@ -296,5 +298,36 @@ describe('what is drawn is what is offered', () => {
     msgs2.push(msg('monkaS', { t: 600, u: 'lonely' }));
     const s2 = emotionSeries(msgs2, 1200);
     expect(emotionMoments(s2, 'dread-payoff')).toEqual([]);
+  });
+});
+
+describe('the bar the list and the ribbon share', () => {
+  /*
+   * The moment list dims a rate-scored moment when the mood is quiet at its time, using
+   * exactly these two functions. If they ever disagreed with the picker, a moment standing
+   * under a visible swell would be greyed out for no reason a reader could see — which is
+   * what Angel found on 2026-09-21, when dimming still meant "did not win a peak".
+   */
+  const s = emotionSeries(load('tokyosims_2871164819.jsonl'), 23057);
+
+  for (const axis of AXIS_KEYS as AxisKey[]) {
+    it(`agrees with the picker on ${axis}`, () => {
+      const bar = peakBar(s, axis);
+      for (const m of emotionMoments(s, axis)) {
+        // every moment the picker returned stands at or above the bar where it stands
+        expect(
+          moodHeightAt(s, axis, m.t),
+          `${axis}: a moment at ${m.t}s is below the bar the list would judge it by`,
+        ).toBeGreaterThanOrEqual(bar * 0.999);
+      }
+    });
+  }
+
+  it('reads zero outside the VOD and never divides by a silent axis', () => {
+    expect(moodHeightAt(s, 'joy-sorrow', -50)).toBeGreaterThanOrEqual(0);
+    expect(moodHeightAt(s, 'joy-sorrow', 10_000_000)).toBeGreaterThanOrEqual(0);
+    const quiet = emotionSeries([msg('hello', { t: 5 })], 600);
+    expect(Number.isFinite(peakBar(quiet, 'dread-payoff'))).toBe(true);
+    expect(moodHeightAt(quiet, 'dread-payoff', 100)).toBe(0);
   });
 });

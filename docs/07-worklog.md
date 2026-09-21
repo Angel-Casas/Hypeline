@@ -1956,3 +1956,22 @@ run exercises the teleport, the close and the label, and it asserts the pill is
 announced as a menu.
 
 156 unit tests, 16 e2e suites, hover, locales, lint and build green.
+
+## 2026-09-21i — dimmed now means the mood is quiet here
+
+Angel: some dimmed moments were sitting exactly on the peaks the ribbon was drawing.
+Measured on tokyosims at his slider setting: 25 mood moments used of 31 available,
+and **7 dimmed rate moments standing on a mood peak**.
+
+Two causes. The mood budget was the slider's `top`, so on a busy axis real swells
+went unclaimed; mood peaks are thinned by `minGapSec` now — which the slider also
+sets, so it still controls their density — with a generous safety ceiling instead of
+a hard count. And dimming asked the wrong question: "did this win a peak?" is about
+our thinning, which a reader cannot see. It asks the ribbon now, through the same
+`peakBar` / `moodHeightAt` the picker uses.
+
+After: zero dimmed moments on a peak, on all three axes at both sensitivities, and
+six more moments keep full strength because they stand on a swell without having
+earned a label. A unit test ties the list's bar to the picker's so they cannot drift.
+
+160 unit tests, 16 e2e suites, hover, locales, lint and build green.

@@ -347,6 +347,52 @@ export interface EmotionMomentOptions {
 }
 
 /**
+ * How high the curve must stand for a bump to count as a peak, in the drawn units.
+ *
+ * Two bars, and a peak only has to clear one (Angel, 2026-09-21: "although they might be
+ * negligible, it was still highlighted in the heatmap as a peak ... could be something
+ * interesting in the VOD for people to clip").
+ *
+ * The first is absolute — a quarter of the ribbon's height — and catches everything on an
+ * axis with real signal. The second is relative to the axis's own tallest point, and is what
+ * an axis that never gets loud needs: on a stream where dread peaks at two chatters in
+ * eleven, those two chatters are still the most frightened this chat ever got, and they are
+ * worth a click. `minChatters` is what keeps that from becoming noise: one person is never a
+ * mood, whatever fraction of a quiet minute they are.
+ *
+ * Exported because the moment list asks the same question of the rate-scored moments: one
+ * that sits on a swell this tall is *about* the chosen mood, and dimming it would be a lie.
+ */
+export function peakBar(
+  s: EmotionSeries,
+  axis: AxisKey,
+  opts: { minHeight?: number; minRelative?: number } = {},
+): number {
+  const { minHeight = 0.25, minRelative = 0.5 } = opts;
+  const a = axisOf(axis);
+  let own = 0;
+  for (const key of [a.up.key, a.down.key])
+    for (const v of s.poles[key].curve) if (v > own) own = v;
+  return Math.min(minHeight * axisScale(s, axis), minRelative * own);
+}
+
+/** The taller pole's curve at a second, in the same units as `peakBar`. */
+export function moodHeightAt(s: EmotionSeries, axis: AxisKey, t: number): number {
+  const a = axisOf(axis);
+  const i = Math.max(0, Math.min(s.count - 1, Math.round(t / s.bucketSec)));
+  return Math.max(s.poles[a.up.key].curve[i] ?? 0, s.poles[a.down.key].curve[i] ?? 0);
+}
+
+/**
+ * How many mood peaks may surface at once. Deliberately generous and *not* the sensitivity
+ * slider's `top`: the slider still governs mood density through `minGapSec`, which is the
+ * honest control — two peaks a minute apart are one moment whatever the budget — while a
+ * hard count simply left real peaks on the ribbon unclaimed. On a 6-hour VOD the gap alone
+ * yields about thirty; this is the safety net, not the policy (Angel, 2026-09-21).
+ */
+export const MAX_MOOD_MOMENTS = 60;
+
+/**
  * The moments on one axis, best first — **the peaks of the curve the ribbon draws**.
  *
  * This is the whole design, and the first version got it wrong: the ribbon drew `share`
@@ -371,26 +417,11 @@ export function emotionMoments(
     minHeight = 0.25,
     minRelative = 0.5,
     minGapSec = 120,
-    top = 12,
+    top = MAX_MOOD_MOMENTS,
   } = opts;
   const a = axisOf(axis);
   const scale = axisScale(s, axis);
-  /*
-   * Two bars, and a peak only has to clear one (Angel, 2026-09-21: "although they might be
-   * negligible, it was still highlighted in the heatmap as a peak ... could be something
-   * interesting in the VOD for people to clip").
-   *
-   * The first is absolute — a quarter of the ribbon's height — and catches everything on an
-   * axis with real signal. The second is relative to the axis's own tallest point, and is
-   * what an axis that never gets loud needs: on a stream where dread peaks at two chatters
-   * in eleven, those two chatters are still the most frightened this chat ever got, and
-   * they are worth a click. `minChatters` is what keeps that from becoming noise: one person
-   * is never a mood, whatever fraction of a quiet minute they are.
-   */
-  let own = 0;
-  for (const key of [a.up.key, a.down.key])
-    for (const v of s.poles[key].curve) if (v > own) own = v;
-  const bar = Math.min(minHeight * scale, minRelative * own);
+  const bar = peakBar(s, axis, { minHeight, minRelative });
   const found: EmotionMoment[] = [];
   for (const p of [a.up, a.down]) {
     const d = s.poles[p.key];

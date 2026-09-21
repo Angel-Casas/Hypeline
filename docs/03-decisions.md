@@ -1270,6 +1270,21 @@ scoped rule beats it whatever the specificity, so a component cannot simply add 
 utility class and expect it to win — it reads the token instead of copying nine hex
 values.
 
+_Dimming asks the ribbon, not our own bookkeeping_ (Angel, 2026-09-21). It first
+meant "this moment did not win a mood peak", which is a fact about the thinning
+and invisible to a reader: a moment standing right under a visible swell could be
+greyed out because a slightly stronger peak sat a minute away. It now means what it
+looks like it means — the mood curve is low here, so this moment is not about the
+mood you chose — and it is measured with the same `peakBar` and `moodHeightAt` the
+picker uses, with a test tying the two together. A moment on a swell keeps full
+strength whether or not it also earned a label.
+
+The mood budget came off the sensitivity slider at the same time. `top` governs the
+rate peaks; mood peaks are thinned by `minGapSec`, which the slider also sets, so
+the slider still controls their density — but through the honest control, since two
+peaks a minute apart are one moment whatever the budget. A hard count of 25 was
+leaving real swells unclaimed on a six-hour VOD that had 31 of them.
+
 _Colour is validated, and it is not the only cue._ The two poles use steps of
 the thread's own ends, checked against each ground for colour-vision separation
 (ΔE ≈ 26 protan and tritan) and contrast; night is its own choice, not a flip of
