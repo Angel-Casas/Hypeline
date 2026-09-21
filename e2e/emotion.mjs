@@ -25,6 +25,9 @@ const LAUGH = [600, 1800];
 const GRIEF = [1200];
 const TENSE = [2400, 3000];
 const WINDOW = 180;
+/** Two ordinary volume spikes, far from every mood window: the rate scorer's own moments. */
+const BURST = [180, 3300];
+const BURST_LEN = 30;
 
 /**
  * A *quiet* chat: one message every 8 seconds. That is under three per 15-second bucket, so
@@ -52,6 +55,15 @@ function chat() {
     else if (tense) m = `monkaS ${t}`;
     out.push({ i: i++, t, u: `v${i % 97}`, m, b: [] });
   }
+  // the bursts: plain chatter, but a lot of it, so the heatmap has peaks of its own to dim
+  for (const at of BURST) {
+    for (let t = at; t < at + BURST_LEN; t += 1) {
+      for (let k = 0; k < 4; k++) {
+        out.push({ i: i++, t, u: `b${(t * 5 + k) % 120}`, m: `wow look at that ${t}.${k}`, b: [] });
+      }
+    }
+  }
+  out.sort((a, b) => a.t - b.t || a.i - b.i);
   return out;
 }
 const MESSAGES = chat();
@@ -138,13 +150,22 @@ if ((await axis.inputValue()) !== '') throw new Error('the layer should start of
 if ((await emoChips.count()) !== 0) throw new Error('mood chips before the layer is on');
 const flat = await times();
 console.log('layer off · moments:', flat.length, '·', flat.join(' '));
-if ((await p.locator('.emo-up').count()) !== 0) throw new Error('lobes drawn while off');
+if (!flat.length) throw new Error('the rate scorer should find the two bursts');
+const pinsOff = await p.locator('.pin-dot').count();
+console.log('pins on the thread:', pinsOff);
+if ((await p.locator('ol.chips li.is-dim').count()) !== 0)
+  throw new Error('moments dimmed with no mood chosen');
+if ((await p.locator('[data-testid="emo-ribbon"]').count()) !== 0)
+  throw new Error('mood ribbon drawn while off');
 
 // --- 2. joy ↔ sorrow: the laughter and the grief appear, labelled -----------------------
 await axis.selectOption('joy-sorrow');
 await p.waitForTimeout(700);
-if ((await p.locator('.emo-up').count()) !== 1) throw new Error('no upper lobe drawn');
-if ((await p.locator('.emo-down').count()) !== 1) throw new Error('no lower lobe drawn');
+if ((await p.locator('[data-testid="emo-ribbon"]').count()) !== 1)
+  throw new Error('no mood ribbon drawn');
+// it wears the thread's own three layers, not a flat fill
+if ((await p.locator('[data-testid="emo-ribbon"] path').count()) !== 3)
+  throw new Error('the mood ribbon is not drawn like the thread');
 const labels = [
   (await p.locator('[data-testid="emo-up"]').innerText()).trim(),
   (await p.locator('[data-testid="emo-down"]').innerText()).trim(),
@@ -159,12 +180,60 @@ console.log('joy↔sorrow · moments:', withJoy.length, '· new:', added.join(' 
 if ((await emoChips.count()) === 0) throw new Error('no mood moments in the list');
 if (withJoy.length <= flat.length) throw new Error('the layer added no moments');
 
-// the lobes must actually have shape — a flat path would pass every check above
-const upArea = await p.locator('.emo-up').getAttribute('d');
-const ys = [...upArea.matchAll(/L[\d.]+ ([\d.]+)/g)].map((m) => Number(m[1]));
-const spread = Math.max(...ys) - Math.min(...ys);
-console.log('upper lobe height (viewBox units):', spread.toFixed(1));
-if (spread < 5) throw new Error('the upper lobe is flat: ' + spread);
+// The ribbon must have shape, and it must be *asymmetric* about the spine — that
+// asymmetry is the whole reading, and a symmetric one would just be the thread again.
+const d = await p.locator('[data-testid="emo-ribbon"] path').first().getAttribute('d');
+const ys = [...d.matchAll(/[ML][\d.]+ ([\d.]+)/g)].map((m) => Number(m[1]));
+const mid = 60; // H / 2
+const up = mid - Math.min(...ys);
+const down = Math.max(...ys) - mid;
+console.log(`ribbon reach — up ${up.toFixed(1)}, down ${down.toFixed(1)} (viewBox units)`);
+if (up < 5 || down < 5) throw new Error(`a pole is flat: up ${up} down ${down}`);
+if (Math.abs(up - down) < 1) throw new Error('the ribbon is symmetric — poles are not separate');
+
+// the thread is still there, as a ghost, and it has given up its colour
+const ghost = await p
+  .locator('.thread-muted')
+  .evaluate((el) => [el.getAttribute('opacity'), getComputedStyle(el).filter].join(' '));
+console.log('thread underneath:', ghost);
+if (!/grayscale/.test(ghost)) throw new Error('the thread kept its colour under the layer');
+
+// the pins on the ribbon belong to the mood now; the rate peaks stay in the list, dimmed
+const pinCount = await p.locator('.pin-dot').count();
+const dimmed = await p.locator('ol.chips li.is-dim').count();
+const emoCount = await emoChips.count();
+console.log(
+  `pins on the ribbon: ${pinCount} (mood moments ${emoCount}) · rate chips dimmed: ${dimmed}`,
+);
+if (pinCount !== emoCount)
+  throw new Error(`the rate peaks still have pins: ${pinCount} pins for ${emoCount} moments`);
+if (dimmed !== flat.length)
+  throw new Error(`expected ${flat.length} dimmed rate chips, got ${dimmed}`);
+// dimmed, not gone, and still clickable. Polled rather than read once: the dim is a 140ms
+// fade, and reading it the instant the class lands catches the transition mid-flight.
+const box = await p.locator('ol.chips li.is-dim').first().boundingBox();
+if (!box || box.width < 10) throw new Error('a dimmed chip is not on screen');
+await p.waitForFunction(
+  () => {
+    const el = document.querySelector('ol.chips li.is-dim');
+    if (!el) return false;
+    const o = Number(getComputedStyle(el).opacity);
+    return o > 0.15 && o < 0.6;
+  },
+  null,
+  { timeout: 5000 },
+);
+const op = await p
+  .locator('ol.chips li.is-dim')
+  .first()
+  .evaluate((el) => Number(getComputedStyle(el).opacity));
+console.log('a dimmed chip settles at opacity', op);
+// and a click on it still selects that moment
+await p.locator('ol.chips li.is-dim').first().click();
+await p.waitForTimeout(300);
+if ((await p.locator('ol.chips li.is-on').count()) === 0)
+  throw new Error('a dimmed moment is not clickable');
+console.log('a dimmed moment is still selectable');
 
 // --- 3. the case the heatmap cannot see: chat tensed up and said *less* -----------------
 await axis.selectOption('dread-payoff');

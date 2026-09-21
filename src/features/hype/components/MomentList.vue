@@ -135,6 +135,14 @@ const chips = computed(() => {
   const chat = props.moments.filter((m) => !m.source);
   const max = Math.max(1e-6, ...chat.map((m) => m.score));
   const byScore = [...chat].sort((a, b) => b.score - a.score);
+  /*
+   * With a mood chosen, its moments are the answer to the question the user just asked, and
+   * the rate peaks are context. They are dimmed rather than removed — still ranked, still
+   * one click away — because hiding them would make choosing a mood feel like losing the
+   * heatmap (Angel, 2026-09-21). Keyed off a mood moment actually existing, so an axis that
+   * finds nothing dims nothing and the list stays exactly as it was.
+   */
+  const mood = props.moments.some((m) => m.source === 'emotion');
   return props.moments.map((m) => {
     const ai = m.source === 'ai';
     const emo = m.source === 'emotion';
@@ -159,6 +167,7 @@ const chips = computed(() => {
           : mult
             ? `${mult}×`
             : t('moments.chattersShort', { n: m.users }),
+      dim: mood && !m.source,
       colour: silkAt(at, false, 0),
       // an emotion moment's strength is a lift, not a rate score: ~3 is a strong one
       heat: ai ? m.score / 5 : emo ? Math.min(1, m.score / 3) : m.score / max,
@@ -190,6 +199,7 @@ const chips = computed(() => {
           'has-frame': !!c.frame,
           'is-ai': c.ai,
           'is-emo': c.emo,
+          'is-dim': c.dim,
           dark: settings.dark,
         }"
         :style="{ '--c': c.colour, '--h': c.heat }"
@@ -302,6 +312,17 @@ const chips = computed(() => {
  * scans down one column. Colours are the validated pole pair; the arrow carries the same
  * information, which is what makes the chip work in greyscale.
  */
+/* dimmed, never disabled: full strength on hover or focus, and on the active one */
+.chip.is-dim {
+  opacity: 0.34;
+  transition: opacity 140ms ease;
+}
+.chip.is-dim:hover,
+.chip.is-dim:focus-visible,
+.chip.is-dim.is-on,
+.chip.is-dim.is-hot {
+  opacity: 1;
+}
 .motag {
   display: grid;
   place-items: center;

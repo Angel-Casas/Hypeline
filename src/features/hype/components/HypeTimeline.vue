@@ -24,7 +24,14 @@ import type { Storyboard } from '@/lib/twitch/storyboard';
 import { frameAt } from '@/lib/twitch/storyboard';
 import { formatHms } from '@/lib/twitch/vodUrl';
 import { peaksFromMoments, seriesFromPeaks } from '@/ui/thread/series';
-import { axisOf, POLE_KEY, type AxisKey, type EmotionSeries } from '../emotion';
+import {
+  axisOf,
+  isUpper,
+  POLE_KEY,
+  type AxisKey,
+  type EmotionSeries,
+  type PoleKey,
+} from '../emotion';
 
 const props = withDefaults(
   defineProps<{
@@ -326,31 +333,50 @@ const emoScale = computed(() => {
   return p98 > 0 ? p98 : 1;
 });
 
+/**
+ * A pole's share at a second, interpolated between bucket centres rather than read off the
+ * bucket it lands in. A staircase was honest about the resolution and wrong about the app:
+ * the thread is a curve, so the mood has to be one too (Angel, 2026-09-21).
+ */
 function shareAt(pole: 'up' | 'down', sec: number): number {
   const s = props.emotion;
   const a = emoAxis.value;
   if (!s || !a) return 0;
-  const i = Math.floor(sec / s.bucketSec);
-  if (i < 0 || i >= s.count) return 0;
-  return s.poles[pole === 'up' ? a.up.key : a.down.key].share[i] ?? 0;
+  const series = s.poles[pole === 'up' ? a.up.key : a.down.key].share;
+  const at = sec / s.bucketSec - 0.5; // bucket i is centred half a bucket in
+  const i = Math.floor(at);
+  const f = at - i;
+  const lo = series[Math.min(s.count - 1, Math.max(0, i))] ?? 0;
+  const hi = series[Math.min(s.count - 1, Math.max(0, i + 1))] ?? 0;
+  return lo + (hi - lo) * f;
 }
 
-/** One pole as a filled area hanging off the spine; `dir` is -1 up, +1 down. */
-function emoPath(pole: 'up' | 'down', dir: number): string {
+/** How far off the spine a pole reaches at `sec`, in viewBox units. */
+function emoAmp(pole: 'up' | 'down', sec: number): number {
+  const room = (H / 2 - 5) * 0.9;
+  return Math.min(1, shareAt(pole, sec) / emoScale.value) * room;
+}
+
+/**
+ * The mood ribbon: built exactly like `ribbonPath`, one closed shape whose top edge is the
+ * upper pole and whose bottom edge is the lower one. The hype ribbon is symmetric about the
+ * spine; this one is not, and that asymmetry *is* the reading — but it is the same object,
+ * so it takes the same three layers (halo, fill, sheen) and the same silk.
+ */
+const emoRibbon = computed(() => {
+  if (!emoOn.value) return '';
   const N = 240;
   const mid = H / 2;
-  const room = (H / 2 - 5) * 0.88;
-  const pts: string[] = [`M0 ${mid}`];
+  const top: string[] = [];
+  const bot: string[] = [];
   for (let k = 0; k <= N; k++) {
     const sec = v0.value + (k / N) * span.value;
-    const v = Math.min(1, shareAt(pole, sec) / emoScale.value);
-    pts.push(`L${((k / N) * W).toFixed(1)} ${(mid + dir * v * room).toFixed(2)}`);
+    const px = ((k / N) * W).toFixed(1);
+    top.push(`${k ? 'L' : 'M'}${px} ${(mid - emoAmp('up', sec)).toFixed(2)}`);
+    bot.push(`L${px} ${(mid + emoAmp('down', sec)).toFixed(2)}`);
   }
-  pts.push(`L${W} ${mid} Z`);
-  return pts.join(' ');
-}
-const emoUp = computed(() => (emoOn.value ? emoPath('up', -1) : ''));
-const emoDown = computed(() => (emoOn.value ? emoPath('down', 1) : ''));
+  return top.join(' ') + ' ' + bot.reverse().join(' ') + ' Z';
+});
 /** The pole names, for the labels that keep identity off colour alone. */
 const emoLabels = computed(() => {
   const a = emoAxis.value;
@@ -400,10 +426,41 @@ const edgeSec = computed(() => {
 const edgePx = computed(() =>
   edgeSec.value == null ? 0 : ((edgeSec.value - v0.value) / span.value) * wrapW.value,
 );
+/**
+ * With a mood chosen, the pins belong to *that* mood: the rate peaks are still in the list
+ * below (dimmed, one click away) but on the ribbon they would be pins for a shape that is no
+ * longer drawn (Angel, 2026-09-21). AI pins stay either way — the user asked for those.
+ */
 const visibleMoments = computed(() =>
-  props.moments.filter((m) => m.t >= v0.value && m.t < v1.value),
+  props.moments.filter(
+    (m) =>
+      m.t >= v0.value &&
+      m.t < v1.value &&
+      (!emoOn.value || m.source === 'emotion' || m.source === 'ai'),
+  ),
 );
-const pinTop = (m: Moment) => Math.max(7, H / 2 - amp(shaped(hypeAt(m.t)), H) - 6);
+/**
+ * A pin hangs off the spine towards the lobe it belongs to. The thread is symmetric, so its
+ * pins always rose; a mood ribbon is not, and a moment that lives under the line wants its
+ * pin under the line too — otherwise the marker for "chat was gutted" points at empty sky.
+ */
+const pinDown = (m: Moment) =>
+  emoOn.value && m.source === 'emotion' && !!m.pole && !isUpper(m.pole as PoleKey);
+/** The tip of the pin: past whichever curve is on screen, on the pin's own side. */
+const pinTop = (m: Moment) => {
+  if (!emoOn.value) return Math.max(7, H / 2 - amp(shaped(hypeAt(m.t)), H) - 6);
+  return pinDown(m)
+    ? Math.min(H - 7, H / 2 + emoAmp('down', m.t) + 6)
+    : Math.max(7, H / 2 - emoAmp('up', m.t) - 6);
+};
+/** The dot sits just beyond the tip, on the same side. */
+const pinDot = (m: Moment) => pinTop(m) + (pinDown(m) ? 2 : -2);
+/** The hit area spans spine → tip whichever way that runs. */
+const pinRect = (m: Moment) => {
+  const tip = pinTop(m);
+  const pad = 14 * sy;
+  return { y: Math.min(H / 2, tip) - pad, height: Math.abs(H / 2 - tip) + 2 * pad };
+};
 const hasRange = computed(() => props.inSec != null && props.outSec != null);
 
 const ticks = computed(() => {
@@ -810,19 +867,29 @@ function pulse(sec: number) {
         <g
           :mask="isLoading ? `url(#${gid}c)` : undefined"
           :class="{ 'thread-muted': emoOn }"
-          :opacity="emoOn ? 0.3 : 1"
+          :opacity="emoOn ? 0.13 : 1"
         >
           <path :d="ribbon" :fill="`url(#${gid})`" opacity="0.5" :filter="`url(#${gid}b)`" />
           <path :d="ribbon" :fill="`url(#${gid})`" opacity="0.92" />
           <path :d="ribbon" :fill="`url(#${gid}s)`" opacity="0.7" />
         </g>
-        <!-- the emotion layer (ADR-43): the warm pole above the spine, the cool one below,
-             each its own curve. The thread recedes behind it rather than competing — two
-             rainbows over one strip is a mess, and the question here is the shape. -->
-        <g v-if="emoOn" class="emo" pointer-events="none">
-          <path :d="emoUp" class="emo-up" />
-          <path :d="emoDown" class="emo-down" />
-          <line x1="0" :y1="H / 2" :x2="W" :y2="H / 2" class="emo-spine" vector-effect="non-scaling-stroke" />
+        <!-- the mood layer (ADR-43) wearing the thread's own clothes: halo, fill, sheen, the
+             same silk. It replaces the thread rather than sitting on a different chart on top
+             of it — the hype ribbon stays underneath as a ghost, for where you are. The shape
+             is what changed: the top edge is one pole, the bottom edge the other, so the
+             asymmetry about the spine is the reading. -->
+        <g v-if="emoOn" class="emo" data-testid="emo-ribbon" pointer-events="none">
+          <path :d="emoRibbon" :fill="`url(#${gid})`" opacity="0.5" :filter="`url(#${gid}b)`" />
+          <path :d="emoRibbon" :fill="`url(#${gid})`" opacity="0.92" />
+          <path :d="emoRibbon" :fill="`url(#${gid}s)`" opacity="0.7" />
+          <line
+            x1="0"
+            :y1="H / 2"
+            :x2="W"
+            :y2="H / 2"
+            class="emo-spine"
+            vector-effect="non-scaling-stroke"
+          />
         </g>
         <!-- lane fronts: a hairline in ink with a small dot riding the spine (same language as
              the pins), instead of a light -->
@@ -944,7 +1011,7 @@ function pulse(sec: number) {
           <ellipse
             class="ring"
             :cx="x(focusMoment.t) + barW / 2"
-            :cy="pinTop(focusMoment) - 2"
+            :cy="pinDot(focusMoment)"
             :rx="5 * sx"
             :ry="5 * sy"
             fill="none"
@@ -952,7 +1019,7 @@ function pulse(sec: number) {
             stroke-width="1"
             vector-effect="non-scaling-stroke"
             :style="{
-              transformOrigin: `${x(focusMoment.t) + barW / 2}px ${pinTop(focusMoment) - 2}px`,
+              transformOrigin: `${x(focusMoment.t) + barW / 2}px ${pinDot(focusMoment)}px`,
             }"
           />
         </g>
@@ -970,9 +1037,9 @@ function pulse(sec: number) {
           <!-- hit area: 28 px wide on screen, from above the dot down to the spine -->
           <rect
             :x="x(m.t) + barW / 2 - 14 * sx"
-            :y="pinTop(m) - 14 * sy"
+            :y="pinRect(m).y"
             :width="28 * sx"
-            :height="H / 2 - pinTop(m) + 14 * sy"
+            :height="pinRect(m).height"
             fill="transparent"
           />
           <!-- AI pins (transcript hits the user asked for): accent, dashed stem, hollow dot -->
@@ -992,7 +1059,7 @@ function pulse(sec: number) {
           />
           <ellipse
             :cx="x(m.t) + barW / 2"
-            :cy="pinTop(m) - 2"
+            :cy="pinDot(m)"
             :rx="(m.id === hoverId || m.id === activeId ? 4.5 : 3) * sx"
             :ry="(m.id === hoverId || m.id === activeId ? 4.5 : 3) * sy"
             :style="
@@ -1380,14 +1447,6 @@ function pulse(sec: number) {
  */
 .thread-muted {
   filter: grayscale(1);
-}
-.emo-up {
-  fill: var(--emo-up);
-  fill-opacity: 0.82;
-}
-.emo-down {
-  fill: var(--emo-down);
-  fill-opacity: 0.82;
 }
 .emo-label {
   font-size: 10px;

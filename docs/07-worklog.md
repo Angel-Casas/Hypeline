@@ -1857,3 +1857,27 @@ label saying otherwise; it is greyed now.
 all green.
 
 Next: per-language pole packs, and folding `scoring.ts`'s `mood` into the poles.
+
+## 2026-09-21e — the mood layer, rebuilt in the app's own language
+
+Angel looked at it and was right: the layer was a foreign chart sitting on top of
+the app rather than part of it. Flat fills, stepped edges, its own palette. It is
+now the hype ribbon's twin — same silk, same halo/fill/sheen, same smooth curve,
+sampled between bucket centres — and the only thing that differs is that its two
+edges are two different poles, so the asymmetry carries the meaning. The thread
+survives underneath at 13 % and greyed.
+
+Two follow-on changes he asked for, both right. The ribbon's pins now belong to
+the chosen mood; the rate peaks keep their place in the list at a third opacity,
+still ranked, still clickable. And a third I found by looking at the render: a
+pin for a lower-pole moment pointed up, over empty sky, so pins now hang towards
+the lobe they mark.
+
+The e2e grew a pair of ordinary volume spikes so there are rate moments to dim in
+the first place — without them the fixture proved nothing about dimming — and it
+now checks the ribbon is asymmetric, that the thread has given up its colour, that
+the pin count matches the mood moments, and that a dimmed chip is still
+selectable. Polling for the dim rather than reading it once: it is a 140 ms fade,
+and the first version of the assertion was racing it.
+
+150 unit tests, 16 e2e suites, hover, locales, lint and build green.

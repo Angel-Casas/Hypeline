@@ -1192,6 +1192,22 @@ by pole, and a rate peak wins any tie: if the heatmap already found the moment,
 a duplicate row only costs trust. Only rate-scored moments are numbered, because
 a rank across three different scales would be a lie.
 
+_The mood layer wears the thread's own clothes_ (Angel, 2026-09-21). The first
+build drew it as a second chart laid over the first — flat fills, stepped edges,
+its own palette — and it read as a foreign object on the page. It is now the same
+ribbon: the same silk, the same three layers (halo, fill, sheen), the same smooth
+curve, sampled between bucket centres instead of stepping. The difference is the
+shape: the top edge is one pole and the bottom edge the other, so the asymmetry
+about the spine _is_ the reading, where the hype ribbon is symmetric by
+construction. The hype ribbon stays underneath at 13 % and greyed, as a ghost of
+where you are rather than a competitor. Choosing a mood also hands the ribbon's
+pins to that mood — the rate peaks stay in the list below, dimmed to a third and
+one click away, because a pin for a shape that is no longer drawn is a lie, and
+hiding those moments entirely would make choosing a mood feel like losing the
+heatmap. A pin hangs towards the lobe it belongs to, below the spine for a lower
+pole: a marker for "chat was gutted" pointing at empty sky was the tell that the
+first version had been reasoned about rather than looked at.
+
 _Colour is validated, and it is not the only cue._ The two poles use steps of
 the thread's own ends, checked against each ground for colour-vision separation
 (ΔE ≈ 26 protan and tritan) and contrast; night is its own choice, not a flip of
