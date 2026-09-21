@@ -1303,9 +1303,23 @@ turning the layer on grows it out of the spine, turning it off folds it back in,
 lag. The series is built on the first hover so a preview never waits.
 
 _The mood mark is a wave crest_, rising for the warm pole and falling for the cool
-one, chosen by Angel from ten candidates (`design/mood-marks.html`). It is drawn in
-ink rather than the pole colour: the first sheet drew it in pole colour and it
-vanished on a chip of the same hue. The direction carries the pole.
+one, chosen by Angel from ten candidates (`design/mood-marks.html`). The first
+sheet drew it in the pole colour and it vanished on a chip of the same hue, so it
+shipped in ink; Angel then asked for the poles to be told apart by colour too
+(2026-09-21), so it is now a pastel stroke — apricot rising, sky falling, the
+thread's own ends — over a wider ink halo. The halo is what survives a chip of the
+mark's own hue; the direction still carries the pole for anyone the colour fails.
+
+_The list keeps its active chip in view by scrolling the grid, never the page_
+(Angel, 2026-09-21: "when I select an option from the dropdown it sometimes moves
+my screen down"). The active moment is derived from the moments list (first in the
+clip range, else near the playhead), so choosing a mood — which rewrites the list —
+can change it without anyone clicking a chip. The list's keep-in-view used
+`scrollIntoView`, which scrolls _every_ scrollable ancestor, the page included, and
+when the newly active chip sat below the fold the page lurched to it. It now moves
+`ol.chips` alone, by rect arithmetic. The e2e reproduces the gesture with the chip
+below the fold and measures `window.scrollY` around every menu choice: 60 → 127 on
+the old code, 60 → 60 now.
 
 _Colour is validated, and it is not the only cue._ The two poles use steps of
 the thread's own ends, checked against each ground for colour-vision separation

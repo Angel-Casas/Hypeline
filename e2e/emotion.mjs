@@ -99,7 +99,9 @@ function chunkAt(offset) {
 }
 
 const b = await chromium.launch(EXEC ? { executablePath: EXEC } : {});
-const ctx = await b.newContext({ viewport: { width: 1440, height: 1000 } });
+// short enough that the page scrolls and the second row of chips sits below the fold: the
+// scroll guard in chooseAxis needs a chip that is off screen to catch a jump (2a)
+const ctx = await b.newContext({ viewport: { width: 1440, height: 500 } });
 await ctx.addInitScript(() => {
   localStorage.setItem('hypeline.locale', 'en');
   localStorage.setItem('hypeline.tour.v1', 'done');
@@ -164,18 +166,29 @@ const LABEL = {
 };
 const axisValue = async () => (await axis.locator('.pick-v').innerText()).trim();
 async function chooseAxis(key) {
+  // choosing a mood rewrites the moments, which can silently move the "active" one, whose
+  // keep-in-view used to scroll the *page* (Angel, 2026-09-21). The page must not move.
+  const before = await p.evaluate(() => window.scrollY);
   await axis.click();
   const menu = p.locator('[data-testid="pick-menu"]');
   await menu.waitFor({ state: 'visible', timeout: 5000 });
   await menu.locator('[role="menuitemradio"]', { hasText: LABEL[key] }).first().click();
   await menu.waitFor({ state: 'hidden', timeout: 5000 });
   await p.waitForTimeout(700);
+  const after = await p.evaluate(() => window.scrollY);
+  if (Math.abs(after - before) > 1)
+    throw new Error(`choosing ${LABEL[key]} scrolled the page from ${before} to ${after}`);
 }
 const times = async () =>
   (await p.locator('ol.chips li b').allInnerTexts()).map((s) => s.trim()).sort();
 
 // --- 1. off by default, and the flat hour gives the rate scorer nothing to say ----------
 await axis.waitFor({ state: 'visible', timeout: 20000 });
+// a little down, with the pill still in view — so a jump either way is measurable and the
+// browser has no reason of its own to move (a click on an off-screen pill would)
+await p.evaluate(() => window.scrollTo(0, 60));
+await p.waitForTimeout(200);
+console.log('page scrolled to', await p.evaluate(() => window.scrollY), 'before any choice');
 if ((await axisValue()) !== LABEL['']) throw new Error('the layer should start off');
 // it is our own pill, and it says so to a screen reader
 if ((await axis.getAttribute('aria-haspopup')) !== 'menu')
@@ -294,6 +307,22 @@ if ((await p.locator('ol.chips li.is-on').count()) === 0)
   throw new Error('a dimmed moment is not clickable');
 console.log('a dimmed moment is still selectable');
 
+// --- 2a. the page must not move when a choice silently changes the "active" moment -----
+// The active moment is derived from the list (first in the clip range, else near the
+// playhead). Select a joy moment in the grid's second row — below the fold at this viewport —
+// switch to hype (it vanishes, active → none), switch back (it reappears, active → it
+// again): the list's keep-in-view fires, and it used to scroll the *page* to the chip
+// (Angel, 2026-09-21). chooseAxis measures window.scrollY around every choice; with the old
+// scrollIntoView this step fails (60 → 127), with the grid-only scroll the page stays put.
+await p.evaluate(() => window.scrollTo(0, 60));
+await p.locator('ol.chips li', { hasText: '0:30:45' }).first().click();
+await p.waitForTimeout(400);
+await p.evaluate(() => window.scrollTo(0, 60));
+await p.waitForTimeout(150);
+await chooseAxis('hype-letdown');
+await chooseAxis('joy-sorrow');
+console.log('active moment came and went; page still at', await p.evaluate(() => window.scrollY));
+
 // --- 2b. the raid: a volume spike that is also a mood peak ------------------------------
 // clicking a moment zooms the timeline to it, so start from a clean view: otherwise the
 // pins we are about to count are simply outside the window (which cost me twenty minutes)
@@ -313,7 +342,9 @@ const hypePins = await p.locator('.pin-dot').count();
 const hypeMoods = await emoChips.count();
 const hypeBright = await p.locator('ol.chips li:not(.is-dim)').count();
 console.log(`raid chip @${raidAt}: dimmed=${raidDim} mood-chip=${raidIsMood} · "${raidLabel}"`);
-console.log(`hype↔letdown · pins ${hypePins} · mood chips ${hypeMoods} · bright chips ${hypeBright}`);
+console.log(
+  `hype↔letdown · pins ${hypePins} · mood chips ${hypeMoods} · bright chips ${hypeBright}`,
+);
 if (raidDim) throw new Error('the raid was dimmed — the mood claimed it, it is not context');
 if (!raidIsMood) throw new Error('the raid the mood claimed is not shown as a mood moment');
 if (!/hyped/.test(raidLabel ?? ''))
@@ -361,17 +392,20 @@ await menu.waitFor({ state: 'hidden', timeout: 5000 }).catch(() => {});
 await p.keyboard.press('Escape');
 await p.waitForTimeout(800);
 const backLabel = (await p.locator('[data-testid="emo-up"]').innerText()).trim();
-console.log(`after leaving: label "${backLabel}" · pins aside ${await p.locator('.pin.is-aside').count()}`);
-if (backLabel !== 'laughing') throw new Error('the ribbon did not return to the choice: ' + backLabel);
+console.log(
+  `after leaving: label "${backLabel}" · pins aside ${await p.locator('.pin.is-aside').count()}`,
+);
+if (backLabel !== 'laughing')
+  throw new Error('the ribbon did not return to the choice: ' + backLabel);
 if ((await p.locator('.pin.is-aside').count()) !== 0) throw new Error('pins still aside');
 
 // --- 3. the case the heatmap cannot see: chat tensed up and said *less* -----------------
 await chooseAxis('dread-payoff');
 const dread = await times();
 console.log('dread↔payoff · moments:', dread.length, '·', dread.join(' '));
-const reasons = await p.locator('ol.chips li').evaluateAll((els) =>
-  els.map((e) => e.getAttribute('aria-label') ?? ''),
-);
+const reasons = await p
+  .locator('ol.chips li')
+  .evaluateAll((els) => els.map((e) => e.getAttribute('aria-label') ?? ''));
 const quiet = reasons.filter((r) => /said less/.test(r));
 console.log('moments where chat went quiet:', quiet.length);
 for (const q of quiet.slice(0, 2)) console.log('   ·', q);

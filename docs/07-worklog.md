@@ -2022,3 +2022,16 @@ from both endpoints, so a future "optimisation" cannot quietly turn the morph in
 a swap.
 
 162 unit tests, 16 e2e suites, hover, lint and build green.
+
+## 2026-09-21m — pastel wave, and the page stops jumping
+
+The wave mark is pastel now, apricot up and sky down, over an ink halo so it still
+reads on a chip of its own colour. And the "screen moves down" bug: the active
+moment is derived from the list, a mood switch can silently change it, and the
+list's `scrollIntoView` dragged the page along. The grid scrolls itself now and
+nothing else. The e2e stages the exact gesture with the chip below the fold and
+fails on the old code (page 60 → 127); it passes on the fix.
+
+Still owed for M7: per-language pole packs; fold `scoring.ts` `mood` into the poles.
+
+162 unit tests, 16 e2e suites, hover, lint and build green.

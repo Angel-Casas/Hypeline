@@ -46,12 +46,31 @@ function setChip(id: string, el: unknown) {
  * Desktop only, the grid is capped and scrolls (ADR-27): a sensitive VOD finds twenty peaks
  * and the list used to push the clip panel off the screen. Keep the chosen one in view when
  * the choice came from elsewhere — a pin on the timeline, or the keyboard.
+ *
+ * Scrolls the *grid* and nothing else. This used `scrollIntoView`, which scrolls every
+ * scrollable ancestor — the page included — and the active id is derived from the moments
+ * list (first moment in the clip range, else near the playhead), so choosing a mood could
+ * change it without anyone clicking a moment, and the page would lurch to bring a chip on
+ * screen (Angel, 2026-09-21). The grid is the only thing this watcher is allowed to move.
  */
+const grid = ref<HTMLOListElement | null>(null);
 watch(
   () => props.activeId,
   (id) => {
     if (!id) return;
-    void nextTick(() => chipEls.get(id)?.scrollIntoView({ block: 'nearest' }));
+    void nextTick(() => {
+      const list = grid.value;
+      const el = id ? chipEls.get(id) : null;
+      if (!list || !el) return;
+      // measured in rects, not offsetTop: offsetTop is relative to whichever ancestor happens
+      // to be positioned, and the grid is not one
+      const top =
+        el.getBoundingClientRect().top - list.getBoundingClientRect().top + list.scrollTop;
+      const bottom = top + el.offsetHeight;
+      if (top < list.scrollTop) list.scrollTop = top;
+      else if (bottom > list.scrollTop + list.clientHeight)
+        list.scrollTop = bottom - list.clientHeight;
+    });
   },
 );
 /** Touch screens: no hover, so a tap opens the card first. */
@@ -158,6 +177,10 @@ const chips = computed(() => {
       pole,
       poleLabel: pole ? t(POLE_KEY[pole]) : '',
       poleUp: pole ? isUpper(pole) : false,
+      wave:
+        pole && isUpper(pole)
+          ? 'M1.5 11 C 4 11, 5 4, 8 4 S 12 11, 14.5 11'
+          : 'M1.5 5 C 4 5, 5 12, 8 12 S 12 5, 14.5 5',
       time: formatHms(m.t),
       mult:
         ai || emo
@@ -191,7 +214,7 @@ const chips = computed(() => {
 
 <template>
   <div class="flex min-h-0 flex-col gap-2">
-    <ol class="chips grid grid-cols-[repeat(auto-fill,minmax(92px,1fr))] gap-1.5">
+    <ol ref="grid" class="chips grid grid-cols-[repeat(auto-fill,minmax(92px,1fr))] gap-1.5">
       <li
         v-for="c in chips"
         :key="c.m.id"
@@ -233,12 +256,13 @@ const chips = computed(() => {
           data-testid="moment-emo"
         >
           <title>{{ c.poleLabel }}</title>
+          <!-- the crest twice: a wide ink halo, then the pastel. The halo is what lets a
+               pastel stroke survive a chip of its own hue — apricot on an apricot chip
+               vanished on the first sheet — and the two pastels are the thread's own ends,
+               so the warm and cool poles read apart at a glance (Angel, 2026-09-21). -->
+          <path :d="c.wave" fill="none" class="halo" stroke-width="4.6" stroke-linecap="round" />
           <path
-            :d="
-              c.poleUp
-                ? 'M1.5 11 C 4 11, 5 4, 8 4 S 12 11, 14.5 11'
-                : 'M1.5 5 C 4 5, 5 12, 8 12 S 12 5, 14.5 5'
-            "
+            :d="c.wave"
             fill="none"
             stroke="currentColor"
             stroke-width="2.4"
@@ -346,14 +370,28 @@ const chips = computed(() => {
 /*
  * The mood mark. Same seat as the rank dial it replaces, so a mixed list still scans down
  * one column; a little larger than the old square, since a stroke needs the room a filled
- * glyph did not. Ink, not the pole colour — the chip beneath it can be any heat.
+ * glyph did not. Pastel, in the pole's colour, so rising and falling read apart at a glance
+ * (Angel, 2026-09-21) — but the chip beneath it can be any heat, including the mark's own
+ * hue, so an ink halo sits under the stroke and keeps it legible on a same-coloured chip.
  */
 .motag {
   width: 18px;
   height: 18px;
   display: block;
-  color: var(--ink);
-  filter: drop-shadow(0 0 1.5px color-mix(in srgb, var(--paper) 70%, transparent));
+  /* the thread's own two ends: apricot rising, sky falling */
+  color: #ffa968;
+}
+.motag.down {
+  color: #7f9cff;
+}
+.motag .halo {
+  stroke: #221c2a;
+  opacity: 0.55;
+}
+/* on day paper the pastels are the light thing, so the halo goes dark and a touch stronger */
+:global(html[data-theme='light']) .motag .halo,
+:global(html:not([data-theme='dark'])) .motag .halo {
+  opacity: 0.62;
 }
 
 /* A phone scrolls the page, which is the right scroll there. On a desktop the grid takes
