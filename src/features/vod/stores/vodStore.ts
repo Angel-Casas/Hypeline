@@ -125,8 +125,24 @@ export const useVodStore = defineStore('vod', () => {
       : null,
   );
 
+  /**
+   * Build the series even though no axis is chosen: the open mood menu previews a ribbon
+   * under the pointer, and it needs the numbers before there is a choice. Once built it is
+   * kept — refreshEmotion only clears it when the layer is off *and* nothing asked.
+   */
+  let emotionWanted = false;
+  function ensureEmotion() {
+    emotionWanted = true;
+    if (!info.value || emotion.value) return;
+    emotionBuiltFor = messages.value.length;
+    emotion.value = emotionSeries(
+      dropBotsAndAnnouncements(messages.value),
+      info.value.lengthSeconds,
+    );
+  }
+
   function refreshEmotion(force = false) {
-    if (!emotionAxis.value || !info.value) {
+    if ((!emotionAxis.value && !emotionWanted) || !info.value) {
       emotion.value = null;
       emotionBuiltFor = -1;
       return;
@@ -557,6 +573,7 @@ export const useVodStore = defineStore('vod', () => {
     moments,
     emotion,
     emotionAxis,
+    ensureEmotion,
     dropped,
     fromCache,
     seekTarget,

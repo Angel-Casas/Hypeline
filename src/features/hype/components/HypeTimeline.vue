@@ -69,6 +69,12 @@ const props = withDefaults(
     emotion?: EmotionSeries | null;
     emotionAxis?: AxisKey | null;
     /**
+     * The axis shown is only being *considered* (the menu is open and the pointer rests on
+     * it). The ribbon becomes that mood; the pins, which belong to the chosen one, step back
+     * until the choice is made or abandoned.
+     */
+    previewing?: boolean;
+    /**
      * The transcript: chunks already transcribed (an accent band under the ribbon, so you
      * can see what the AI can search) and, while a whole-VOD transcription runs, the target
      * range and the chunk being worked on (a scanning light over the ribbon).
@@ -93,6 +99,7 @@ const props = withDefaults(
     liveEdge: null,
     emotion: null,
     emotionAxis: null,
+    previewing: false,
     transcript: null,
   },
 );
@@ -402,20 +409,88 @@ function emoAmp(pole: 'up' | 'down', sec: number): number {
  * spine; this one is not, and that asymmetry *is* the reading — but it is the same object,
  * so it takes the same three layers (halo, fill, sheen) and the same silk.
  */
+// twice the thread's sample count: the thread is a handful of wide swells, while a mood
+// curve can turn inside one bucket, and at 240 the polygon behind it was still catching
+// the light (Angel, 2026-09-21)
+const EMO_N = 480;
+type Amps = { up: Float32Array; down: Float32Array };
+const ZERO_AMPS = (): Amps => ({ up: new Float32Array(EMO_N + 1), down: new Float32Array(EMO_N + 1) });
+
+/** Where the chosen axis wants the ribbon: both edges, sampled across the visible window. */
+const emoTarget = computed<Amps>(() => {
+  const out = ZERO_AMPS();
+  if (!emoOn.value) return out;
+  for (let k = 0; k <= EMO_N; k++) {
+    const sec = v0.value + (k / EMO_N) * span.value;
+    out.up[k] = emoAmp('up', sec);
+    out.down[k] = emoAmp('down', sec);
+  }
+  return out;
+});
+
+/*
+ * What is actually drawn — the target, or on its way there. Changing axis morphs one mood
+ * into the next rather than swapping it; turning the layer on grows the ribbon out of the
+ * spine, and turning it off folds it back in. That is what lets the menu *preview* a mood
+ * under the pointer: the ribbon becomes that mood for as long as you hover, and slides back
+ * when you leave (Angel, 2026-09-21). Zooming and panning snap, because a curve trailing the
+ * viewport would read as lag, not as motion.
+ */
+const emoDrawn = ref<Amps>(ZERO_AMPS());
+/** 0 with the layer off, 1 with it on, tweened alongside the shape so nothing pops. */
+const emoAlpha = ref(0);
+const EMO_MS = 560;
+let emoFrame = 0;
+let emoFrom: Amps | null = null;
+let emoAlphaFrom = 0;
+let emoT0 = 0;
+const easeOut = (x: number) => 1 - Math.pow(1 - x, 3);
+
+function emoSnap() {
+  cancelAnimationFrame(emoFrame);
+  emoDrawn.value = emoTarget.value;
+  emoAlpha.value = emoOn.value ? 1 : 0;
+}
+function emoTween() {
+  cancelAnimationFrame(emoFrame);
+  if (reduceMotion) return emoSnap();
+  emoFrom = emoDrawn.value;
+  emoAlphaFrom = emoAlpha.value;
+  emoT0 = performance.now();
+  const toAlpha = emoOn.value ? 1 : 0;
+  const step = (now: number) => {
+    const p = easeOut(Math.min(1, (now - emoT0) / EMO_MS));
+    const to = emoTarget.value;
+    const from = emoFrom!;
+    const next = ZERO_AMPS();
+    for (let k = 0; k <= EMO_N; k++) {
+      next.up[k] = from.up[k]! + (to.up[k]! - from.up[k]!) * p;
+      next.down[k] = from.down[k]! + (to.down[k]! - from.down[k]!) * p;
+    }
+    emoDrawn.value = next;
+    emoAlpha.value = emoAlphaFrom + (toAlpha - emoAlphaFrom) * p;
+    if (p < 1) emoFrame = requestAnimationFrame(step);
+  };
+  emoFrame = requestAnimationFrame(step);
+}
+// the axis (or the layer) changing is motion; the window changing is not
+watch(() => props.emotionAxis, emoTween);
+watch([v0, v1, () => props.emotion], emoSnap);
+onMounted(emoSnap);
+onBeforeUnmount(() => cancelAnimationFrame(emoFrame));
+
+/** The mood ribbon is on screen while it is on, or still folding away. */
+const emoVisible = computed(() => emoOn.value || emoAlpha.value > 0.005);
+
 const emoRibbon = computed(() => {
-  if (!emoOn.value) return '';
-  // twice the thread's sample count: the thread is a handful of wide swells, while a mood
-  // curve can turn inside one bucket, and at 240 the polygon behind it was still catching
-  // the light (Angel, 2026-09-21)
-  const N = 480;
+  const d = emoDrawn.value;
   const mid = H / 2;
   const top: string[] = [];
   const bot: string[] = [];
-  for (let k = 0; k <= N; k++) {
-    const sec = v0.value + (k / N) * span.value;
-    const px = ((k / N) * W).toFixed(1);
-    top.push(`${k ? 'L' : 'M'}${px} ${(mid - emoAmp('up', sec)).toFixed(2)}`);
-    bot.push(`L${px} ${(mid + emoAmp('down', sec)).toFixed(2)}`);
+  for (let k = 0; k <= EMO_N; k++) {
+    const px = ((k / EMO_N) * W).toFixed(1);
+    top.push(`${k ? 'L' : 'M'}${px} ${(mid - d.up[k]!).toFixed(2)}`);
+    bot.push(`L${px} ${(mid + d.down[k]!).toFixed(2)}`);
   }
   return top.join(' ') + ' ' + bot.reverse().join(' ') + ' Z';
 });
@@ -908,8 +983,8 @@ function pulse(sec: number) {
         <path v-if="isLoading" :d="ribbon" :fill="`url(#${gid})`" opacity="0.14" />
         <g
           :mask="isLoading ? `url(#${gid}c)` : undefined"
-          :class="{ 'thread-muted': emoOn }"
-          :opacity="emoOn ? 0.13 : 1"
+          :class="{ 'thread-muted': emoVisible }"
+          :opacity="1 - 0.87 * emoAlpha"
         >
           <path :d="ribbon" :fill="`url(#${gid})`" opacity="0.5" :filter="`url(#${gid}b)`" />
           <path :d="ribbon" :fill="`url(#${gid})`" opacity="0.92" />
@@ -920,7 +995,13 @@ function pulse(sec: number) {
              of it — the hype ribbon stays underneath as a ghost, for where you are. The shape
              is what changed: the top edge is one pole, the bottom edge the other, so the
              asymmetry about the spine is the reading. -->
-        <g v-if="emoOn" class="emo" data-testid="emo-ribbon" pointer-events="none">
+        <g
+          v-if="emoVisible"
+          class="emo"
+          data-testid="emo-ribbon"
+          pointer-events="none"
+          :opacity="emoAlpha"
+        >
           <path :d="emoRibbon" :fill="`url(#${gid})`" opacity="0.5" :filter="`url(#${gid}b)`" />
           <path :d="emoRibbon" :fill="`url(#${gid})`" opacity="0.92" />
           <path :d="emoRibbon" :fill="`url(#${gid}s)`" opacity="0.7" />
@@ -1069,8 +1150,8 @@ function pulse(sec: number) {
         <g
           v-for="m in visibleMoments"
           :key="m.id"
-          class="cursor-pointer"
-          :class="{ 'is-hot': m.id === hoverId || m.id === activeId }"
+          class="pin cursor-pointer"
+          :class="{ 'is-hot': m.id === hoverId || m.id === activeId, 'is-aside': previewing }"
           @pointerenter="pinEnter(m)"
           @pointerleave="pinLeave"
           @pointerdown.stop
@@ -1487,6 +1568,14 @@ function pulse(sec: number) {
  * half reads as the lower pole, which is exactly the misreading the labels are there to
  * prevent. Greyed, it goes back to being context.
  */
+/* pins step aside while a mood is only being previewed: they belong to the chosen one */
+.pin {
+  transition: opacity 0.25s ease;
+}
+.pin.is-aside {
+  opacity: 0;
+  pointer-events: none;
+}
 .thread-muted {
   filter: grayscale(1);
 }

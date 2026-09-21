@@ -1292,6 +1292,21 @@ moment's time is its bucket's _centre_, not its start: on a quiet channel a buck
 is ninety seconds wide, and the middle of the window is both where chat reacted and
 where the ribbon draws it.
 
+_The menu previews, and the ribbon morphs_ (Angel, 2026-09-21). Resting the pointer
+on an entry of the open mood menu makes the ribbon _that_ mood for as long as it
+rests there — the pill, the list and the pins keep the choice, and the pins step
+aside — and leaving slides it back. `MenuButton` gained a `preview` event for it,
+fired on hover and on focus alike so arrow keys preview too. The ribbon is a tween
+now rather than a computed shape: changing axis morphs one mood into the next,
+turning the layer on grows it out of the spine, turning it off folds it back in,
+560 ms ease-out. Zoom and pan snap, because a curve trailing the viewport reads as
+lag. The series is built on the first hover so a preview never waits.
+
+_The mood mark is a wave crest_, rising for the warm pole and falling for the cool
+one, chosen by Angel from ten candidates (`design/mood-marks.html`). It is drawn in
+ink rather than the pole colour: the first sheet drew it in pole colour and it
+vanished on a chip of the same hue. The direction carries the pole.
+
 _Colour is validated, and it is not the only cue._ The two poles use steps of
 the thread's own ends, checked against each ground for colour-vision separation
 (ΔE ≈ 26 protan and tritan) and contrast; night is its own choice, not a flip of

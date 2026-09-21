@@ -46,7 +46,15 @@ const props = withDefaults(
     silk: false,
   },
 );
-const emit = defineEmits<{ 'update:modelValue': [string | number] }>();
+const emit = defineEmits<{
+  'update:modelValue': [string | number];
+  /**
+   * The option under the pointer or the keyboard cursor, or null once nothing is — so a
+   * parent can *show* a choice before it is made (the mood menu previews its ribbon). Fired
+   * on hover and on focus alike, so arrow keys preview as well as the mouse.
+   */
+  preview: [string | number | null];
+}>();
 // two roots (the pill and the teleported menu), so attributes have to be placed by hand
 defineOptions({ inheritAttrs: false });
 
@@ -77,6 +85,7 @@ function toggle() {
 }
 function close(refocus = true) {
   open.value = false;
+  emit('preview', null);
   if (refocus) btn.value?.focus({ preventScroll: true });
 }
 function pick(v: string | number) {
@@ -88,6 +97,7 @@ function onDoc(e: MouseEvent) {
   const el = e.target as Node;
   if (menu.value?.contains(el) || btn.value?.contains(el)) return;
   open.value = false;
+  emit('preview', null);
 }
 function onKey(e: KeyboardEvent) {
   if (!open.value) return;
@@ -143,6 +153,7 @@ onBeforeUnmount(() => {
         class="pick-menu fixed z-[70] rounded-2xl p-1.5"
         :style="{ top: pos.top + 'px', left: pos.left + 'px', width: pos.width + 'px' }"
         data-testid="pick-menu"
+        @pointerleave="emit('preview', null)"
       >
         <p v-if="label" class="eyebrow px-2.5 pt-1.5 pb-1">{{ label }}</p>
         <button
@@ -154,6 +165,8 @@ onBeforeUnmount(() => {
           class="flex w-full items-center justify-between gap-3 rounded-xl px-2.5 py-1.5 text-left text-[13px] text-ink transition-colors hover-frost focus:outline-none"
           :class="o.v === modelValue ? 'font-semibold' : ''"
           @click="pick(o.v)"
+          @pointerenter="emit('preview', o.v)"
+          @focus="emit('preview', o.v)"
         >
           <span>{{ o.l }}</span>
           <span v-if="o.note" class="text-muted text-[10.5px]">{{ o.note }}</span>

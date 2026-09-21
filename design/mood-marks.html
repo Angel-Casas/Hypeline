@@ -1,0 +1,72 @@
+<!doctype html>
+<meta charset="utf-8" />
+<title>Mood marks — ten candidates</title>
+<style>
+  @font-face { font-family: 'Manrope'; src: url('../public/fonts/manrope-500-latin.woff2') format('woff2'); font-weight: 500; }
+  body { margin: 0; font-family: Manrope, system-ui, sans-serif; background: #0c0a0f; color: #f3edf6; padding: 28px 32px; }
+  h1 { font-size: 15px; font-weight: 600; margin: 0 0 4px; letter-spacing: .02em; }
+  p.sub { margin: 0 0 22px; font-size: 12px; opacity: .55; }
+  .grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 26px 40px; }
+  .card { display: flex; flex-direction: column; gap: 8px; }
+  .name { font: 600 11px/1.2 ui-monospace, monospace; letter-spacing: .08em; text-transform: uppercase; opacity: .7; }
+  .name b { color: #f3edf6; opacity: 1; margin-right: 6px; font-size: 12px; }
+  .row { display: flex; gap: 8px; align-items: center; }
+  .zoom { display: flex; gap: 6px; margin-right: 10px; }
+  .zoom span { width: 48px; height: 48px; border-radius: 12px; display: grid; place-items: center; }
+  .zoom svg { width: 40px; height: 40px; overflow: visible; }
+  .zoom .w { background: #17131c; --pole: #cf7020; --ink: #f3edf6; --paper: #17131c; }
+  .zoom .c { background: #17131c; --pole: #6b7fe0; --ink: #f3edf6; --paper: #17131c; }
+  /* a chip, as the list draws one */
+  .chip { position: relative; width: 92px; aspect-ratio: 16/10; border-radius: 10px; padding: 7px; box-sizing: border-box;
+          background: color-mix(in srgb, var(--c) calc(var(--h) * 100%), var(--paper)); color: var(--ink); }
+  .dark { --paper: #17131c; --ink: #f3edf6; }
+  .light { --paper: #f4eef5; --ink: #221c2a; }
+  .chip .t { position: absolute; left: 7px; bottom: 6px; font: 700 11.5px ui-monospace, monospace; }
+  .chip .t small { font-weight: 500; font-size: 10px; opacity: .8; margin-left: 3px; }
+  .mark { position: absolute; top: 6px; left: 6px; width: 15px; height: 15px; display: block; }
+  .mark svg { width: 15px; height: 15px; display: block; overflow: visible; }
+  .warm { --pole: var(--warm); } .cool { --pole: var(--cool); }
+  .dark .warm { --warm: #cf7020; } .dark .cool { --cool: #6b7fe0; }
+  .light .warm { --warm: #c2661a; } .light .cool { --cool: #5a6fd6; }
+  .note { font-size: 11px; opacity: .55; line-height: 1.35; }
+</style>
+<h1>Mood marks — ten candidates</h1>
+<p class="sub">Each shown warm (upper pole) and cool (lower pole), on a hot chip and a cool one, night and day. Big pair: the shape, warm and cool. Chips: how it sits on a moment, in ink, so it reads on any heat. The current mark is a small coloured square with ▲ / ▼.</p>
+<div class="grid" id="g"></div>
+<script>
+  // All marks drawn in a 16×16 box; `d` receives the pole direction: 1 = up (warm), -1 = down (cool).
+  const MARKS = [
+    { n: 'swell', note: 'the ribbon\'s own shape: one small bell, above or below a hairline',
+      svg: (d) => `<path d="M1 ${d>0?12:4} C 4 ${d>0?12:4}, 5.5 ${d>0?3:13}, 8 ${d>0?3:13} S 12 ${d>0?12:4}, 15 ${d>0?12:4}" fill="var(--pole)" opacity=".95"/><path d="M1 ${d>0?12.5:3.5} H15" stroke="var(--ink)" stroke-width="1" opacity=".45" stroke-linecap="round"/>` },
+    { n: 'pin', note: 'the timeline pin, shrunk: a stem from the line to a dot',
+      svg: (d) => `<path d="M1 8 H15" stroke="var(--ink)" stroke-width="1" opacity=".4" stroke-linecap="round"/><path d="M8 8 V${d>0?4:12}" stroke="var(--pole)" stroke-width="1.6" stroke-linecap="round"/><circle cx="8" cy="${d>0?3:13}" r="2.4" fill="var(--pole)"/>` },
+    { n: 'chevron', note: 'a soft chevron; reads at any size',
+      svg: (d) => `<path d="M3 ${d>0?10.5:5.5} L8 ${d>0?5.5:10.5} L13 ${d>0?10.5:5.5}" fill="none" stroke="var(--pole)" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>` },
+    { n: 'petal', note: 'a leaf pointing the way the pole goes',
+      svg: (d) => `<path d="M8 ${d>0?1.5:14.5} C 12.5 ${d>0?4.5:11.5}, 12.5 ${d>0?10:6}, 8 ${d>0?14.5:1.5} C 3.5 ${d>0?10:6}, 3.5 ${d>0?4.5:11.5}, 8 ${d>0?1.5:14.5} Z" fill="var(--pole)"/><path d="M8 ${d>0?4:12} V${d>0?12:4}" stroke="var(--paper)" stroke-width="1" opacity=".7" stroke-linecap="round"/>` },
+    { n: 'bars', note: 'three bars of a swell, like an equaliser',
+      svg: (d) => { const y = (h) => d>0 ? `y="${14-h}" height="${h}"` : `y="2" height="${h}"`; return `<rect x="2" ${y(5)} width="3" rx="1.5" fill="var(--pole)" opacity=".55"/><rect x="6.5" ${y(11)} width="3" rx="1.5" fill="var(--pole)"/><rect x="11" ${y(7)} width="3" rx="1.5" fill="var(--pole)" opacity=".75"/>`; } },
+    { n: 'half', note: 'a half-disc on the line — the mirror, literally',
+      svg: (d) => `<path d="M1 8 H15" stroke="var(--ink)" stroke-width="1" opacity=".4" stroke-linecap="round"/><path d="M2.5 8 A5.5 5.5 0 0 ${d>0?1:0} 13.5 8 Z" fill="var(--pole)"/>` },
+    { n: 'spark', note: 'a four-point spark; the direction is a small tail',
+      svg: (d) => `<path d="M8 1.5 C 8.6 5.4, 10.6 7.4, 14.5 8 C 10.6 8.6, 8.6 10.6, 8 14.5 C 7.4 10.6, 5.4 8.6, 1.5 8 C 5.4 7.4, 7.4 5.4, 8 1.5 Z" fill="var(--pole)"/><circle cx="8" cy="${d>0?1.2:14.8}" r="1.4" fill="var(--ink)" opacity=".85"/>` },
+    { n: 'drop', note: 'a teardrop: heavy end toward the pole',
+      svg: (d) => `<path d="M8 ${d>0?1.5:14.5} C 11 ${d>0?6:10}, 12 ${d>0?8.5:7.5}, 12 ${d>0?10.5:5.5} A4 4 0 0 1 4 ${d>0?10.5:5.5} C 4 ${d>0?8.5:7.5}, 5 ${d>0?6:10}, 8 ${d>0?1.5:14.5} Z" fill="var(--pole)"/>` },
+    { n: 'ring', note: 'a hairline ring with a filled dot riding its top or bottom',
+      svg: (d) => `<circle cx="8" cy="8" r="5.5" fill="none" stroke="var(--pole)" stroke-width="1.5"/><circle cx="8" cy="${d>0?2.5:13.5}" r="2.3" fill="var(--pole)" stroke="var(--paper)" stroke-width="1"/>` },
+    { n: 'wave', note: 'a single wave crest, rising or falling',
+      svg: (d) => `<path d="M1.5 ${d>0?11:5} C 4 ${d>0?11:5}, 5 ${d>0?4:12}, 8 ${d>0?4:12} S 12 ${d>0?11:5}, 14.5 ${d>0?11:5}" fill="none" stroke="var(--pole)" stroke-width="2.4" stroke-linecap="round"/>` },
+  ];
+  const g = document.getElementById('g');
+  MARKS.forEach((m, i) => {
+    const card = document.createElement('div'); card.className = 'card';
+    const chips = [['dark', 1, '#ffa968', 0.95, '2:39:00', '11 ch'], ['dark', -1, '#7f9cff', 0.45, '2:23:15', '6 ch'],
+                   ['light', 1, '#ff77b5', 0.9, '0:30:45', '12 ch'], ['light', -1, '#b39cff', 0.4, '1:14:15', '8 ch']];
+    card.innerHTML = `<div class="name"><b>${i+1}</b>${m.n}</div>
+      <div class="row"><div class="zoom"><span class="w"><svg viewBox="0 0 16 16">${m.svg(1)}</svg></span><span class="c"><svg viewBox="0 0 16 16">${m.svg(-1)}</svg></span></div>${chips.map(([th, d, c, h, t, ch]) => `<div class="chip ${th} ${d>0?'warm':'cool'}" style="--c:${c};--h:${h}">
+        <span class="mark" style="--pole: var(--ink)"><svg viewBox="0 0 16 16">${m.svg(d)}</svg></span>
+        <span class="t">${t}<small>${ch}</small></span></div>`).join('')}</div>
+      <div class="note">${m.note}</div>`;
+    g.appendChild(card);
+  });
+</script>

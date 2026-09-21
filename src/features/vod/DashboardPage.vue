@@ -18,6 +18,7 @@ import TwitchPlayer from './components/TwitchPlayer.vue';
 import SubOnlyNotice from './components/SubOnlyNotice.vue';
 import HypeTimeline from '@/features/hype/components/HypeTimeline.vue';
 import EmotionControl from '@/features/hype/components/EmotionControl.vue';
+import { AXIS_KEYS, type AxisKey } from '@/features/hype/emotion';
 import MomentList from '@/features/hype/components/MomentList.vue';
 import VocabularyOverlay from '@/features/hype/components/VocabularyOverlay.vue';
 import { useVocabStore } from '@/features/hype/vocabStore';
@@ -200,6 +201,22 @@ useShortcuts({
 
 const aiStore = useAiStore();
 /** Chat's moments plus the ones the user's transcript searches pinned (AI), in time order. */
+/**
+ * The mood the open menu is hovering, '' for "off", null when the menu is closed or the
+ * pointer is off it. The ribbon shows it; the moments and pins keep following the choice.
+ */
+const moodPreview = ref<string | null>(null);
+const shownAxis = computed<AxisKey | null>(() => {
+  if (moodPreview.value == null) return store.emotionAxis;
+  return (AXIS_KEYS as string[]).includes(moodPreview.value)
+    ? (moodPreview.value as AxisKey)
+    : null;
+});
+// the series is built lazily when the layer is on; a preview needs it before the choice
+watch(moodPreview, (v) => {
+  if (v) store.ensureEmotion();
+});
+
 const allMoments = computed<Moment[]>(() =>
   aiStore.aiMoments.length
     ? [...moments.value, ...aiStore.aiMoments].sort((a, b) => a.t - b.t)
@@ -586,13 +603,15 @@ watch(
             v-if="phase === 'ready' && buckets.length"
             v-model="settings.emotionAxis"
             :bucket-sec="store.emotion?.bucketSec ?? null"
+            @preview="moodPreview = $event"
           />
           <HypeTimeline
             v-if="buckets.length || phase === 'loading-chat'"
             :buckets="buckets"
             :moments="allMoments"
             :emotion="store.emotion"
-            :emotion-axis="store.emotionAxis"
+            :emotion-axis="shownAxis"
+            :previewing="moodPreview != null"
             :length-seconds="lengthSeconds"
             :current-time="currentTime"
             :in-sec="inSec"

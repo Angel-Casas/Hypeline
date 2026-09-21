@@ -219,16 +219,32 @@ const chips = computed(() => {
           aria-hidden="true"
         ></span>
         <span v-if="c.ai" class="aitag absolute top-[6px] left-[6px]">AI</span>
-        <!-- the pole, by shape as well as by colour: an arrow up for the warm pole, down for
-             the cool one, so the chip is readable without colour vision or a legend -->
-        <span
+        <!-- the mood mark: one wave crest, rising for the warm pole and falling for the cool
+             one (Angel chose it from ten, 2026-09-21: design/mood-marks.html). Drawn in ink
+             rather than the pole colour so it reads on a chip of any heat, and the direction
+             carries the pole, so it works without colour vision or a legend. -->
+        <svg
           v-else-if="c.emo"
-          class="motag absolute top-[6px] left-[6px]"
+          class="motag absolute top-[5px] left-[5px]"
           :class="c.poleUp ? 'up' : 'down'"
-          :title="c.poleLabel"
+          viewBox="0 0 16 16"
+          role="img"
+          :aria-label="c.poleLabel"
           data-testid="moment-emo"
-          >{{ c.poleUp ? '▲' : '▼' }}</span
         >
+          <title>{{ c.poleLabel }}</title>
+          <path
+            :d="
+              c.poleUp
+                ? 'M1.5 11 C 4 11, 5 4, 8 4 S 12 11, 14.5 11'
+                : 'M1.5 5 C 4 5, 5 12, 8 12 S 12 5, 14.5 5'
+            "
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2.4"
+            stroke-linecap="round"
+          />
+        </svg>
         <span v-else class="dial absolute top-[6px] left-[6px]"
           ><i>{{ c.rank }}</i></span
         >
@@ -327,25 +343,17 @@ const chips = computed(() => {
 .chip.is-dim.is-hot {
   opacity: 1;
 }
+/*
+ * The mood mark. Same seat as the rank dial it replaces, so a mixed list still scans down
+ * one column; a little larger than the old square, since a stroke needs the room a filled
+ * glyph did not. Ink, not the pole colour — the chip beneath it can be any heat.
+ */
 .motag {
-  display: grid;
-  place-items: center;
-  width: 15px;
-  height: 15px;
-  border-radius: 5px;
-  font-size: 9px;
-  line-height: 1;
-  color: #fff;
-  background: #c2661a;
-}
-.motag.down {
-  background: #5a6fd6;
-}
-:global(html[data-theme='dark']) .motag {
-  background: #cf7020;
-}
-:global(html[data-theme='dark']) .motag.down {
-  background: #6b7fe0;
+  width: 18px;
+  height: 18px;
+  display: block;
+  color: var(--ink);
+  filter: drop-shadow(0 0 1.5px color-mix(in srgb, var(--paper) 70%, transparent));
 }
 
 /* A phone scrolls the page, which is the right scroll there. On a desktop the grid takes

@@ -327,6 +327,44 @@ if (hypePins < 1) throw new Error('the raid peak has no pin on the ribbon');
 if (hypePins !== 1)
   throw new Error(`expected just the raid pinned on the mood ribbon, got ${hypePins}`);
 
+// --- 2c. hovering a menu entry previews that mood on the ribbon, animated ---------------
+// joy is the choice; rest the pointer on hype in the open menu and the ribbon *becomes*
+// hype for as long as it is there, morphing rather than swapping; the pins step aside; the
+// pill and the list keep the choice. Leave, and it slides back.
+await chooseAxis('joy-sorrow');
+const ribbonD = async () =>
+  (await p.locator('[data-testid="emo-ribbon"] path').first().getAttribute('d')) ?? '';
+const d0 = await ribbonD();
+await axis.click();
+const menu = p.locator('[data-testid="pick-menu"]');
+await menu.waitFor({ state: 'visible', timeout: 5000 });
+await menu.locator('[role="menuitemradio"]', { hasText: LABEL['hype-letdown'] }).first().hover();
+await p.waitForTimeout(140);
+const dMid = await ribbonD();
+const labelMid = (await p.locator('[data-testid="emo-up"]').innerText()).trim();
+const asideMid = await p.locator('.pin.is-aside').count();
+await p.waitForTimeout(700);
+const d1 = await ribbonD();
+const pillMid = await axisValue();
+console.log(
+  `preview: label "${labelMid}" · pins aside ${asideMid} · pill still "${pillMid}" · frames differ: ` +
+    `${d0 !== dMid && dMid !== d1 && d0 !== d1}`,
+);
+if (labelMid !== 'hyped') throw new Error('hovering hype did not preview hype: ' + labelMid);
+if (pillMid !== LABEL['joy-sorrow']) throw new Error('a preview changed the choice');
+if (asideMid === 0) throw new Error("the chosen mood's pins stayed up during a preview");
+if (d0 === d1) throw new Error('the ribbon did not change under the pointer');
+if (dMid === d0 || dMid === d1) throw new Error('the ribbon swapped instead of morphing');
+// leaving the menu slides it back to the choice
+await p.mouse.move(5, 5);
+await menu.waitFor({ state: 'hidden', timeout: 5000 }).catch(() => {});
+await p.keyboard.press('Escape');
+await p.waitForTimeout(800);
+const backLabel = (await p.locator('[data-testid="emo-up"]').innerText()).trim();
+console.log(`after leaving: label "${backLabel}" · pins aside ${await p.locator('.pin.is-aside').count()}`);
+if (backLabel !== 'laughing') throw new Error('the ribbon did not return to the choice: ' + backLabel);
+if ((await p.locator('.pin.is-aside').count()) !== 0) throw new Error('pins still aside');
+
 // --- 3. the case the heatmap cannot see: chat tensed up and said *less* -----------------
 await chooseAxis('dread-payoff');
 const dread = await times();

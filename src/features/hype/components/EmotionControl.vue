@@ -28,7 +28,11 @@ const props = defineProps<{
   /** The width the layer actually chose, so a widened bucket can say so. */
   bucketSec?: number | null;
 }>();
-const emit = defineEmits<{ 'update:modelValue': [string] }>();
+const emit = defineEmits<{
+  'update:modelValue': [string];
+  /** An axis the pointer is resting on in the open menu ('' = off), or null when none. */
+  preview: [string | null];
+}>();
 
 const { t } = useI18n();
 
@@ -56,6 +60,7 @@ const widened = computed(
       :model-value="modelValue"
       :title="t('emotion.hint')"
       @update:model-value="emit('update:modelValue', String($event))"
+      @preview="emit('preview', $event == null ? null : String($event))"
     />
     <span v-if="widened" class="text-muted font-mono text-[10px]" data-testid="emotion-widened">{{
       t('emotion.widened', { sec: bucketSec })

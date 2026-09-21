@@ -2006,3 +2006,19 @@ One-line fix; the e2e now reads each bright chip's `--h` and fails if the mood
 chips are cold, so a score-scale change cannot do this silently again.
 
 162 unit tests, 16 e2e suites green.
+
+## 2026-09-21l — hover a mood and the ribbon becomes it; the wave mark
+
+Two asks. The mood mark: ten candidates rendered warm/cool, night/day, in-chip and
+zoomed (`design/mood-marks.html`); Angel chose the wave crest. Drawn in ink — the
+first sheet used the pole colour and it vanished on a chip of the same hue.
+
+The preview: resting on an entry of the open menu makes the ribbon that mood, and
+it _morphs_ rather than swaps — the ribbon is a tween now, growing out of the spine
+when the layer turns on and folding back when it turns off. The choice, the list
+and the pins are untouched during a preview (the pins step aside); leaving slides
+it back. The e2e hovers an entry, grabs a frame mid-motion and asserts it differs
+from both endpoints, so a future "optimisation" cannot quietly turn the morph into
+a swap.
+
+162 unit tests, 16 e2e suites, hover, lint and build green.
