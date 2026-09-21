@@ -524,6 +524,36 @@ const back = await times();
 console.log('layer off again · moments:', back.length);
 if (back.join(' ') !== flat.join(' ')) throw new Error('turning it off changed the list');
 
+// --- 5b. the very first preview of a fresh session morphs too ---------------------------
+// The series is built lazily on the first hover, and its arrival used to snap the ribbon to
+// the hovered mood instead of growing it (Angel, 2026-09-21). Fresh page, layer off, nothing
+// built: hover joy and catch the ribbon part-way.
+await p.reload();
+await p.waitForFunction(() => /\d+ moments/.test(document.body.innerText), null, {
+  timeout: 90000,
+});
+await axis.waitFor({ state: 'visible', timeout: 20000 });
+if ((await axisValue()) !== LABEL['']) throw new Error('the layer should be off after reload');
+await axis.click();
+await menu.waitFor({ state: 'visible', timeout: 5000 });
+const reach = async () =>
+  p
+    .locator('[data-testid="emo-ribbon"] path')
+    .first()
+    .evaluate((el) => {
+      const b = el.getBBox();
+      return Number(b.height.toFixed(2));
+    });
+await menu.locator('[role="menuitemradio"]', { hasText: LABEL['joy-sorrow'] }).first().hover();
+await p.waitForTimeout(140);
+const firstMid = await reach().catch(() => 0);
+await p.waitForTimeout(800);
+const firstEnd = await reach();
+console.log(`first preview of the session · reach at 140ms ${firstMid} · settled ${firstEnd}`);
+if (!(firstMid > 0.5 && firstMid < firstEnd * 0.9))
+  throw new Error(`the first preview snapped: ${firstMid} of ${firstEnd} at 140ms`);
+await p.keyboard.press('Escape');
+
 const real = errors.filter((e) => !/ResizeObserver/.test(e));
 console.log('page errors:', real.length ? real : 'none');
 await b.close();

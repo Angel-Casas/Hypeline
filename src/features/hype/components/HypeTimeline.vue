@@ -478,9 +478,12 @@ function emoTween() {
   };
   emoFrame = requestAnimationFrame(step);
 }
-// the axis (or the layer) changing is motion; the window changing is not
-watch(() => props.emotionAxis, emoTween);
-watch([v0, v1, () => props.emotion], emoSnap);
+// the axis (or the layer) changing is motion; the window changing is not. The series
+// arriving is motion too: it is built lazily, on the first preview, and used to *snap* —
+// so the first hover in a fresh session painted its mood at once while every later one
+// morphed (Angel, 2026-09-21). A restart mid-tween continues from what is drawn.
+watch([() => props.emotionAxis, () => props.emotion], emoTween);
+watch([v0, v1], emoSnap);
 onMounted(emoSnap);
 onBeforeUnmount(() => cancelAnimationFrame(emoFrame));
 
