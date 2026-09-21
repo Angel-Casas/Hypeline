@@ -27,7 +27,10 @@ const OUT = new URL('.', import.meta.url).pathname;
 const BUCKET = 15;
 const BASE_HALF = 600;
 
-const FIXTURES = [
+/* `node axes.mjs <label> <path>` runs one ad-hoc VOD instead — for trying an axis against a
+   VOD the fixtures do not cover (a horror stream for dread, say). */
+const ARGV = process.argv.slice(2).filter((a) => !a.startsWith('--'));
+const FIXTURES = ARGV.length >= 2 ? [[ARGV[0], ARGV[1]]] : [
   ['tokyosims', 'src/features/hype/__tests__/fixtures/tokyosims_2871164819.jsonl'],
   ['caseoh_', 'src/features/hype/__tests__/fixtures/caseoh_2871808638.jsonl.gz'],
   ['popkreep_', 'src/features/hype/__tests__/fixtures/popkreep_2861002437.jsonl'],

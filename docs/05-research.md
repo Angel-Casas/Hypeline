@@ -691,3 +691,43 @@ copium, aware), and `shock` mixes dread (monkaS) with surprise (wtf, omg). Those
 split across different axes, so the lexicon has to be re-cut rather than reused,
 and `mood` should probably become a projection of the new poles rather than a
 second, disagreeing classifier.
+
+### S7b — the horror VOD does not settle dread (2026-09-21)
+
+Angel supplied a psychological-horror VOD with 120k views to test the dread ↔ relief
+axis: `twitch.tv/videos/2877241107` (hasgarson). It does not settle the question, for
+three measurable reasons, and each is worth keeping.
+
+- **Density, again.** 2,572 human messages over 10 h 47 m — **4.0 messages a minute**,
+  226 distinct chatters, a median of **1** chatter per 15 s bucket. Even widened to the
+  spike's 120 s ceiling the median is 4, under the crowd floor. Dread was tagged on
+  **3 users in the entire VOD**; relief on 3. There is nothing here to measure.
+- **Views are not chatters.** 120k views on a VOD with 4 messages a minute: almost all
+  of that is replay traffic arriving long after the chat happened. Our entire signal
+  comes from people typing *while it aired*, so when sizing a VOD, concurrent viewers
+  are the number that matters and the view count is close to irrelevant.
+- **The chat is German** (`und`, `ich`, `die`, `es`, `bei` lead the token counts). Our
+  pole lexicon is English, so most of what this chat says is invisible to it — the same
+  problem ADR-29 solved for the hype vocabulary, now inherited by the emotion layer.
+  The emotion lexicon needs per-language packs on the same footing.
+
+**And a fourth thing, which matters beyond this feature: some chats converse rather
+than react.** The top emotes here are `LUL`, `:D`, `<3`, `Kappa` and the channel's own
+`hasgaBlove` / `hasgaLovebee` / `hasgaFlower` — greeting and affection. People are
+talking *with* the streamer and each other, in sentences, not reacting in unison to
+what is on screen. A reactive chat votes; a conversational chat chats. **The hype
+heatmap depends on the same reflex the emotion layer does**, so a conversational
+channel is a weak spot for the whole app, not just for M7. Worth its own look:
+what, if anything, we can offer a channel like this.
+
+One positive result even so: joy still tagged 235 users and produced a clean moment
+(`00:48:00`, 5 of 6 chatters on `LUL` / `xD` / `kekw` while volume was flat) **in a
+German chat with an English lexicon**, because `LUL`, `xD`, `kekw` and `haha` are not
+English — they are Twitch. That is the emote-token thesis holding up under the least
+favourable conditions we have tested.
+
+**Dread ↔ relief therefore stays untested, not disproven.** What would settle it: an
+English-language horror or competitive VOD with a *live* chat above roughly 30
+messages a minute. The fixture is kept as `spikes/s7-sentiment/hasgarson_2877241107.jsonl.gz`
+— not to prove the axis, but as the low-density, non-English, conversational
+counter-example, which is exactly the case our three original fixtures lacked.
