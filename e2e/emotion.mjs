@@ -179,8 +179,11 @@ async function chooseAxis(key) {
   if (Math.abs(after - before) > 1)
     throw new Error(`choosing ${LABEL[key]} scrolled the page from ${before} to ${after}`);
 }
+// a chip on its way out (a fade, since the grid animates) is not in the list any more
 const times = async () =>
-  (await p.locator('ol.chips li b').allInnerTexts()).map((s) => s.trim()).sort();
+  (await p.locator('ol.chips li:not(.chip-leave-active) b').allInnerTexts())
+    .map((s) => s.trim())
+    .sort();
 
 // --- 1. off by default, and the flat hour gives the rate scorer nothing to say ----------
 await axis.waitFor({ state: 'visible', timeout: 20000 });
@@ -201,7 +204,7 @@ console.log('layer off · moments:', flat.length, '·', flat.join(' '));
 if (!flat.length) throw new Error('the rate scorer should find the two bursts');
 const pinsOff = await p.locator('.pin-dot').count();
 console.log('pins on the thread:', pinsOff);
-if ((await p.locator('ol.chips li.is-dim').count()) !== 0)
+if ((await p.locator('ol.chips li:not(.chip-leave-active).is-dim').count()) !== 0)
   throw new Error('moments dimmed with no mood chosen');
 if ((await p.locator('[data-testid="emo-ribbon"]').count()) !== 0)
   throw new Error('mood ribbon drawn while off');
@@ -263,9 +266,9 @@ if (!/grayscale/.test(ghost)) throw new Error('the thread kept its colour under 
 // the pins on the ribbon belong to the mood now; the rate peaks stay in the list, dimmed.
 // Every row is one of exactly two kinds: the mood's (bright, pinned) or the heatmap's (dim).
 const pinCount = await p.locator('.pin-dot').count();
-const dimmed = await p.locator('ol.chips li.is-dim').count();
+const dimmed = await p.locator('ol.chips li:not(.chip-leave-active).is-dim').count();
 const emoCount = await emoChips.count();
-const bright = await p.locator('ol.chips li:not(.is-dim)').count();
+const bright = await p.locator('ol.chips li:not(.is-dim):not(.chip-leave-active)').count();
 console.log(
   `pins on the ribbon: ${pinCount} (mood moments ${emoCount}) · bright ${bright} · dimmed ${dimmed}`,
 );
@@ -275,7 +278,7 @@ if (bright !== emoCount) throw new Error(`bright ${bright} but mood moments ${em
 // and bright means *warm*: a mood chip carries its height as heat (0..1). A stale divisor
 // once left every one of them at a tenth of its colour, undimmed and yet dark.
 const heats = await p
-  .locator('ol.chips li:not(.is-dim)')
+  .locator('ol.chips li:not(.is-dim):not(.chip-leave-active)')
   .evaluateAll((els) => els.map((e) => Number(e.style.getPropertyValue('--h'))));
 console.log('mood chip heat:', heats.map((h) => h.toFixed(2)).join(' '));
 if (Math.max(...heats) < 0.6) throw new Error('mood chips are cold: ' + heats.join(' '));
@@ -283,11 +286,11 @@ if (dimmed !== flat.length)
   throw new Error(`expected ${flat.length} dimmed rate chips, got ${dimmed}`);
 // dimmed, not gone, and still clickable. Polled rather than read once: the dim is a 140ms
 // fade, and reading it the instant the class lands catches the transition mid-flight.
-const box = await p.locator('ol.chips li.is-dim').first().boundingBox();
+const box = await p.locator('ol.chips li:not(.chip-leave-active).is-dim').first().boundingBox();
 if (!box || box.width < 10) throw new Error('a dimmed chip is not on screen');
 await p.waitForFunction(
   () => {
-    const el = document.querySelector('ol.chips li.is-dim');
+    const el = document.querySelector('ol.chips li:not(.chip-leave-active).is-dim');
     if (!el) return false;
     const o = Number(getComputedStyle(el).opacity);
     return o > 0.15 && o < 0.6;
@@ -296,16 +299,67 @@ await p.waitForFunction(
   { timeout: 5000 },
 );
 const op = await p
-  .locator('ol.chips li.is-dim')
+  .locator('ol.chips li:not(.chip-leave-active).is-dim')
   .first()
   .evaluate((el) => Number(getComputedStyle(el).opacity));
 console.log('a dimmed chip settles at opacity', op);
 // and a click on it still selects that moment
-await p.locator('ol.chips li.is-dim').first().click();
+await p.locator('ol.chips li:not(.chip-leave-active).is-dim').first().click();
 await p.waitForTimeout(300);
-if ((await p.locator('ol.chips li.is-on').count()) === 0)
+if ((await p.locator('ol.chips li:not(.chip-leave-active).is-on').count()) === 0)
   throw new Error('a dimmed moment is not clickable');
 console.log('a dimmed moment is still selectable');
+
+// --- 2a′. the mood's moments sit first, and the order toggle ranks (Angel, 2026-09-21) ----
+// One row shape: [time, dimmed?, heat, rank] in DOM order.
+const rows = () =>
+  p.locator('ol.chips li:not(.chip-leave-active)').evaluateAll((els) =>
+    els.map((el) => ({
+      t: el.querySelector('b')?.textContent?.trim() ?? '',
+      dim: el.classList.contains('is-dim'),
+      heat: Number(el.style.getPropertyValue('--h')),
+      rank: Number(el.querySelector('.dial i')?.textContent ?? 0),
+    })),
+  );
+const hms = (s) => s.split(':').reduce((a, x) => a * 60 + Number(x), 0);
+let r = await rows();
+const firstDim = r.findIndex((x) => x.dim);
+if (firstDim === -1 || r.slice(firstDim).some((x) => !x.dim))
+  throw new Error(
+    'mood moments are not grouped first: ' + r.map((x) => (x.dim ? 'd' : 'M')).join(''),
+  );
+const chrono = (xs) => xs.every((x, i) => !i || hms(xs[i - 1].t) <= hms(x.t));
+if (!chrono(r.slice(0, firstDim)) || !chrono(r.slice(firstDim)))
+  throw new Error('by time: a group is out of order: ' + r.map((x) => x.t).join(' '));
+console.log('by time · mood first:', r.map((x) => (x.dim ? '·' : x.t)).join(' '));
+// switch to rank: the chips slide (FLIP), and each group is hottest-first
+await p.locator('[data-testid="order-rank"]').click();
+const slid = await p
+  .waitForSelector('ol.chips li:not(.chip-leave-active).chip-move', {
+    state: 'attached',
+    timeout: 1500,
+  })
+  .then(() => true)
+  .catch(() => false);
+await p.waitForTimeout(700);
+r = await rows();
+const desc = (xs) => xs.every((x, i) => !i || xs[i - 1].heat >= x.heat - 1e-6);
+if (!desc(r.slice(0, firstDim)) || !desc(r.slice(firstDim)))
+  throw new Error('by rank: not hottest first: ' + r.map((x) => x.heat.toFixed(2)).join(' '));
+if (r.slice(firstDim).some((x) => x.dim && !x.rank)) throw new Error('a rate chip lost its rank');
+console.log(
+  'by rank · slid:',
+  slid,
+  '· heats:',
+  r.map((x) => x.heat.toFixed(2) + (x.dim ? `#${x.rank}` : '')).join(' '),
+);
+if (!slid) throw new Error('the reorder did not animate (no chip-move class was seen)');
+// it persists through the same settings store as the axis; back to time for the rest
+await p.locator('[data-testid="order-time"]').click();
+await p.waitForTimeout(700);
+r = await rows();
+if (!chrono(r.slice(0, firstDim)) || !chrono(r.slice(firstDim)))
+  throw new Error('back to time: out of order');
 
 // --- 2a. the page must not move when a choice silently changes the "active" moment -----
 // The active moment is derived from the list (first in the clip range, else near the
@@ -315,7 +369,7 @@ console.log('a dimmed moment is still selectable');
 // (Angel, 2026-09-21). chooseAxis measures window.scrollY around every choice; with the old
 // scrollIntoView this step fails (60 → 127), with the grid-only scroll the page stays put.
 await p.evaluate(() => window.scrollTo(0, 60));
-await p.locator('ol.chips li', { hasText: '0:30:45' }).first().click();
+await p.locator('ol.chips li:not(.chip-leave-active)', { hasText: '0:30:45' }).first().click();
 await p.waitForTimeout(400);
 await p.evaluate(() => window.scrollTo(0, 60));
 await p.waitForTimeout(150);
@@ -333,14 +387,14 @@ await p.waitForFunction(() => /\d+ moments/.test(document.body.innerText), null,
 await axis.waitFor({ state: 'visible', timeout: 20000 });
 await chooseAxis('hype-letdown');
 const raidAt = '0:55:00';
-const chip = p.locator('ol.chips li', { hasText: raidAt }).first();
+const chip = p.locator('ol.chips li:not(.chip-leave-active)', { hasText: raidAt }).first();
 await chip.waitFor({ state: 'visible', timeout: 10000 });
 const raidLabel = await chip.getAttribute('aria-label');
 const raidDim = await chip.evaluate((el) => el.classList.contains('is-dim'));
 const raidIsMood = (await chip.locator('[data-testid="moment-emo"]').count()) === 1;
 const hypePins = await p.locator('.pin-dot').count();
 const hypeMoods = await emoChips.count();
-const hypeBright = await p.locator('ol.chips li:not(.is-dim)').count();
+const hypeBright = await p.locator('ol.chips li:not(.is-dim):not(.chip-leave-active)').count();
 console.log(`raid chip @${raidAt}: dimmed=${raidDim} mood-chip=${raidIsMood} · "${raidLabel}"`);
 console.log(
   `hype↔letdown · pins ${hypePins} · mood chips ${hypeMoods} · bright chips ${hypeBright}`,
@@ -404,7 +458,7 @@ await chooseAxis('dread-payoff');
 const dread = await times();
 console.log('dread↔payoff · moments:', dread.length, '·', dread.join(' '));
 const reasons = await p
-  .locator('ol.chips li')
+  .locator('ol.chips li:not(.chip-leave-active)')
   .evaluateAll((els) => els.map((e) => e.getAttribute('aria-label') ?? ''));
 const quiet = reasons.filter((r) => /said less/.test(r));
 console.log('moments where chat went quiet:', quiet.length);

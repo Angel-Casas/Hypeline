@@ -36,7 +36,7 @@ import { EXAMPLE_ID } from './example';
 import { chosen as localeChosen } from '@/i18n';
 import QuotaBanner from '@/features/settings/QuotaBanner.vue';
 import { clipAnchor, useClipStore } from '@/features/clips/stores/clipStore';
-import { useSettingsStore } from '@/features/settings/settingsStore';
+import { useSettingsStore, type MomentOrder } from '@/features/settings/settingsStore';
 import type { VodInfo } from '@/lib/twitch/types';
 import { formatHms } from '@/lib/twitch/vodUrl';
 import { fetchLiveInfo } from '@/lib/twitch/gql';
@@ -98,6 +98,8 @@ function openSettings() {
  */
 type Tab = 'moments' | 'clip' | 'ai';
 const tab = ref<Tab>('moments');
+/** The two orders of the moments grid, in the order they sit in the toggle. */
+const ORDERS: MomentOrder[] = ['time', 'rank'];
 const TABS = computed<{ id: Tab; label: string }[]>(() => [
   { id: 'moments', label: t('dashboard.tabMoments') },
   { id: 'clip', label: t('dashboard.tabClip') },
@@ -692,8 +694,30 @@ watch(
             :class="tab === 'moments' ? 'flex' : 'hidden xl:flex'"
             data-tour="moments"
           >
-            <div class="flex items-center justify-between gap-3">
-              <h2 class="text-sm font-semibold">{{ t('dashboard.moments') }}</h2>
+            <!-- wraps: title + order on one line, the slider on the next, on a phone -->
+            <div class="flex flex-wrap items-center justify-between gap-x-3 gap-y-1.5">
+              <div class="flex items-center gap-2.5">
+                <h2 class="text-sm font-semibold">{{ t('dashboard.moments') }}</h2>
+                <!-- order: as they happen, or strongest first (Angel, 2026-09-21) -->
+                <div
+                  v-if="allMoments.length > 1"
+                  class="order flex gap-0.5 rounded-full p-0.5"
+                  role="group"
+                  :aria-label="t('dashboard.orderTitle')"
+                  :title="t('dashboard.orderTitle')"
+                >
+                  <button
+                    v-for="o in ORDERS"
+                    :key="o"
+                    class="seg-opt px-2! py-0.5! text-[10.5px]!"
+                    :aria-pressed="settings.momentOrder === o"
+                    :data-testid="`order-${o}`"
+                    @click="settings.momentOrder = o"
+                  >
+                    {{ t(o === 'time' ? 'dashboard.orderTime' : 'dashboard.orderRank') }}
+                  </button>
+                </div>
+              </div>
               <!-- sensitivity: how many peaks surface (1 = only the loudest … 5 = everything) -->
               <label
                 class="text-ink-2 flex items-center gap-2.5 font-mono text-[11px]"
@@ -1070,6 +1094,11 @@ watch(
   .live-dot {
     animation: none;
   }
+}
+/* the order toggle: a frost pill around two segments, so it reads as one control */
+.order {
+  background: var(--frost-bg);
+  box-shadow: inset 0 1px 0 var(--frost-inset);
 }
 /* the sensitivity slider: a silk track, an ink thumb */
 .sens {

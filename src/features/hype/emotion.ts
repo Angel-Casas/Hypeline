@@ -395,7 +395,6 @@ export function moodHeightAt(s: EmotionSeries, axis: AxisKey, t: number): number
   return pick(i) + (pick(i + 1) - pick(i)) * f;
 }
 
-
 /**
  * How many mood peaks may surface at once. Deliberately generous and *not* the sensitivity
  * slider's `top`: the slider still governs mood density through `minGapSec`, which is the

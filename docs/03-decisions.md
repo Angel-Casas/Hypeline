@@ -1321,6 +1321,23 @@ when the newly active chip sat below the fold the page lurched to it. It now mov
 below the fold and measures `window.scrollY` around every menu choice: 60 → 127 on
 the old code, 60 → 60 now.
 
+_The mood's moments sit first, and the grid has a rank order_ (Angel, 2026-09-21).
+Dimming alone left the answer to the user's question in seventh place, so with a
+mood chosen the list is grouped — the mood's moments, then the heatmap's — and the
+chips _slide_ to their new seats (`<TransitionGroup>`, FLIP, 480 ms; leaving chips
+fade in place, lifted out of the flow so the others close ranks; none of it under
+reduced motion). Within a group the order is the user's: **by time**, as they
+happen, or **by rank**, strongest first — a two-segment toggle beside the heading,
+remembered in settings like the axis. Rank sorts by _heat_, each kind's own scale
+already normalised to 0..1 (the ring's arc): the loudest rate peak, the surest AI
+hit and the tallest mood swell sort alike, and what reads hottest sits first. Ties
+break by time so equals never shuffle. The animation has a cost the tests pay: a
+chip on its way out is still in the DOM for 180 ms, so every e2e selector for a
+chip excludes `.chip-leave-active`. The toggle also made the moments header too
+wide for a phone (the tour caught it: the layout viewport grew and the sheet fell
+off screen), so the header wraps now — title and order on one line, the slider on
+the next.
+
 _Colour is validated, and it is not the only cue._ The two poles use steps of
 the thread's own ends, checked against each ground for colour-vision separation
 (ΔE ≈ 26 protan and tritan) and contrast; night is its own choice, not a flip of

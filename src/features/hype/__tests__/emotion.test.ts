@@ -141,9 +141,7 @@ describe('pickBucketSec', () => {
   });
 
   it('never widens past the ceiling, however dead the chat', () => {
-    expect(pickBucketSec([msg('hi', { t: 10 })], 36000)).toBeLessThanOrEqual(
-      BASE_BUCKET_SEC * 8,
-    );
+    expect(pickBucketSec([msg('hi', { t: 10 })], 36000)).toBeLessThanOrEqual(BASE_BUCKET_SEC * 8);
   });
 });
 
@@ -280,8 +278,10 @@ describe('what is drawn is what is offered', () => {
       }
       if (!best.v) return; // this axis is silent on this VOD, and draws nothing
       const found = emotionMoments(s, axis, { top: 20 });
-      expect(found.length, `${axis} draws a peak at ${(best.v / scale) * 100}% and offers nothing`)
-        .toBeGreaterThan(0);
+      expect(
+        found.length,
+        `${axis} draws a peak at ${(best.v / scale) * 100}% and offers nothing`,
+      ).toBeGreaterThan(0);
       // the tallest drawn peak is inside one thinning window of an offered moment
       const near = found.some((m) => Math.abs(m.t - best.t) <= 120);
       expect(near, `${axis}: nothing offered near its tallest peak at ${best.t}s`).toBe(true);

@@ -110,7 +110,9 @@ await p.waitForFunction(() => /\d+ moments/.test(document.body.innerText), null,
 });
 /** The times on the moment chips: the slider fixes how many surface, so it is *which* ones. */
 const momentTimes = async () =>
-  (await p.locator('ol.chips li b').allInnerTexts()).map((s) => s.trim()).sort();
+  (await p.locator('ol.chips li:not(.chip-leave-active) b').allInnerTexts())
+    .map((s) => s.trim())
+    .sort();
 const before = await momentTimes();
 console.log('moments with the English lists only:', before.length, '·', before.join(' '));
 

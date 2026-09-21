@@ -19,7 +19,10 @@ interface Persisted {
   sensitivity: number;
   /** Which emotion axis the heatmap mirrors, '' for off (ADR-43). */
   emotionAxis: string;
+  /** How the moments grid is ordered: as they happen, or strongest first (2026-09-21). */
+  momentOrder: MomentOrder;
 }
+export type MomentOrder = 'time' | 'rank';
 
 const DEFAULTS: Persisted = {
   shimUrl: '',
@@ -31,6 +34,7 @@ const DEFAULTS: Persisted = {
   theme: 'system',
   sensitivity: 3,
   emotionAxis: '',
+  momentOrder: 'time',
 };
 
 function load(): Persisted {
@@ -70,6 +74,7 @@ export const useSettingsStore = defineStore('settings', () => {
    * instead of throwing on a stored value nothing recognises.
    */
   const emotionAxis = ref(String(initial.emotionAxis ?? ''));
+  const momentOrder = ref<MomentOrder>(initial.momentOrder === 'rank' ? 'rank' : 'time');
   const mq = typeof matchMedia === 'function' ? matchMedia('(prefers-color-scheme: dark)') : null;
   const systemDark = ref(mq?.matches ?? false);
   mq?.addEventListener?.('change', (e) => (systemDark.value = e.matches));
@@ -124,6 +129,7 @@ export const useSettingsStore = defineStore('settings', () => {
       theme,
       sensitivity,
       emotionAxis,
+      momentOrder,
     ],
     () => {
       try {
@@ -137,6 +143,7 @@ export const useSettingsStore = defineStore('settings', () => {
           theme: theme.value,
           sensitivity: sensitivity.value,
           emotionAxis: emotionAxis.value,
+          momentOrder: momentOrder.value,
         };
         localStorage.setItem(KEY, JSON.stringify(p));
       } catch {
@@ -156,6 +163,7 @@ export const useSettingsStore = defineStore('settings', () => {
     theme,
     sensitivity,
     emotionAxis,
+    momentOrder,
     dark,
     toggleTheme,
   };

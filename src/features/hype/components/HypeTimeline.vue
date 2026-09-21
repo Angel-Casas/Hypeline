@@ -331,7 +331,9 @@ function ribbonPath(from: number, to: number, height: number, scale: number): st
  * top and two corners. The moment picker uses this same scale, so what is drawn and what is
  * offered cannot drift apart.
  */
-const emoAxis = computed(() => (props.emotion && props.emotionAxis ? axisOf(props.emotionAxis) : null));
+const emoAxis = computed(() =>
+  props.emotion && props.emotionAxis ? axisOf(props.emotionAxis) : null,
+);
 const emoOn = computed(() => emoAxis.value != null);
 
 /** The same scale the moment picker measures peaks against, so the two cannot disagree. */
@@ -414,7 +416,10 @@ function emoAmp(pole: 'up' | 'down', sec: number): number {
 // the light (Angel, 2026-09-21)
 const EMO_N = 480;
 type Amps = { up: Float32Array; down: Float32Array };
-const ZERO_AMPS = (): Amps => ({ up: new Float32Array(EMO_N + 1), down: new Float32Array(EMO_N + 1) });
+const ZERO_AMPS = (): Amps => ({
+  up: new Float32Array(EMO_N + 1),
+  down: new Float32Array(EMO_N + 1),
+});
 
 /** Where the chosen axis wants the ribbon: both edges, sampled across the visible window. */
 const emoTarget = computed<Amps>(() => {
@@ -1413,7 +1418,10 @@ function pulse(sec: number) {
         <div class="emo-label pointer-events-none absolute top-1.5 left-2.5" data-testid="emo-up">
           {{ emoLabels.up }}
         </div>
-        <div class="emo-label emo-label-down pointer-events-none absolute bottom-1.5 left-2.5" data-testid="emo-down">
+        <div
+          class="emo-label emo-label-down pointer-events-none absolute bottom-1.5 left-2.5"
+          data-testid="emo-down"
+        >
           {{ emoLabels.down }}
         </div>
       </template>

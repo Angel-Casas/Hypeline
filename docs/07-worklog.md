@@ -2035,3 +2035,20 @@ fails on the old code (page 60 → 127); it passes on the fix.
 Still owed for M7: per-language pole packs; fold `scoring.ts` `mood` into the poles.
 
 162 unit tests, 16 e2e suites, hover, lint and build green.
+
+## 2026-09-21n — mood moments first, and a rank order
+
+With a mood chosen the mood's chips now sit first as well as bright, and a reorder
+slides the chips to their new seats (FLIP via `<TransitionGroup>`). Beside the
+"Moments" heading a two-segment toggle orders the grid by time or by rank (heat,
+hottest first), remembered in settings. Three new strings in all ten catalogs.
+
+Two things the suite caught: leaving chips linger 180 ms, so chip selectors in the
+e2e exclude `.chip-leave-active`; and the wider header overflowed a phone, which the
+tour flagged as an off-screen sheet — the header wraps now. Also ran Prettier over
+three hype files an earlier commit had left unformatted.
+
+Still owed for M7: per-language pole packs; fold `scoring.ts` `mood` into the poles.
+
+162 unit tests, 16 e2e suites, hover, lint, locales and build green.
+

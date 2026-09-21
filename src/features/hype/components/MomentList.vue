@@ -162,7 +162,7 @@ const chips = computed(() => {
    * finds nothing dims nothing and the list stays exactly as it was.
    */
   const mood = props.moments.some((m) => m.source === 'emotion');
-  return props.moments.map((m) => {
+  const cells = props.moments.map((m) => {
     const ai = m.source === 'ai';
     const emo = m.source === 'emotion';
     const pole = emo ? (m.pole as PoleKey | undefined) : undefined;
@@ -209,80 +209,99 @@ const chips = computed(() => {
           : t('moments.msgsFromUsers', { n: m.n, users: m.users }),
     };
   });
+  /*
+   * Order (Angel, 2026-09-21). Two keys, in this precedence: the mood's moments come first
+   * when a mood is chosen — brighter *and* on top, since being the answer and sitting in
+   * seventh place is a contradiction — and within a group either time or rank, the user's
+   * choice. Rank means heat, which is each kind's own scale already normalised to 0..1 (the
+   * ring's arc): the loudest rate peak, the surest AI hit and the tallest mood swell sort
+   * alike, and what the eye sees as hottest is what sits first. Ties break by time so the
+   * order is stable and a rerun does not shuffle equals. The <TransitionGroup> below moves
+   * each chip from its old seat to its new one, so a reorder is a slide, not a redeal.
+   */
+  const rank = settings.momentOrder === 'rank';
+  return cells.sort((a, b) => {
+    const g = Number(!a.emo) - Number(!b.emo);
+    if (mood && g) return g;
+    return (rank && b.heat - a.heat) || a.m.t - b.m.t;
+  });
 });
 </script>
 
 <template>
   <div class="flex min-h-0 flex-col gap-2">
     <ol ref="grid" class="chips grid grid-cols-[repeat(auto-fill,minmax(92px,1fr))] gap-1.5">
-      <li
-        v-for="c in chips"
-        :key="c.m.id"
-        :ref="(el) => setChip(c.m.id, el)"
-        class="chip relative aspect-[16/10] cursor-pointer overflow-hidden rounded-[10px] p-[7px]"
-        :class="{
-          'is-on': c.m.id === activeId,
-          'is-hot': c.m.id === hoverId,
-          'has-frame': !!c.frame,
-          'is-ai': c.ai,
-          'is-emo': c.emo,
-          'is-dim': c.dim,
-          dark: settings.dark,
-        }"
-        :style="{ '--c': c.colour, '--h': c.heat }"
-        :aria-label="`${c.time} · ${c.why}`"
-        @click="onChipClick(c)"
-        @mouseenter="!coarse && emit('hover', c.m.id)"
-        @mouseleave="!coarse && emit('hover', null)"
-      >
-        <span
-          v-if="c.frame"
-          class="frame absolute inset-0"
-          :style="c.frame"
-          aria-hidden="true"
-        ></span>
-        <span v-if="c.ai" class="aitag absolute top-[6px] left-[6px]">AI</span>
-        <!-- the mood mark: one wave crest, rising for the warm pole and falling for the cool
+      <!-- no tag: the <ol> above is the grid, and this only animates its children -->
+      <TransitionGroup name="chip">
+        <li
+          v-for="c in chips"
+          :key="c.m.id"
+          :ref="(el) => setChip(c.m.id, el)"
+          class="chip relative aspect-[16/10] cursor-pointer overflow-hidden rounded-[10px] p-[7px]"
+          :class="{
+            'is-on': c.m.id === activeId,
+            'is-hot': c.m.id === hoverId,
+            'has-frame': !!c.frame,
+            'is-ai': c.ai,
+            'is-emo': c.emo,
+            'is-dim': c.dim,
+            dark: settings.dark,
+          }"
+          :style="{ '--c': c.colour, '--h': c.heat }"
+          :aria-label="`${c.time} · ${c.why}`"
+          @click="onChipClick(c)"
+          @mouseenter="!coarse && emit('hover', c.m.id)"
+          @mouseleave="!coarse && emit('hover', null)"
+        >
+          <span
+            v-if="c.frame"
+            class="frame absolute inset-0"
+            :style="c.frame"
+            aria-hidden="true"
+          ></span>
+          <span v-if="c.ai" class="aitag absolute top-[6px] left-[6px]">AI</span>
+          <!-- the mood mark: one wave crest, rising for the warm pole and falling for the cool
              one (Angel chose it from ten, 2026-09-21: design/mood-marks.html). Drawn in ink
              rather than the pole colour so it reads on a chip of any heat, and the direction
              carries the pole, so it works without colour vision or a legend. -->
-        <svg
-          v-else-if="c.emo"
-          class="motag absolute top-[5px] left-[5px]"
-          :class="c.poleUp ? 'up' : 'down'"
-          viewBox="0 0 16 16"
-          role="img"
-          :aria-label="c.poleLabel"
-          data-testid="moment-emo"
-        >
-          <title>{{ c.poleLabel }}</title>
-          <!-- the crest twice: a wide ink halo, then the pastel. The halo is what lets a
+          <svg
+            v-else-if="c.emo"
+            class="motag absolute top-[5px] left-[5px]"
+            :class="c.poleUp ? 'up' : 'down'"
+            viewBox="0 0 16 16"
+            role="img"
+            :aria-label="c.poleLabel"
+            data-testid="moment-emo"
+          >
+            <title>{{ c.poleLabel }}</title>
+            <!-- the crest twice: a wide ink halo, then the pastel. The halo is what lets a
                pastel stroke survive a chip of its own hue — apricot on an apricot chip
                vanished on the first sheet — and the two pastels are the thread's own ends,
                so the warm and cool poles read apart at a glance (Angel, 2026-09-21). -->
-          <path :d="c.wave" fill="none" class="halo" stroke-width="4.6" stroke-linecap="round" />
-          <path
-            :d="c.wave"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2.4"
-            stroke-linecap="round"
-          />
-        </svg>
-        <span v-else class="dial absolute top-[6px] left-[6px]"
-          ><i>{{ c.rank }}</i></span
-        >
-        <span
-          v-if="clippedIds?.has(c.m.id)"
-          class="clipmark absolute top-[7px] right-[7px] font-mono text-[9px]"
-          :title="t('moments.hasClip')"
-          >{{ t('moments.clipMark') }}</span
-        >
-        <span class="text absolute right-[7px] bottom-[6px] left-[7px] flex items-baseline gap-1">
-          <b class="font-mono text-[11.5px] font-bold tabular-nums">{{ c.time }}</b>
-          <span class="mult font-mono text-[10px]">{{ c.mult }}</span>
-        </span>
-      </li>
+            <path :d="c.wave" fill="none" class="halo" stroke-width="4.6" stroke-linecap="round" />
+            <path
+              :d="c.wave"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2.4"
+              stroke-linecap="round"
+            />
+          </svg>
+          <span v-else class="dial absolute top-[6px] left-[6px]"
+            ><i>{{ c.rank }}</i></span
+          >
+          <span
+            v-if="clippedIds?.has(c.m.id)"
+            class="clipmark absolute top-[7px] right-[7px] font-mono text-[9px]"
+            :title="t('moments.hasClip')"
+            >{{ t('moments.clipMark') }}</span
+          >
+          <span class="text absolute right-[7px] bottom-[6px] left-[7px] flex items-baseline gap-1">
+            <b class="font-mono text-[11.5px] font-bold tabular-nums">{{ c.time }}</b>
+            <span class="mult font-mono text-[10px]">{{ c.mult }}</span>
+          </span>
+        </li>
+      </TransitionGroup>
     </ol>
     <p class="text-muted min-h-4 font-mono text-[10.5px]">
       {{ coarse ? t('moments.hintTouch') : t('moments.hintHover') }}
@@ -366,6 +385,34 @@ const chips = computed(() => {
 .chip.is-dim.is-on,
 .chip.is-dim.is-hot {
   opacity: 1;
+}
+/*
+ * Reordering slides (FLIP via <TransitionGroup>): a chip whose seat changed glides from the
+ * old one to the new; one that leaves fades where it stood, lifted out of the grid so the
+ * others can close ranks under it; one that arrives fades in. Under reduced motion the
+ * order simply changes.
+ */
+.chip-move,
+.chip-enter-active {
+  transition:
+    transform 0.48s cubic-bezier(0.2, 0.7, 0.2, 1),
+    opacity 0.25s ease;
+}
+.chip-leave-active {
+  position: absolute;
+  transition: opacity 0.18s ease;
+}
+/* two classes, to outrank a dimmed chip's own opacity */
+.chip.chip-enter-from,
+.chip.chip-leave-to {
+  opacity: 0;
+}
+@media (prefers-reduced-motion: reduce) {
+  .chip-move,
+  .chip-enter-active,
+  .chip-leave-active {
+    transition: none;
+  }
 }
 /*
  * The mood mark. Same seat as the rank dial it replaces, so a mixed list still scans down
