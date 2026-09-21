@@ -167,7 +167,8 @@ const chips = computed(() => {
           : mult
             ? `${mult}×`
             : t('moments.chattersShort', { n: m.users }),
-      dim: mood && !m.source,
+      // a rate moment the mood also claimed is not context, it is an answer: never dimmed
+      dim: mood && !m.source && !m.pole,
       colour: silkAt(at, false, 0),
       // an emotion moment's strength is a lift, not a rate score: ~3 is a strong one
       heat: ai ? m.score / 5 : emo ? Math.min(1, m.score / 3) : m.score / max,

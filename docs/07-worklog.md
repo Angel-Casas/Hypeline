@@ -1902,3 +1902,36 @@ The e2e now asserts that number stays under 0.45, so the ribbon cannot quietly g
 back to being a polygon.
 
 150 unit tests, 16 e2e suites, hover, lint and build green.
+
+## 2026-09-21g — peaks you can see are peaks you can clip
+
+Angel found a hype swell with no moment on it; clicking the heatmap there showed a
+raid landing with the whole room hyped. He also had a dread axis with visible peaks
+and no moments at all. Both were the same root cause, and the numbers on the
+tokyosims fixture were worse than the report: on hype, peaks at 90 %, 75 % and 64 %
+of the ribbon height offered nothing, and dread-payoff offered **zero** while
+drawing full-height peaks.
+
+The ribbon drew `share`; the list picked on `lift` against a rolling baseline with a
+hard four-chatter floor. Two different quantities, so they disagreed all the time.
+Moments are now the peaks of `curve` — the same smoothed series the ribbon is drawn
+from, against the same scale.
+
+Two supporting changes. A pole's height is the lower bound of a Wilson interval
+rather than the raw proportion, so 1-of-2 (0.21) and 15-of-30 (0.41) stop being the
+same 50 %; that replaces the hard floor with a smooth discount and keeps a lone
+chatter from painting a full-height peak. And the drawn scale has a floor, so a
+quiet axis draws quietly rather than normalising noise to full height — which is
+why the honest fix made dread _smaller_ rather than lowering its bar. A peak
+qualifies on either an absolute or a relative bar, so a weak axis still offers its
+own best moments, which is what Angel asked for.
+
+Separately: a rate peak the mood also claims is now tagged rather than dropped. The
+raid was exactly that case — the mood moment was discarded as a duplicate and then
+the rate pin was hidden because a mood was on, leaving the swell bare.
+
+tokyosims went from 2 hype moments to 12, and from 0 dread moments to 3. The e2e
+gained a raid that is both a volume spike and a mood peak, and asserts it is pinned,
+undimmed, and says the room was hyped.
+
+156 unit tests, 16 e2e suites, hover, locales, lint and build green.

@@ -26,8 +26,10 @@ import { formatHms } from '@/lib/twitch/vodUrl';
 import { peaksFromMoments, seriesFromPeaks } from '@/ui/thread/series';
 import {
   axisOf,
+  axisScale,
   isUpper,
   POLE_KEY,
+  SMOOTH_SIGMA,
   type AxisKey,
   type EmotionSeries,
   type PoleKey,
@@ -314,27 +316,21 @@ function ribbonPath(from: number, to: number, height: number, scale: number): st
  * and a bucket where chat is both hysterical and gutted — the best kind there is — would
  * render as a flat line.
  *
- * Scaled to the tallest point of the *smoothed* curve, across both poles and the whole VOD.
- * Not the visible window, so zooming in cannot make a small feeling look like a big one; and
- * not a percentile with the rest clipped, which is the mistake the thread already made and
- * fixed on 2026-09-14 — clipping gives the peak a flat top and two corners, which is most of
- * what made this ribbon look like a polygon. Blurring is what protects against a single
- * freak bucket now, and it does it without a straight edge anywhere.
+ * Scaled by `axisScale`: the tallest point of the smoothed curve across both poles and the
+ * whole VOD, but never below a floor, so an axis with nothing much to say draws quietly
+ * instead of normalising its own noise up to full height. Not the visible window, so zooming
+ * cannot make a small feeling look big; and not a percentile with the rest clipped, which is
+ * the mistake the thread already made and fixed on 2026-09-14 — clipping gives a peak a flat
+ * top and two corners. The moment picker uses this same scale, so what is drawn and what is
+ * offered cannot drift apart.
  */
 const emoAxis = computed(() => (props.emotion && props.emotionAxis ? axisOf(props.emotionAxis) : null));
 const emoOn = computed(() => emoAxis.value != null);
 
-const emoScale = computed(() => {
-  const s = props.emotion;
-  const a = emoAxis.value;
-  if (!s || !a) return 1;
-  const sm = emoSmooth.value;
-  if (!sm) return 1;
-  let peak = 0;
-  for (const v of sm.up) if (v > peak) peak = v;
-  for (const v of sm.down) if (v > peak) peak = v;
-  return peak > 0 ? peak : 1;
-});
+/** The same scale the moment picker measures peaks against, so the two cannot disagree. */
+const emoScale = computed(() =>
+  props.emotion && props.emotionAxis ? axisScale(props.emotion, props.emotionAxis) : 1,
+);
 
 /**
  * Gaussian blur over the bucket series, the way `buildSeries` smooths the thread's.
@@ -347,35 +343,17 @@ const emoScale = computed(() => {
  * destroy the very comparison the mirror exists for — so it takes the same *treatment*
  * instead: blur the buckets, keep one shared scale across the axis.
  */
-const SMOOTH_SIGMA = 1.25; // in buckets
-
-function blur(v: readonly number[], sigma: number): number[] {
-  const r = Math.max(1, Math.ceil(sigma * 3));
-  const k: number[] = [];
-  let ks = 0;
-  for (let i = -r; i <= r; i++) {
-    const w = Math.exp(-(i * i) / (2 * sigma * sigma));
-    k.push(w);
-    ks += w;
-  }
-  return v.map((_, i) => {
-    let acc = 0;
-    for (let j = -r; j <= r; j++) acc += (v[Math.max(0, Math.min(v.length - 1, i + j))] ?? 0) * k[j + r]!;
-    return acc / ks;
-  });
-}
-
-/** The two poles of the chosen axis, raw — the continuous kernel below does the smoothing. */
+/**
+ * The two poles, as confidence-weighted strength rather than raw share, un-smoothed — the
+ * continuous kernel below does the smoothing. `strength` discounts a share measured on very
+ * few people, which is what stops one chatter in a quiet minute from painting a full-height
+ * peak that the moment list would then refuse to offer (Angel, 2026-09-21).
+ */
 const emoRaw = computed<{ up: readonly number[]; down: readonly number[] } | null>(() => {
   const s = props.emotion;
   const a = emoAxis.value;
   if (!s || !a) return null;
-  return { up: s.poles[a.up.key].share, down: s.poles[a.down.key].share };
-});
-/** Blurred copies, for the scale only: the drawn curve never reads from these. */
-const emoSmooth = computed<{ up: number[]; down: number[] } | null>(() => {
-  const r = emoRaw.value;
-  return r ? { up: blur(r.up, SMOOTH_SIGMA), down: blur(r.down, SMOOTH_SIGMA) } : null;
+  return { up: s.poles[a.up.key].strength, down: s.poles[a.down.key].strength };
 });
 
 /**
@@ -500,7 +478,8 @@ const visibleMoments = computed(() =>
     (m) =>
       m.t >= v0.value &&
       m.t < v1.value &&
-      (!emoOn.value || m.source === 'emotion' || m.source === 'ai'),
+      // a rate peak the mood also claimed keeps its pin: it is a mood moment as well
+      (!emoOn.value || m.source === 'emotion' || !!m.pole || m.source === 'ai'),
   ),
 );
 /**

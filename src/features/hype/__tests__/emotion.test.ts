@@ -22,12 +22,15 @@ import {
   BASE_BUCKET_SEC,
   MIN_CHATTERS,
   axisOf,
+  axisScale,
+  confidentShare,
   emotionMoments,
   emotionSeries,
   isUpper,
   pickBucketSec,
   polesOf,
   tokensOf,
+  type AxisKey,
   type PoleKey,
 } from '../emotion';
 
@@ -193,7 +196,8 @@ describe('emotionMoments', () => {
     const found = emotionMoments(s, 'joy-sorrow', { minGapSec: 300, top: 8 });
     expect(found.length).toBeLessThanOrEqual(8);
     for (let i = 1; i < found.length; i++) {
-      expect(found[i - 1]!.lift).toBeGreaterThanOrEqual(found[i]!.lift);
+      // ranked by how tall the peak stands on the ribbon — the same number it is drawn at
+      expect(found[i - 1]!.height).toBeGreaterThanOrEqual(found[i]!.height);
       for (let j = 0; j < i; j++) {
         expect(Math.abs(found[i]!.t - found[j]!.t)).toBeGreaterThanOrEqual(300);
       }
@@ -224,5 +228,73 @@ describe('emotionMoments', () => {
     expect(s.count).toBeGreaterThan(0);
     expect(emotionMoments(s, 'joy-sorrow')).toEqual([]);
     expect(s.peak.joy).toBe(0);
+  });
+});
+
+describe('confidentShare', () => {
+  it('discounts a proportion measured on almost nobody', () => {
+    // the same 50 %, and the difference between "someone said it" and "the room agreed"
+    const oneOfTwo = confidentShare(1, 2);
+    const fifteenOfThirty = confidentShare(15, 30);
+    expect(oneOfTwo).toBeLessThan(fifteenOfThirty / 1.5);
+    expect(confidentShare(0, 50)).toBe(0);
+    expect(confidentShare(1, 0)).toBe(0);
+  });
+
+  it('rises with agreement and never exceeds the share itself', () => {
+    let prev = 0;
+    for (const k of [1, 2, 4, 8, 16]) {
+      const v = confidentShare(k, 20);
+      expect(v).toBeGreaterThan(prev);
+      expect(v).toBeLessThanOrEqual(k / 20);
+      prev = v;
+    }
+  });
+});
+
+describe('what is drawn is what is offered', () => {
+  /*
+   * The invariant Angel's bug report bought us (2026-09-21). Before this, the ribbon drew
+   * `share` while the list picked on `lift` with a hard four-chatter floor, so a quiet
+   * channel could show a three-quarter-height swell of hype with nothing to click, and a
+   * whole axis could draw peaks and offer zero moments. Peaks are now found on the same
+   * curve the ribbon is drawn from, so the two cannot drift apart again.
+   */
+  const msgs = load('tokyosims_2871164819.jsonl');
+  const s = emotionSeries(msgs, 23057);
+
+  for (const axis of AXIS_KEYS as AxisKey[]) {
+    it(`offers a moment at the tallest peak of ${axis}`, () => {
+      const a = axisOf(axis);
+      const scale = axisScale(s, axis);
+      let best = { v: 0, t: 0 };
+      for (const key of [a.up.key, a.down.key]) {
+        const d = s.poles[key];
+        for (let i = 0; i < s.count; i++) {
+          // only peaks a crowd could stand behind: one chatter is never a mood
+          if (d.cnt[i]! < MIN_CHATTERS) continue;
+          if (d.curve[i]! > best.v) best = { v: d.curve[i]!, t: i * s.bucketSec };
+        }
+      }
+      if (!best.v) return; // this axis is silent on this VOD, and draws nothing
+      const found = emotionMoments(s, axis, { top: 20 });
+      expect(found.length, `${axis} draws a peak at ${(best.v / scale) * 100}% and offers nothing`)
+        .toBeGreaterThan(0);
+      // the tallest drawn peak is inside one thinning window of an offered moment
+      const near = found.some((m) => Math.abs(m.t - best.t) <= 120);
+      expect(near, `${axis}: nothing offered near its tallest peak at ${best.t}s`).toBe(true);
+    });
+  }
+
+  it('still refuses a peak only one person made', () => {
+    // 1 of 2 chatters is 50 % and means nothing; it must not become a moment
+    const msgs2: ChatMessage[] = [];
+    for (let t = 0; t < 1200; t += 30) {
+      msgs2.push(msg(`chatting ${t}`, { t, u: `a${t}` }));
+      msgs2.push(msg(`chatting too ${t}`, { t, u: `b${t}` }));
+    }
+    msgs2.push(msg('monkaS', { t: 600, u: 'lonely' }));
+    const s2 = emotionSeries(msgs2, 1200);
+    expect(emotionMoments(s2, 'dread-payoff')).toEqual([]);
   });
 });

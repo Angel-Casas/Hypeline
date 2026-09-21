@@ -25,8 +25,16 @@ const LAUGH = [600, 1800];
 const GRIEF = [1200];
 const TENSE = [2400, 3000];
 const WINDOW = 180;
-/** Two ordinary volume spikes, far from every mood window: the rate scorer's own moments. */
+/**
+ * Two volume spikes, far from every mood window. The first is ordinary chatter: a moment the
+ * rate scorer owns alone. The second is a **raid** — a flood of messages that is *also* the
+ * room going hyped, which is the case Angel hit on 2026-09-21. It has to end up with a pin
+ * and an undimmed chip, because both things are true of it; the first version of this layer
+ * discarded the mood peak as a duplicate and then hid the rate pin, leaving a visible swell
+ * on the ribbon with nothing on it at all.
+ */
 const BURST = [180, 3300];
+const RAID = 3300;
 const BURST_LEN = 30;
 
 /**
@@ -59,7 +67,8 @@ function chat() {
   for (const at of BURST) {
     for (let t = at; t < at + BURST_LEN; t += 1) {
       for (let k = 0; k < 4; k++) {
-        out.push({ i: i++, t, u: `b${(t * 5 + k) % 120}`, m: `wow look at that ${t}.${k}`, b: [] });
+        const m = at === RAID ? `POGGERS raid ${t}.${k}` : `wow look at that ${t}.${k}`;
+        out.push({ i: i++, t, u: `b${(t * 5 + k) % 120}`, m, b: [] });
       }
     }
   }
@@ -249,6 +258,34 @@ await p.waitForTimeout(300);
 if ((await p.locator('ol.chips li.is-on').count()) === 0)
   throw new Error('a dimmed moment is not clickable');
 console.log('a dimmed moment is still selectable');
+
+// --- 2b. the raid: a volume spike that is also a mood peak ------------------------------
+// clicking a moment zooms the timeline to it, so start from a clean view: otherwise the
+// pins we are about to count are simply outside the window (which cost me twenty minutes)
+await p.reload();
+await p.waitForFunction(() => /\d+ moments/.test(document.body.innerText), null, {
+  timeout: 90000,
+});
+await axis.waitFor({ state: 'visible', timeout: 20000 });
+await axis.selectOption('hype-letdown');
+await p.waitForTimeout(1200);
+const raidAt = '0:55:00';
+const chip = p.locator('ol.chips li', { hasText: raidAt }).first();
+await chip.waitFor({ state: 'visible', timeout: 10000 });
+const raidLabel = await chip.getAttribute('aria-label');
+const raidDim = await chip.evaluate((el) => el.classList.contains('is-dim'));
+const hypePins = await p.locator('.pin-dot').count();
+const hypeMoods = await emoChips.count();
+console.log(`raid chip @${raidAt}: dimmed=${raidDim} · "${raidLabel}"`);
+console.log(`hype↔letdown · pins ${hypePins} · mood-tagged or mood-born chips ${hypeMoods}`);
+if (raidDim) throw new Error('the raid was dimmed — the mood claimed it, it is not context');
+if (!/hyped/.test(raidLabel ?? ''))
+  throw new Error('the raid chip does not say the room was hyped: ' + raidLabel);
+// its pin has to be on the ribbon: a peak you can see is a peak you can click
+if (hypePins < 1) throw new Error('the raid peak has no pin on the ribbon');
+// and it is the *only* pin: the other rate peak was not a mood peak, so it steps aside
+if (hypePins !== 1)
+  throw new Error(`expected just the raid pinned on the mood ribbon, got ${hypePins}`);
 
 // --- 3. the case the heatmap cannot see: chat tensed up and said *less* -----------------
 await axis.selectOption('dread-payoff');

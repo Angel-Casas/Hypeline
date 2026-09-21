@@ -128,11 +128,13 @@ export function polesOf(m: ChatMessage): PoleKey[] {
 }
 
 /**
- * How many distinct chatters an emotion needs before it is an emotion rather than one
- * viewer having a moment. Four is the floor; the bucket widens until it can hold three
- * times that, so a normal bucket clears the floor comfortably and a *quiet* one still can.
+ * The floor: below two chatters there is no *agreement*, only a person. Everything above
+ * that is handled by confidence rather than by a threshold — see `strength` below. A hard
+ * count was the original design and it was wrong: on a chat with six people talking, a
+ * moment where two of them are hyped is a third of the room, and the ribbon drew it as a
+ * three-quarter-height peak while the list refused to offer it (Angel, 2026-09-21).
  */
-export const MIN_CHATTERS = 4;
+export const MIN_CHATTERS = 2;
 const TARGET_CHATTERS = 12;
 /** The heatmap's own resolution. The emotion layer starts here and widens if it must. */
 export const BASE_BUCKET_SEC = 15;
@@ -184,8 +186,19 @@ function rollingMedian(v: number[], half: number): number[] {
 export interface PoleSeries {
   /** Distinct chatters who took this pole, per bucket. */
   cnt: number[];
-  /** `cnt / chatters` — the volume-independent quantity the layer draws. */
+  /** `cnt / chatters` — the raw proportion. */
   share: number[];
+  /**
+   * The share, discounted for how few people it was measured on: the lower bound of a
+   * Wilson score interval. One chatter of two is 50 % and means almost nothing; fifteen of
+   * thirty is the same 50 % and means a great deal, and `strength` is 0.21 against 0.41.
+   * This is what both the ribbon and the moment list use, so a peak you can see is a peak
+   * you can click — which a raw share could not promise, because on a quiet axis it let one
+   * person paint a full-height peak.
+   */
+  strength: number[];
+  /** `strength`, gaussian-smoothed: the curve as drawn, and as peaks are picked off it. */
+  curve: number[];
   /** log2 of share against this channel's own rolling median share. */
   lift: number[];
 }
@@ -207,10 +220,57 @@ export interface EmotionSeries {
 const BASELINE_HALF_SEC = 600;
 /**
  * Damping for the lift ratio. Without it a bucket whose baseline share is zero returns an
- * unbounded lift, so a single chatter in a quiet stretch would outrank a crowd (S7). This
- * is why the crowd floor, not the lift, is what keeps the layer honest.
+ * unbounded lift, so a single chatter in a quiet stretch would outrank a crowd (S7).
  */
 const LIFT_FLOOR = 0.02;
+
+/**
+ * Lower bound of the Wilson score interval for `k` of `n`, at z = 1 (~84 % one-sided).
+ * Small samples are pulled towards zero, large ones barely move; 0 of anything is 0.
+ */
+export function confidentShare(k: number, n: number): number {
+  if (n <= 0 || k <= 0) return 0;
+  const p = k / n;
+  const z2 = 1; // z = 1
+  const lo = (p + z2 / (2 * n) - Math.sqrt((p * (1 - p)) / n + z2 / (4 * n * n))) / (1 + z2 / n);
+  return Math.max(0, lo);
+}
+
+/** Gaussian blur over buckets, in bucket units. The drawing samples the same kernel. */
+export const SMOOTH_SIGMA = 1.25;
+function blur(v: readonly number[], sigma: number): number[] {
+  const r = Math.max(1, Math.ceil(sigma * 4));
+  const k: number[] = [];
+  let ks = 0;
+  for (let i = -r; i <= r; i++) {
+    const w = Math.exp(-(i * i) / (2 * sigma * sigma));
+    k.push(w);
+    ks += w;
+  }
+  return v.map((_, i) => {
+    let acc = 0;
+    for (let j = -r; j <= r; j++)
+      acc += (v[Math.max(0, Math.min(v.length - 1, i + j))] ?? 0) * k[j + r]!;
+    return acc / ks;
+  });
+}
+
+/**
+ * What counts as a ribbon at full height when an axis has nothing much to show. Without a
+ * floor the ribbon normalises to its own maximum, so an axis whose best moment is one
+ * chatter in six still fills the frame — the other half of the same bug. With it, a quiet
+ * axis draws quietly, which is the truth.
+ */
+export const FULL_HEIGHT = 0.15;
+
+/** The scale the axis is drawn against: its own tallest smoothed point, but never less. */
+export function axisScale(s: EmotionSeries, axis: AxisKey): number {
+  const a = axisOf(axis);
+  let peak = 0;
+  for (const key of [a.up.key, a.down.key])
+    for (const v of s.poles[key].curve) if (v > peak) peak = v;
+  return Math.max(peak, FULL_HEIGHT);
+}
 
 /**
  * One pass over the messages for all six poles. Computing every pole rather than only the
@@ -248,10 +308,12 @@ export function emotionSeries(
   for (const p of POLES) {
     const cnt = poleSets[p.key].map((s) => s.size);
     const share = cnt.map((c, i) => (chatters[i]! > 0 ? c / chatters[i]! : 0));
+    const strength = cnt.map((c, i) => confidentShare(c, chatters[i]!));
+    const curve = blur(strength, SMOOTH_SIGMA);
     const base = rollingMedian(share, half);
     const lift = share.map((s, i) => Math.log2((s + LIFT_FLOOR) / (base[i]! + LIFT_FLOOR)));
-    poles[p.key] = { cnt, share, lift };
-    peak[p.key] = share.reduce((a, b) => (b > a ? b : a), 0);
+    poles[p.key] = { cnt, share, strength, curve, lift };
+    peak[p.key] = curve.reduce((a, b) => (b > a ? b : a), 0);
   }
   return { bucketSec, count, chatters, msgs: msgCount, rate, poles, peak };
 }
@@ -265,6 +327,8 @@ export interface EmotionMoment {
   users: number;
   share: number;
   lift: number;
+  /** How tall the peak stands, 0..1 of the drawn ribbon — the number peaks are ranked by. */
+  height: number;
   /** Both poles of the axis are high at once — the best kind of moment there is. */
   both: boolean;
   /** How far the volume was above its own baseline here; negative means chat went quiet. */
@@ -273,45 +337,91 @@ export interface EmotionMoment {
 
 export interface EmotionMomentOptions {
   minChatters?: number;
-  minLift?: number;
+  /** How tall a peak must stand, as a fraction of the drawn ribbon's height. */
+  minHeight?: number;
+  /** ...or, for a quiet axis, as a fraction of that axis's own tallest peak. */
+  minRelative?: number;
   /** Minimum seconds between two emotion moments. */
   minGapSec?: number;
   top?: number;
 }
 
 /**
- * The strong moments on one axis, best first. Every bucket where a pole is well above its
- * own baseline and enough people agree — whether or not volume also spiked. Callers merge
- * these with the rate-scored moments and drop the ones the heatmap already found; what is
- * left is what this layer adds.
+ * The moments on one axis, best first — **the peaks of the curve the ribbon draws**.
+ *
+ * This is the whole design, and the first version got it wrong: the ribbon drew `share`
+ * while the list selected on `lift` against a rolling baseline with a hard four-chatter
+ * floor. The two disagreed constantly, so a chat could show a three-quarter-height swell of
+ * hype with nothing to click on it, which is exactly what Angel found on 2026-09-21 — a raid
+ * landing, the whole room hyped, and no moment offered. On that VOD the dread axis drew
+ * full-height peaks and offered *nothing at all*.
+ *
+ * So peaks are now found on `curve`, the same smoothed, confidence-weighted series the
+ * ribbon is drawn from, and measured against the same scale. If you can see a bump, it is
+ * in this list. The only remaining bar is `minChatters`, because one person is not a mood
+ * however loud they are.
  */
 export function emotionMoments(
   s: EmotionSeries,
   axis: AxisKey,
   opts: EmotionMomentOptions = {},
 ): EmotionMoment[] {
-  const { minChatters = MIN_CHATTERS, minLift = 1.2, minGapSec = 120, top = 12 } = opts;
+  const {
+    minChatters = MIN_CHATTERS,
+    minHeight = 0.25,
+    minRelative = 0.5,
+    minGapSec = 120,
+    top = 12,
+  } = opts;
   const a = axisOf(axis);
+  const scale = axisScale(s, axis);
+  /*
+   * Two bars, and a peak only has to clear one (Angel, 2026-09-21: "although they might be
+   * negligible, it was still highlighted in the heatmap as a peak ... could be something
+   * interesting in the VOD for people to clip").
+   *
+   * The first is absolute — a quarter of the ribbon's height — and catches everything on an
+   * axis with real signal. The second is relative to the axis's own tallest point, and is
+   * what an axis that never gets loud needs: on a stream where dread peaks at two chatters
+   * in eleven, those two chatters are still the most frightened this chat ever got, and
+   * they are worth a click. `minChatters` is what keeps that from becoming noise: one person
+   * is never a mood, whatever fraction of a quiet minute they are.
+   */
+  let own = 0;
+  for (const key of [a.up.key, a.down.key])
+    for (const v of s.poles[key].curve) if (v > own) own = v;
+  const bar = Math.min(minHeight * scale, minRelative * own);
   const found: EmotionMoment[] = [];
   for (const p of [a.up, a.down]) {
     const d = s.poles[p.key];
     const other = s.poles[p.key === a.up.key ? a.down.key : a.up.key];
     for (let i = 0; i < s.count; i++) {
-      if (d.cnt[i]! < minChatters || d.lift[i]! < minLift) continue;
+      const v = d.curve[i]!;
+      if (v < bar) continue;
+      // a local maximum, so one swell yields one moment rather than one per bucket
+      if (v < (d.curve[i - 1] ?? 0) || v < (d.curve[i + 1] ?? 0)) continue;
+      // the peak of the smoothed curve can sit a bucket off the bucket that caused it, so
+      // the crowd is counted over the neighbours too — otherwise the reason line reads "2 of
+      // 9" for a swell whose own bucket had 6
+      const near = [i - 1, i, i + 1].filter((j) => j >= 0 && j < s.count);
+      const cnt = Math.max(...near.map((j) => d.cnt[j]!));
+      if (cnt < minChatters) continue;
+      const at = near.reduce((b, j) => (d.cnt[j]! > d.cnt[b]! ? j : b), i);
       found.push({
-        t: i * s.bucketSec,
+        t: at * s.bucketSec,
         pole: p.key,
-        cnt: d.cnt[i]!,
-        users: s.chatters[i]!,
-        share: d.share[i]!,
-        lift: d.lift[i]!,
-        both: other.cnt[i]! >= minChatters && other.lift[i]! >= minLift,
-        rate: s.rate[i]!,
+        cnt,
+        users: s.chatters[at]!,
+        share: d.share[at]!,
+        lift: d.lift[at]!,
+        height: v / scale,
+        both: other.curve[i]! >= bar && Math.max(...near.map((j) => other.cnt[j]!)) >= minChatters,
+        rate: s.rate[at]!,
       });
     }
   }
-  // strongest first, then thin out so two buckets of the same laugh are one moment
-  found.sort((x, y) => y.lift - x.lift || y.cnt - x.cnt);
+  // tallest first, then thin out so two buckets of the same laugh are one moment
+  found.sort((x, y) => y.height - x.height || y.cnt - x.cnt);
   const kept: EmotionMoment[] = [];
   for (const m of found) {
     if (kept.every((k) => Math.abs(k.t - m.t) >= minGapSec)) kept.push(m);

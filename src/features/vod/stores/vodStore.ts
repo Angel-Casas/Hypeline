@@ -19,6 +19,7 @@ import {
   emotionSeries,
   reasonFor,
   type AxisKey,
+  type EmotionMoment,
   type EmotionSeries,
 } from '@/features/hype/emotion';
 import type { SpeechChunk } from '@/features/hype/speech';
@@ -159,23 +160,34 @@ export const useVodStore = defineStore('vod', () => {
 
   /**
    * Fold the emotion moments into the ranked list (Angel, 2026-09-21: one list, labelled,
-   * not two). A rate peak wins any tie — if the heatmap already found the moment, the
-   * emotion layer has nothing to add there and a duplicate row would only cost trust. What
-   * survives is exactly what this layer contributes.
+   * not two).
+   *
+   * A mood peak that lands on a rate peak **tags it** rather than being dropped. Dropping it
+   * was the original behaviour and it created the bug Angel found: the rate moment's pin is
+   * hidden while a mood is chosen, and the mood moment that would have replaced it had just
+   * been discarded as a duplicate — so a visible swell on the ribbon ended up with nothing
+   * on it at all. A raid where the whole room went hyped is exactly that case, since it
+   * spikes the message rate too. Tagged, it keeps its rank, keeps its pin, and gains the
+   * mood's reason line, which is the honest description: both things are true of it.
    */
   function withEmotion(rate: Moment[], vodId: string, gapSec: number, top: number): Moment[] {
     const s = emotion.value;
     const axis = emotionAxis.value;
     if (!s || !axis) return rate;
+    const tag = new Map<string, EmotionMoment>();
     const extra: Moment[] = [];
     for (const m of emotionMoments(s, axis, { minGapSec: gapSec, top })) {
-      if (rate.some((r) => Math.abs(r.t - m.t) < gapSec)) continue;
+      const hit = rate.find((r) => Math.abs(r.t - m.t) < gapSec && !tag.has(r.id));
+      if (hit) {
+        tag.set(hit.id, m);
+        continue;
+      }
       if (extra.some((e) => Math.abs(e.t - m.t) < gapSec)) continue;
       extra.push({
         id: `${vodId}:e${m.t}`,
         t: m.t,
-        // the layer's own strength, on the same 0-ish..n footing as a rate score
-        score: m.lift,
+        // how tall the peak stands on the ribbon, 0..1 — the number the list ranks moods by
+        score: m.height,
         n: 0,
         users: m.users,
         reasons: [reasonFor(m)],
@@ -183,7 +195,11 @@ export const useVodStore = defineStore('vod', () => {
         pole: m.pole,
       });
     }
-    return [...rate, ...extra].sort((a, b) => a.t - b.t);
+    const merged = rate.map((r) => {
+      const m = tag.get(r.id);
+      return m ? { ...r, pole: m.pole, reasons: [reasonFor(m), ...r.reasons] } : r;
+    });
+    return [...merged, ...extra].sort((a, b) => a.t - b.t);
   }
 
   // switching axis (or turning the layer off) re-picks the moments; it never re-fetches,

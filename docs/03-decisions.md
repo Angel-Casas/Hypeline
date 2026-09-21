@@ -1223,6 +1223,35 @@ mood ribbon now scales to the tallest point of its own smoothed curve, and
 blurring rather than clipping is what protects it from a single freak bucket. The
 e2e keeps that number under 0.45.
 
+_What is drawn is what is offered_ (Angel, 2026-09-21). The first build drew
+`share` and selected moments on `lift` against a rolling baseline, behind a hard
+four-chatter floor. Those two quantities disagree constantly, so the ribbon could
+show a three-quarter-height swell of hype with nothing to click on it — a raid
+landing, the whole room hyped, no moment — and on the same VOD the dread axis drew
+peaks and offered **zero** moments. Peaks are now found on `curve`, the very series
+the ribbon is drawn from, measured against the same scale, so the two cannot drift
+apart again; a test asserts it on every axis of a real fixture.
+
+Two changes made that possible. A pole's height is now `strength`, the lower bound
+of a Wilson interval rather than the raw proportion: one chatter of two is 50 % and
+means nothing, fifteen of thirty is the same 50 % and means a great deal, and they
+score 0.21 against 0.41. That replaces the hard chatter floor with a smooth
+discount, and it stops a lone chatter in a quiet minute from painting a full-height
+peak. And the drawn scale has a floor, so an axis with nothing much to say draws
+quietly instead of normalising its own noise up to fill the frame — the other half
+of the same bug, and the reason the honest fix made dread _smaller_ rather than
+making its bar lower. A peak clears either an absolute bar (a quarter of the
+ribbon) or a relative one (half of that axis's own tallest point), because on a
+stream where dread peaks at two chatters in eleven, those two are still the most
+frightened this chat ever got and are worth a click. Only `minChatters` = 2 remains
+absolute: one person is never a mood.
+
+_A rate peak that a mood also claims is tagged, not dropped._ Dropping it was what
+made Angel's raid disappear entirely: the mood moment was discarded as a duplicate
+and the rate pin was hidden because a mood was on, so a visible swell ended up with
+nothing on it. Tagged, it keeps its rank and its pin, is never dimmed, and leads
+with the mood's reason — both things are true of it.
+
 _Colour is validated, and it is not the only cue._ The two poles use steps of
 the thread's own ends, checked against each ground for colour-vision separation
 (ΔE ≈ 26 protan and tritan) and contrast; night is its own choice, not a flip of
