@@ -2063,3 +2063,16 @@ snapped. All three fixed, each with an e2e assertion.
 
 162 unit tests, 16 e2e suites, hover, lint and build green.
 
+## 2026-09-23 — Happy ↔ Sad, Love ↔ Hate, Hype ↔ Letdown (ADR-44)
+
+Angel wanted plainer axes. Joy ↔ sorrow is Happy ↔ Sad now; a new Love ↔ Hate axis
+replaces Dread ↔ Payoff (retired for its words). Hype ↔ Anger was his first idea and
+I argued against it (not opposites on Twitch; anger was the pole S7 dropped) — he
+took Hype ↔ Letdown instead. The love/hate words were each read in context across
+the five real chats (`spikes/s7-sentiment/lovehate.mjs`, S7d); the refusals (`heart`,
+`sweet`, `bad`, `boo`…) have a tombstone test. Stored axes normalise on load, so an
+old `joy-sorrow` becomes `happy-sad` and `dread-payoff` becomes off. Strings in all
+ten catalogs; the "both poles" reason now names the axis's own poles.
+
+164 unit tests, 16 e2e suites, hover, lint, locales and build green.
+

@@ -668,22 +668,22 @@
     "aria": "Calque humeur du chat",
     "widened": "Pas de {sec}s — ce chat est trop calme pour 15s",
     "axis": {
-      "joy-sorrow": "Rire ↔ Tristesse",
-      "hype-letdown": "Hype ↔ Déception",
-      "dread-payoff": "Tension ↔ Soulagement"
+      "happy-sad": "Joie ↔ Tristesse",
+      "love-hate": "Amour ↔ Haine",
+      "hype-letdown": "Hype ↔ Déception"
     },
     "pole": {
-      "joy": "mort de rire",
-      "sorrow": "effondré",
+      "happy": "mort de rire",
+      "sad": "effondré",
+      "love": "sous le charme",
+      "hate": "en train de détester",
       "hype": "à fond",
-      "letdown": "qui n'y croit plus",
-      "dread": "tendu",
-      "payoff": "soulagé"
+      "letdown": "qui n'y croit plus"
     },
     "reason": {
       "plain": "le chat était {what} — {n} sur {of}",
       "quiet": "le chat écrivait moins, mais était {what} — {n} sur {of}",
-      "both": "le chat ne savait pas s'il fallait rire ou pleurer — {n} sur {of}"
+      "both": "le chat était {up} et {down} à la fois — {n} sur {of}"
     }
   }
 }

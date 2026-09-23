@@ -1,4 +1,5 @@
 import { defineStore } from 'pinia';
+import { normaliseAxis } from '@/features/hype/emotion';
 import { computed, ref, watch } from 'vue';
 
 export type Theme = 'system' | 'light' | 'dark';
@@ -70,10 +71,11 @@ export const useSettingsStore = defineStore('settings', () => {
   const sensitivity = ref(Math.min(5, Math.max(1, Number(initial.sensitivity) || 3)));
   /**
    * The emotion axis the heatmap mirrors, '' when the layer is off (ADR-43). A plain string
-   * rather than the `AxisKey` union so an axis retired in a later version degrades to "off"
-   * instead of throwing on a stored value nothing recognises.
+   * rather than the `AxisKey` union, normalised on load: a renamed axis maps to its new name
+   * and a retired one (ADR-44) degrades to "off" instead of throwing on a stored value
+   * nothing recognises.
    */
-  const emotionAxis = ref(String(initial.emotionAxis ?? ''));
+  const emotionAxis = ref<string>(normaliseAxis(initial.emotionAxis));
   const momentOrder = ref<MomentOrder>(initial.momentOrder === 'rank' ? 'rank' : 'time');
   const mq = typeof matchMedia === 'function' ? matchMedia('(prefers-color-scheme: dark)') : null;
   const systemDark = ref(mq?.matches ?? false);

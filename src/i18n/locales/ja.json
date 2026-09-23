@@ -668,22 +668,22 @@
     "aria": "チャットの空気レイヤー",
     "widened": "{sec}秒刻み — このチャットは15秒では静かすぎます",
     "axis": {
-      "joy-sorrow": "笑い ↔ 悲しみ",
-      "hype-letdown": "盛り上がり ↔ 落胆",
-      "dread-payoff": "緊張 ↔ 安堵"
+      "happy-sad": "楽しい ↔ 悲しい",
+      "love-hate": "好き ↔ 嫌い",
+      "hype-letdown": "盛り上がり ↔ 落胆"
     },
     "pole": {
-      "joy": "爆笑",
-      "sorrow": "落ち込み",
+      "happy": "爆笑",
+      "sad": "落ち込み",
+      "love": "メロメロ",
+      "hate": "嫌悪",
       "hype": "大盛り上がり",
-      "letdown": "がっかり",
-      "dread": "緊張",
-      "payoff": "安堵"
+      "letdown": "がっかり"
     },
     "reason": {
       "plain": "チャットは{what}（{of}人中{n}人）",
       "quiet": "発言は減ったが{what}（{of}人中{n}人）",
-      "both": "笑うべきか泣くべきか（{of}人中{n}人）"
+      "both": "チャットは{up}と{down}が同時に（{of}人中{n}人）"
     }
   }
 }

@@ -4,7 +4,7 @@
  * The fixture is built so the feature has nowhere to hide: a chat so quiet that the rate
  * scorer scores every bucket zero and finds **no moments at all**. One message every eight
  * seconds, all hour. The only thing that ever changes is *what chat says* — two windows of
- * laughter, one of grief, and, the case that matters most, two where the room tenses up and
+ * laughter, one of grief, and, the case that matters most, two where the room turns on the stream and
  * **halves its message rate**, which is the one shape a rate-based scorer cannot see by
  * construction, because it is looking for the opposite sign.
  *
@@ -23,7 +23,7 @@ const LENGTH = 3600;
 
 const LAUGH = [600, 1800];
 const GRIEF = [1200];
-const TENSE = [2400, 3000];
+const HATE = [2400, 3000];
 const WINDOW = 180;
 /**
  * Two volume spikes, far from every mood window. The first is ordinary chatter: a moment the
@@ -43,9 +43,10 @@ const BURST_LEN = 30;
  * point. It also forces the emotion layer to widen its own buckets before it can gather a
  * crowd, so this fixture exercises the widening path as well.
  *
- * In the tense windows the chat halves its rate, to one message every 16 seconds: volume
- * *falls* while the room agrees. That is the shape no rate scorer can see, and the reason
- * the moment prints should say chat said less.
+ * In the hate windows the chat halves its rate, to one message every 16 seconds — the room
+ * turning on the stream with a shrug rather than a flood: volume *falls* while the room
+ * agrees. That is the shape no rate scorer can see, and the reason the moment prints should
+ * say chat said less.
  */
 function chat() {
   const out = [];
@@ -54,13 +55,13 @@ function chat() {
     const inAny = (xs) => xs.some((at) => t >= at && t < at + WINDOW);
     const laughing = inAny(LAUGH);
     const grieving = inAny(GRIEF);
-    const tense = inAny(TENSE);
-    const step = tense ? 16 : 8;
+    const hating = inAny(HATE);
+    const step = hating ? 16 : 8;
     if (t % step !== 0) continue;
     let m = `talking quietly about the stream ${t}`;
     if (laughing) m = `KEKW ${t}`;
     else if (grieving) m = `Sadge ${t}`;
-    else if (tense) m = `monkaS ${t}`;
+    else if (hating) m = `cringe ${t}`;
     out.push({ i: i++, t, u: `v${i % 97}`, m, b: [] });
   }
   // the bursts: plain chatter, but a lot of it, so the heatmap has peaks of its own to dim
@@ -160,9 +161,9 @@ const emoChips = p.locator('[data-testid="moment-emo"]');
  */
 const LABEL = {
   '': 'Off',
-  'joy-sorrow': 'Joy ↔ Sorrow',
+  'happy-sad': 'Happy ↔ Sad',
+  'love-hate': 'Love ↔ Hate',
   'hype-letdown': 'Hype ↔ Letdown',
-  'dread-payoff': 'Dread ↔ Payoff',
 };
 const axisValue = async () => (await axis.locator('.pick-v').innerText()).trim();
 async function chooseAxis(key) {
@@ -209,8 +210,8 @@ if ((await p.locator('ol.chips li:not(.chip-leave-active).is-dim').count()) !== 
 if ((await p.locator('[data-testid="emo-ribbon"]').count()) !== 0)
   throw new Error('mood ribbon drawn while off');
 
-// --- 2. joy ↔ sorrow: the laughter and the grief appear, labelled -----------------------
-await chooseAxis('joy-sorrow');
+// --- 2. happy ↔ sad: the laughter and the grief appear, labelled -----------------------
+await chooseAxis('happy-sad');
 if ((await p.locator('[data-testid="emo-ribbon"]').count()) !== 1)
   throw new Error('no mood ribbon drawn');
 // it wears the thread's own three layers, not a flat fill
@@ -226,7 +227,7 @@ if (labels[0] !== 'laughing' || labels[1] !== 'gutted')
 
 const withJoy = await times();
 const added = withJoy.filter((t) => !flat.includes(t));
-console.log('joy↔sorrow · moments:', withJoy.length, '· new:', added.join(' ') || 'none');
+console.log('happy↔sad · moments:', withJoy.length, '· new:', added.join(' ') || 'none');
 if ((await emoChips.count()) === 0) throw new Error('no mood moments in the list');
 if (withJoy.length <= flat.length) throw new Error('the layer added no moments');
 
@@ -364,7 +365,7 @@ if (!chrono(r.slice(0, firstDim)) || !chrono(r.slice(firstDim)))
 
 // --- 2a. the page must not move when a choice silently changes the "active" moment -----
 // The active moment is derived from the list (first in the clip range, else near the
-// playhead). Select a joy moment in the grid's second row — below the fold at this viewport —
+// playhead). Select a happy moment in the grid's second row — below the fold at this viewport —
 // switch to hype (it vanishes, active → none), switch back (it reappears, active → it
 // again): the list's keep-in-view fires, and it used to scroll the *page* to the chip
 // (Angel, 2026-09-21). chooseAxis measures window.scrollY around every choice; with the old
@@ -375,7 +376,7 @@ await p.waitForTimeout(400);
 await p.evaluate(() => window.scrollTo(0, 60));
 await p.waitForTimeout(150);
 await chooseAxis('hype-letdown');
-await chooseAxis('joy-sorrow');
+await chooseAxis('happy-sad');
 console.log('active moment came and went; page still at', await p.evaluate(() => window.scrollY));
 
 // --- 2b. the raid: a volume spike that is also a mood peak ------------------------------
@@ -414,10 +415,10 @@ if (hypePins !== 1)
   throw new Error(`expected just the raid pinned on the mood ribbon, got ${hypePins}`);
 
 // --- 2c. hovering a menu entry previews that mood on the ribbon, animated ---------------
-// joy is the choice; rest the pointer on hype in the open menu and the ribbon *becomes*
+// happy is the choice; rest the pointer on hype in the open menu and the ribbon *becomes*
 // hype for as long as it is there, morphing rather than swapping; the pins step aside; the
 // pill and the list keep the choice. Leave, and it slides back.
-await chooseAxis('joy-sorrow');
+await chooseAxis('happy-sad');
 const ribbonD = async () =>
   (await p.locator('[data-testid="emo-ribbon"] path').first().getAttribute('d')) ?? '';
 const d0 = await ribbonD();
@@ -431,7 +432,7 @@ await p.waitForTimeout(700);
 const focused = await p.evaluate(() => document.activeElement?.textContent?.trim() ?? '');
 const openLabel = (await p.locator('[data-testid="emo-up"]').innerText()).trim();
 console.log(`menu open: focus on "${focused}" · ribbon still "${openLabel}"`);
-if (!focused.startsWith(LABEL['joy-sorrow'])) throw new Error('focus did not land on the choice');
+if (!focused.startsWith(LABEL['happy-sad'])) throw new Error('focus did not land on the choice');
 if (openLabel !== 'laughing') throw new Error('opening the menu changed the ribbon');
 if ((await ribbonD()) !== d0) throw new Error('opening the menu moved the ribbon');
 await menu.locator('[role="menuitemradio"]', { hasText: LABEL['hype-letdown'] }).first().hover();
@@ -447,7 +448,7 @@ console.log(
     `${d0 !== dMid && dMid !== d1 && d0 !== d1}`,
 );
 if (labelMid !== 'hyped') throw new Error('hovering hype did not preview hype: ' + labelMid);
-if (pillMid !== LABEL['joy-sorrow']) throw new Error('a preview changed the choice');
+if (pillMid !== LABEL['happy-sad']) throw new Error('a preview changed the choice');
 if (asideMid === 0) throw new Error("the chosen mood's pins stayed up during a preview");
 if (d0 === d1) throw new Error('the ribbon did not change under the pointer');
 if (dMid === d0 || dMid === d1) throw new Error('the ribbon swapped instead of morphing');
@@ -492,18 +493,17 @@ const pillBack = (await p.locator('[data-testid="emo-up"]').innerText()).trim();
 console.log(`closed from the pill · ribbon "${pillBack}"`);
 if (pillBack !== 'laughing') throw new Error('closing from the pill left the preview on');
 
-// --- 3. the case the heatmap cannot see: chat tensed up and said *less* -----------------
-await chooseAxis('dread-payoff');
-const dread = await times();
-console.log('dread↔payoff · moments:', dread.length, '·', dread.join(' '));
+// --- 3. the case the heatmap cannot see: chat turned on it and said *less* --------------
+await chooseAxis('love-hate');
+const hate = await times();
+console.log('love↔hate · moments:', hate.length, '·', hate.join(' '));
 const reasons = await p
   .locator('ol.chips li:not(.chip-leave-active)')
   .evaluateAll((els) => els.map((e) => e.getAttribute('aria-label') ?? ''));
 const quiet = reasons.filter((r) => /said less/.test(r));
 console.log('moments where chat went quiet:', quiet.length);
 for (const q of quiet.slice(0, 2)) console.log('   ·', q);
-if (!quiet.length)
-  throw new Error('the quiet-tension moments were missed — that is the whole point');
+if (!quiet.length) throw new Error('the quiet-hate moments were missed — that is the whole point');
 
 await p.screenshot({ path: 'e2e/last-emotion.png' });
 
@@ -515,7 +515,7 @@ await p.waitForFunction(() => /\d+ moments/.test(document.body.innerText), null,
 await axis.waitFor({ state: 'visible', timeout: 20000 });
 const kept = await axisValue();
 console.log('after reload the pill reads:', kept);
-if (kept !== LABEL['dread-payoff']) throw new Error('the axis was not remembered: ' + kept);
+if (kept !== LABEL['love-hate']) throw new Error('the axis was not remembered: ' + kept);
 
 // --- 5. turning it off leaves the app exactly as it was --------------------------------
 await chooseAxis('');
@@ -544,7 +544,7 @@ const reach = async () =>
       const b = el.getBBox();
       return Number(b.height.toFixed(2));
     });
-await menu.locator('[role="menuitemradio"]', { hasText: LABEL['joy-sorrow'] }).first().hover();
+await menu.locator('[role="menuitemradio"]', { hasText: LABEL['happy-sad'] }).first().hover();
 await p.waitForTimeout(140);
 const firstMid = await reach().catch(() => 0);
 await p.waitForTimeout(800);

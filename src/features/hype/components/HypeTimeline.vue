@@ -318,7 +318,7 @@ function ribbonPath(from: number, to: number, height: number, scale: number): st
 /**
  * The emotion layer, mirrored about the same spine the ribbon already uses.
  *
- * The two poles are drawn as two curves and **never subtracted**: joy outnumbers sorrow four
+ * The two poles are drawn as two curves and **never subtracted**: laughter outnumbers sadness four
  * or five to one, so a difference would erase the rare pole in every bucket it appeared in,
  * and a bucket where chat is both hysterical and gutted — the best kind there is — would
  * render as a flat line.
@@ -348,7 +348,7 @@ const emoScale = computed(() =>
  * silk (Angel, 2026-09-21). The design system already answered this for the thread: the raw
  * bucket series is too jagged to read, so it is drawn as a smooth swell per moment. The mood
  * ribbon cannot borrow that machinery directly — `seriesFromPeaks` normalises each series to
- * its own maximum, which would make a small sorrow lobe look as tall as a big joy one and
+ * its own maximum, which would make a small sad lobe look as tall as a big happy one and
  * destroy the very comparison the mirror exists for — so it takes the same *treatment*
  * instead: blur the buckets, keep one shared scale across the axis.
  */

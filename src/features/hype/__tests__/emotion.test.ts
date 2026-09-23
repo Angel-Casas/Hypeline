@@ -32,6 +32,7 @@ import {
   pickBucketSec,
   polesOf,
   tokensOf,
+  normaliseAxis,
   type AxisKey,
   type PoleKey,
 } from '../emotion';
@@ -88,10 +89,11 @@ describe('the lexicon', () => {
   });
 
   it('keeps ez on hype, where S7c found it belongs', () => {
-    // it sat in the lower pole of dread-payoff on the assumption that it meant relief;
-    // in one xqc VOD it is 2,801 taunts. This test is the tombstone.
+    // it sat in the lower pole of the (since retired) dread-payoff axis on the assumption
+    // that it meant relief; in one xqc VOD it is 2,801 taunts. This test is the tombstone.
     expect(tokensOf('hype')).toContain('ez');
-    expect(tokensOf('payoff')).not.toContain('ez');
+    for (const p of ['sad', 'hate', 'letdown'] as PoleKey[])
+      expect(tokensOf(p)).not.toContain('ez');
   });
 
   it('draws the warm pole of each axis above the line', () => {
@@ -99,29 +101,49 @@ describe('the lexicon', () => {
       expect(isUpper(a.up.key)).toBe(true);
       expect(isUpper(a.down.key)).toBe(false);
     }
-    expect(AXIS_KEYS).toEqual(['joy-sorrow', 'hype-letdown', 'dread-payoff']);
-    expect(axisOf('dread-payoff').down.key).toBe('payoff');
+    expect(AXIS_KEYS).toEqual(['happy-sad', 'love-hate', 'hype-letdown']);
+    expect(axisOf('love-hate').down.key).toBe('hate');
+  });
+
+  it('keeps the words S7d read in context out of love ↔ hate', () => {
+    // each of these was a real false positive on the five VODs: "your heart is fried",
+    // "take your sweet time", "power to weight ratio", "boo boos", "my bad", and `boring`
+    // is bored, not hate. The tombstone for the lexicon's second lesson.
+    const all = [...tokensOf('love'), ...tokensOf('hate')];
+    for (const w of ['heart', 'sweet', 'wife', 'husband', 'ratio', 'boo', 'bad', 'boring'])
+      expect(all).not.toContain(w);
+    expect(tokensOf('love')).toContain('wholesome');
+    expect(tokensOf('hate')).toContain('cringe');
+  });
+
+  it('maps a stored axis name to what it means today', () => {
+    expect(normaliseAxis('joy-sorrow')).toBe('happy-sad');
+    expect(normaliseAxis('dread-payoff')).toBe('');
+    expect(normaliseAxis('love-hate')).toBe('love-hate');
+    expect(normaliseAxis(undefined)).toBe('');
+    expect(normaliseAxis(42)).toBe('');
   });
 });
 
 describe('polesOf', () => {
   it('reads emote names as well as words', () => {
-    expect(polesOf(msg('that was something', { e: ['PepeHands'] }))).toEqual(['sorrow']);
-    expect(polesOf(msg('OMEGALUL'))).toEqual(['joy']);
-    expect(polesOf(msg('monkaS'))).toEqual(['dread']);
+    expect(polesOf(msg('that was something', { e: ['PepeHands'] }))).toEqual(['sad']);
+    expect(polesOf(msg('OMEGALUL'))).toEqual(['happy']);
+    expect(polesOf(msg('so wholesome', { e: ['peepoLove'] }))).toEqual(['love']);
+    expect(polesOf(msg('holy cringe'))).toEqual(['hate']);
   });
 
   it('votes once per pole however hard someone leans on the key', () => {
-    expect(polesOf(msg('LOL LOL LOL LOL LOL'))).toEqual(['joy']);
+    expect(polesOf(msg('LOL LOL LOL LOL LOL'))).toEqual(['happy']);
   });
 
   it('lets one message vote on two axes at once', () => {
     // "KEKW W" is laughing *and* approving; both are true and both should count
-    expect(polesOf(msg('KEKW W')).sort()).toEqual(['hype', 'joy']);
+    expect(polesOf(msg('KEKW W')).sort()).toEqual(['happy', 'hype']);
   });
 
   it('matches emoji and is not fooled by substrings', () => {
-    expect(polesOf(msg('😭'))).toEqual(['sorrow']);
+    expect(polesOf(msg('😭'))).toEqual(['sad']);
     expect(polesOf(msg('hello world'))).toEqual([]);
     // "lolling" is not "lol"; whole tokens only
     expect(polesOf(msg('lolling about'))).toEqual([]);
@@ -152,7 +174,7 @@ describe('emotionSeries on a big real chat', () => {
   it('measures a share, not a volume', () => {
     // the claim the whole feature rests on: if this correlation were high, the layer
     // would be a fatter copy of the heatmap. S7 measured -0.14..+0.19 here.
-    for (const key of ['joy', 'sorrow', 'hype', 'letdown'] as PoleKey[]) {
+    for (const key of ['happy', 'sad', 'love', 'hate', 'hype', 'letdown'] as PoleKey[]) {
       const r = Math.abs(pearson(s.poles[key].share, s.msgs));
       expect(r, `${key} share vs volume r=${r.toFixed(2)}`).toBeLessThan(0.4);
     }
@@ -160,10 +182,10 @@ describe('emotionSeries on a big real chat', () => {
 
   it('counts chatters, so one spammer is one vote', () => {
     for (let i = 0; i < s.count; i++) {
-      for (const key of ['joy', 'hype'] as PoleKey[]) {
+      for (const key of ['happy', 'hype'] as PoleKey[]) {
         expect(s.poles[key].cnt[i]!).toBeLessThanOrEqual(s.chatters[i]!);
       }
-      expect(s.poles.joy.share[i]!).toBeLessThanOrEqual(1);
+      expect(s.poles.happy.share[i]!).toBeLessThanOrEqual(1);
     }
   });
 
@@ -179,7 +201,7 @@ describe('emotionMoments', () => {
   it('surfaces moments on a chat that found none at 15 s', () => {
     const msgs = load('tokyosims_2871164819.jsonl');
     const s = emotionSeries(msgs, 23057);
-    const found = emotionMoments(s, 'joy-sorrow');
+    const found = emotionMoments(s, 'happy-sad');
     expect(found.length).toBeGreaterThan(0);
     for (const m of found) expect(m.cnt).toBeGreaterThanOrEqual(MIN_CHATTERS);
   });
@@ -193,7 +215,7 @@ describe('emotionMoments', () => {
 
   it('keeps moments apart and ranks the strongest first', () => {
     const s = emotionSeries(load('caseoh_2871808638.jsonl.gz'), 14400);
-    const found = emotionMoments(s, 'joy-sorrow', { minGapSec: 300, top: 8 });
+    const found = emotionMoments(s, 'happy-sad', { minGapSec: 300, top: 8 });
     expect(found.length).toBeLessThanOrEqual(8);
     for (let i = 1; i < found.length; i++) {
       // ranked by how tall the peak stands on the ribbon — the same number it is drawn at
@@ -211,7 +233,7 @@ describe('emotionMoments', () => {
     // quiet on either side so the baseline share is low
     for (let i = 0; i < 40; i++) msgs.push(msg('hello', { t: i * 15, u: `q${i}` }));
     const s = emotionSeries(msgs, 1200, 15);
-    const found = emotionMoments(s, 'joy-sorrow');
+    const found = emotionMoments(s, 'happy-sad');
     expect(found.some((m) => m.both)).toBe(true);
   });
 
@@ -226,8 +248,8 @@ describe('emotionMoments', () => {
   it('survives an empty VOD', () => {
     const s = emotionSeries([], 600, 15);
     expect(s.count).toBeGreaterThan(0);
-    expect(emotionMoments(s, 'joy-sorrow')).toEqual([]);
-    expect(s.peak.joy).toBe(0);
+    expect(emotionMoments(s, 'happy-sad')).toEqual([]);
+    expect(s.peak.happy).toBe(0);
   });
 });
 
@@ -295,9 +317,9 @@ describe('what is drawn is what is offered', () => {
       msgs2.push(msg(`chatting ${t}`, { t, u: `a${t}` }));
       msgs2.push(msg(`chatting too ${t}`, { t, u: `b${t}` }));
     }
-    msgs2.push(msg('monkaS', { t: 600, u: 'lonely' }));
+    msgs2.push(msg('cringe', { t: 600, u: 'lonely' }));
     const s2 = emotionSeries(msgs2, 1200);
-    expect(emotionMoments(s2, 'dread-payoff')).toEqual([]);
+    expect(emotionMoments(s2, 'love-hate')).toEqual([]);
   });
 });
 
@@ -324,11 +346,11 @@ describe('the bar the list and the ribbon share', () => {
   }
 
   it('reads zero outside the VOD and never divides by a silent axis', () => {
-    expect(moodHeightAt(s, 'joy-sorrow', -50)).toBeGreaterThanOrEqual(0);
-    expect(moodHeightAt(s, 'joy-sorrow', 10_000_000)).toBeGreaterThanOrEqual(0);
+    expect(moodHeightAt(s, 'happy-sad', -50)).toBeGreaterThanOrEqual(0);
+    expect(moodHeightAt(s, 'happy-sad', 10_000_000)).toBeGreaterThanOrEqual(0);
     const quiet = emotionSeries([msg('hello', { t: 5 })], 600);
-    expect(Number.isFinite(peakBar(quiet, 'dread-payoff'))).toBe(true);
-    expect(moodHeightAt(quiet, 'dread-payoff', 100)).toBe(0);
+    expect(Number.isFinite(peakBar(quiet, 'love-hate'))).toBe(true);
+    expect(moodHeightAt(quiet, 'love-hate', 100)).toBe(0);
   });
 });
 
@@ -347,16 +369,16 @@ describe('moodHeightAt samples where the ribbon samples', () => {
   it('reads a bucket centre as that bucket', () => {
     for (const i of [3, 10, 15, 20]) {
       const centre = (i + 0.5) * s.bucketSec;
-      expect(moodHeightAt(s, 'joy-sorrow', centre)).toBeCloseTo(s.poles.joy.curve[i]!, 6);
+      expect(moodHeightAt(s, 'happy-sad', centre)).toBeCloseTo(s.poles.happy.curve[i]!, 6);
     }
   });
 
   it('is symmetric about a centre and moves smoothly between them', () => {
     const i = 15;
     const centre = (i + 0.5) * s.bucketSec;
-    const lo = moodHeightAt(s, 'joy-sorrow', centre - 20);
-    const hi = moodHeightAt(s, 'joy-sorrow', centre + 20);
-    const at = moodHeightAt(s, 'joy-sorrow', centre);
+    const lo = moodHeightAt(s, 'happy-sad', centre - 20);
+    const hi = moodHeightAt(s, 'happy-sad', centre + 20);
+    const at = moodHeightAt(s, 'happy-sad', centre);
     // 20s either side of a centre reads between that bucket and its neighbours, not beyond
     expect(Math.min(lo, hi)).toBeLessThanOrEqual(Math.max(at, Math.max(lo, hi)));
     expect(Number.isFinite(lo) && Number.isFinite(hi)).toBe(true);

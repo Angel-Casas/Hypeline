@@ -668,22 +668,22 @@
     "aria": "Ebene Chat-Stimmung",
     "widened": "{sec}s-Schritte – dieser Chat ist für 15s zu ruhig",
     "axis": {
-      "joy-sorrow": "Freude ↔ Trauer",
-      "hype-letdown": "Hype ↔ Enttäuschung",
-      "dread-payoff": "Anspannung ↔ Erlösung"
+      "happy-sad": "Freude ↔ Trauer",
+      "love-hate": "Liebe ↔ Hass",
+      "hype-letdown": "Hype ↔ Enttäuschung"
     },
     "pole": {
-      "joy": "am Lachen",
-      "sorrow": "am Boden",
+      "happy": "am Lachen",
+      "sad": "am Boden",
+      "love": "verliebt",
+      "hate": "am Hassen",
       "hype": "gehyped",
-      "letdown": "enttäuscht",
-      "dread": "angespannt",
-      "payoff": "erleichtert"
+      "letdown": "enttäuscht"
     },
     "reason": {
       "plain": "Chat war {what} – {n} von {of}",
       "quiet": "Chat schrieb weniger, war aber {what} – {n} von {of}",
-      "both": "Chat wusste nicht, ob lachen oder weinen – {n} von {of}"
+      "both": "Chat war {up} und {down} zugleich – {n} von {of}"
     }
   }
 }

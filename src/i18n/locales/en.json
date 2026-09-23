@@ -668,22 +668,22 @@
     "aria": "Chat mood layer",
     "widened": "{sec}s steps — this chat is too quiet for 15s",
     "axis": {
-      "joy-sorrow": "Joy ↔ Sorrow",
-      "hype-letdown": "Hype ↔ Letdown",
-      "dread-payoff": "Dread ↔ Payoff"
+      "happy-sad": "Happy ↔ Sad",
+      "love-hate": "Love ↔ Hate",
+      "hype-letdown": "Hype ↔ Letdown"
     },
     "pole": {
-      "joy": "laughing",
-      "sorrow": "gutted",
+      "happy": "laughing",
+      "sad": "gutted",
+      "love": "in love",
+      "hate": "hating it",
       "hype": "hyped",
-      "letdown": "calling it a loss",
-      "dread": "on edge",
-      "payoff": "relieved"
+      "letdown": "calling it a loss"
     },
     "reason": {
       "plain": "chat was {what} — {n} of {of}",
       "quiet": "chat said less, but was {what} — {n} of {of}",
-      "both": "chat didn't know whether to laugh or cry — {n} of {of}"
+      "both": "chat was {up} and {down} at once — {n} of {of}"
     }
   }
 }

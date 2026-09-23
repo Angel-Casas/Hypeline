@@ -1367,3 +1367,37 @@ chat before it is trusted — `ez` sat on the relief pole until one VOD showed
 2,801 uses of it as a taunt (S7c). Finally, `mood` in `scoring.ts` still
 classifies with its own, differently-cut categories; it should become a
 projection of these poles rather than a second classifier that disagrees.
+
+## ADR-44 — The mood menu reads Happy ↔ Sad, Love ↔ Hate, Hype ↔ Letdown (2026-09-23)
+
+**Context.** ADR-43 shipped joy ↔ sorrow, hype ↔ letdown and dread ↔ payoff. Angel
+(2026-09-23): the dread pair is "very hard for someone to understand", and he
+wanted a love ↔ hate axis. He first proposed hype ↔ anger; talked out of it because
+hype and anger are not opposites on Twitch — a streamer malding is one of the most
+hyped moments a chat has, so both lobes would swell together on one spine and the
+axis would read as broken — and because anger was the emotion S7 dropped as
+inseparable from banter. What real anger-at-the-streamer there is lands on the hate
+pole anyway.
+
+**Decision.** Three axes, plain words: **Happy ↔ Sad** (joy ↔ sorrow renamed; the
+lexicon is laughter and grief, unchanged), **Love ↔ Hate** (new: chat approving of,
+or turning on, what is on screen; every token read in context on 356k real messages,
+S7d), **Hype ↔ Letdown** (unchanged). **Dread ↔ Payoff is retired** — for its words,
+not its signal. Its lexicon is gone from `emotion.ts`; S7b/S7c stay in the research
+doc, and a Hype ↔ Bored axis is the natural home if "quiet tension" is ever wanted
+back.
+
+A stored axis is normalised on load (`normaliseAxis`): `joy-sorrow` becomes
+`happy-sad`, `dread-payoff` and anything unknown become "off". So nobody's saved
+choice throws, and a retired axis degrades to the layer being off rather than to a
+crash. The "both poles at once" reason is no longer the laugh-or-cry sentence; it
+takes the axis's own pole names ("chat was in love and hating it at once"), which
+is the sentence for a roast.
+
+**Consequences.** Four pole labels and three axis names in ten catalogs; the e2e's
+quiet-window case is now a hate window (`cringe` at half rate) and still prints
+"chat said less". The hate pole is loud (`ew`/`eww` are 616 messages across the
+fixtures) and largely performative — roasting, not leaving — which is exactly what
+gets clipped, and the label "hating it" is meant to read that way. Per-language pole
+packs (M7) now owe four poles more.
+

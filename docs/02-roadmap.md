@@ -235,6 +235,9 @@ in `docs/05-research.md`; the throwaway is `spikes/s7-sentiment/`.
       zoom strip and the In/Out handle feet follow.
 - [x] Moments list: a second source alongside the rate peaks, labelled by pole;
       "chat did not know whether to laugh or cry" when both poles are high.
+- [x] **ADR-44 (2026-09-23):** the menu reads Happy ↔ Sad, Love ↔ Hate, Hype ↔
+      Letdown. Dread ↔ Payoff retired for its words, not its signal; Love ↔ Hate's
+      lexicon read in context on 356k messages (S7d).
 - [ ] **Still owed:** per-language pole packs. The lexicon is English; a German
       chat is nearly invisible to it (S7b), exactly as ADR-29 found for the hype
       vocabulary.

@@ -14,20 +14,23 @@
  * Three axes, drawn mirrored: the warm pole above the centre line, the cool pole below.
  * **The poles are never subtracted.** A bucket where chat is both hysterical and gutted is
  * the most interesting bucket on the stream; a difference would render it as a flat line,
- * and since joy outnumbers sorrow four or five to one, subtraction would erase the rare
+ * and since laughter outnumbers sadness four or five to one, subtraction would erase the rare
  * pole in every bucket it appeared in.
  *
- * Why these three, and why no others: S7 measured six poles against four VODs.
- * joy ↔ sorrow fires everywhere; hype ↔ letdown is the W/L culture of a big chat;
- * dread ↔ payoff needed a 353-messages-a-minute chat before it showed anything, and its
- * lower pole is *not* relief-from-fear — `phew` and `survived` are near zero even there.
- * It is `finally`: the wait paying off. The axis is named for what it measures.
+ * Why these three (ADR-44, 2026-09-23): happy ↔ sad fires everywhere; love ↔ hate is
+ * chat approving or turning on what is on screen — hearts and "king" against "cringe" and
+ * "ew" — and it is the axis a streamer most wants clipped; hype ↔ letdown is the W/L
+ * culture of a big chat. A fourth, dread ↔ payoff, was built and measured (S7b: it needed a
+ * 353-messages-a-minute chat before it showed anything) and then dropped, not for the
+ * signal but for the words: nobody knew what "payoff" meant on a menu. The names are the
+ * plainest ones that are still true — "happy" is laughter here, because that is what chat
+ * types when it is happy.
  */
 import type { ChatMessage } from '@/lib/twitch/types';
 import { t } from '@/i18n';
 
-export type PoleKey = 'joy' | 'sorrow' | 'hype' | 'letdown' | 'dread' | 'payoff';
-export type AxisKey = 'joy-sorrow' | 'hype-letdown' | 'dread-payoff';
+export type PoleKey = 'happy' | 'sad' | 'love' | 'hate' | 'hype' | 'letdown';
+export type AxisKey = 'happy-sad' | 'love-hate' | 'hype-letdown';
 
 export interface Pole {
   key: PoleKey;
@@ -60,16 +63,35 @@ const pole = (key: PoleKey, words: string): Pole => ({
  */
 export const AXES: readonly Axis[] = [
   {
-    key: 'joy-sorrow',
+    key: 'happy-sad',
     up: pole(
-      'joy',
+      'happy',
       `lol lmao lmfao lmaoo lmfaoo kekw kek kekl kekwait lul lulw omegalul icant
        pepelaugh haha hahaha ahah xd jaja jajaja 😂 🤣 laughing crying`,
     ),
     down: pole(
-      'sorrow',
+      'sad',
       `sadge pepehands feelsbadman widepeeposad peepocry sadcat 😭 😢 🥺 💔
        rip cry heartbroken awww aww nooo restinpeace`,
+    ),
+  },
+  {
+    // S7d (2026-09-23): every token here was read in context across five real VODs,
+    // 356k messages. Left out on purpose: `heart` ("your heart is fried"), `wife`/`husband`
+    // (RP talk), `sweet` ("take your sweet time"), `ratio` ("power to weight ratio"),
+    // `boo` ("boo boos"), `bad` ("my bad", "not bad") and `boring`, which is bored, not hate.
+    key: 'love-hate',
+    up: pole(
+      'love',
+      `love loved lovely ily wholesome peepolove catlove pepelove king queen legend
+       based cute cutie adorable goated gigachad respect proud marry hug peepohug
+       ❤ 💜 💖 💕 💗 😍 🥰 🫶 🥹`,
+    ),
+    down: pole(
+      'hate',
+      `hate hated cringe cringy trash garbage dogshit clown bozo loser scam scammer
+       fraud ick gross disgusting ew eww yuck worst terrible awful annoying pathetic
+       embarrassing lame weirdo stfu toxic 🤡 🤮 🤢 👎 🖕`,
     ),
   },
   {
@@ -84,16 +106,6 @@ export const AXES: readonly Axis[] = [
       `l ll lll copium aware notlikethis choke choked unlucky malding yikes oof
        washed mid cope sadgechamp`,
     ),
-  },
-  {
-    key: 'dread-payoff',
-    up: pole(
-      'dread',
-      `monkas monkaw monkahmm monkaeyes pausechamp 😬 uhoh ohno scared nervous
-       sweating terrifying creepy`,
-    ),
-    // not relief-from-fear, which barely exists in chat: this is the wait ending
-    down: pole('payoff', `finally phew whew saved survived thankgod exhale atlast`),
   },
 ] as const;
 
@@ -110,7 +122,7 @@ const TOKEN_RE = /[\p{L}\p{N}]+|\p{Extended_Pictographic}/gu;
 
 /**
  * Which poles a message votes for. A message votes at most once per pole however many
- * matching tokens it contains, so `LOL LOL LOL LOL` is one vote for joy.
+ * matching tokens it contains, so `LOL LOL LOL LOL` is one vote for happy.
  */
 export function polesOf(m: ChatMessage): PoleKey[] {
   const toks = new Set<string>(m.m.toLowerCase().match(TOKEN_RE) ?? []);
@@ -479,18 +491,28 @@ export function emotionMoments(
 
 /** The message key for each pole's name, e.g. "laughing". */
 export const POLE_KEY: Record<PoleKey, string> = {
-  joy: 'emotion.pole.joy',
-  sorrow: 'emotion.pole.sorrow',
+  happy: 'emotion.pole.happy',
+  sad: 'emotion.pole.sad',
+  love: 'emotion.pole.love',
+  hate: 'emotion.pole.hate',
   hype: 'emotion.pole.hype',
   letdown: 'emotion.pole.letdown',
-  dread: 'emotion.pole.dread',
-  payoff: 'emotion.pole.payoff',
 };
 export const AXIS_LABEL_KEY: Record<AxisKey, string> = {
-  'joy-sorrow': 'emotion.axis.joy-sorrow',
+  'happy-sad': 'emotion.axis.happy-sad',
+  'love-hate': 'emotion.axis.love-hate',
   'hype-letdown': 'emotion.axis.hype-letdown',
-  'dread-payoff': 'emotion.axis.dread-payoff',
 };
+
+/**
+ * The axis a stored key means today: earlier names map to their successor, and a retired
+ * axis (dread ↔ payoff, ADR-44) or anything unknown degrades to "off" instead of throwing
+ * on a value nothing recognises.
+ */
+export function normaliseAxis(key: unknown): AxisKey | '' {
+  if (key === 'joy-sorrow') return 'happy-sad';
+  return AXES.some((a) => a.key === key) ? (key as AxisKey) : '';
+}
 
 /**
  * Why this moment is in the list, in the user's language. Three shapes, because the
@@ -499,7 +521,15 @@ export const AXIS_LABEL_KEY: Record<AxisKey, string> = {
  */
 export function reasonFor(m: EmotionMoment): string {
   const what = t(POLE_KEY[m.pole]);
-  if (m.both) return t('emotion.reason.both', { n: m.cnt, of: m.users });
+  if (m.both) {
+    const a = AXES.find((x) => x.up.key === m.pole || x.down.key === m.pole) ?? AXES[0]!;
+    return t('emotion.reason.both', {
+      up: t(POLE_KEY[a.up.key]),
+      down: t(POLE_KEY[a.down.key]),
+      n: m.cnt,
+      of: m.users,
+    });
+  }
   if (m.rate < -0.3) return t('emotion.reason.quiet', { what, n: m.cnt, of: m.users });
   return t('emotion.reason.plain', { what, n: m.cnt, of: m.users });
 }

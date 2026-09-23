@@ -780,3 +780,40 @@ headline from S7 should be read as "0.0–0.35 depending on chat size", not a fl
 Fixture kept as `spikes/s7-sentiment/xqc_2879641133.jsonl.gz` (3.8 MB): the high-density,
 highly reactive English counterpart to the hasgarson one, and the only fixture that
 exercises dread, relief and the crowd floor at once.
+
+### S7d — the love ↔ hate lexicon, read in context (2026-09-23)
+
+For ADR-44 the menu became Happy ↔ Sad, Love ↔ Hate, Hype ↔ Letdown. The new axis
+needed words, and after `ez` (S7c) no word goes in on the dictionary's say-so.
+`spikes/s7-sentiment/lovehate.mjs` counts every candidate across the five real chats
+we hold (356,133 messages: xqc, hasgarson, caseoh_, tokyosims, popkreep_) and prints
+the first lines each one matched.
+
+**Admitted, love:** `love` (966 — "i love you xqc", "I LOVE WHEN DEVS…"), `😍` (271),
+`gigachad` (259, praise every time), `cute` (222), `king` (114), `❤` (104), `🥹`
+(96), `proud` (84, "proud of you"), `goated` (83), `queen` (74), `based` (54), `🥰`
+(50), `respect` (46), `🫶` (31), `cutie` (27), `ily` (25), `hug` (24, "HUG <3"),
+`wholesome` (23), `marry` (20, "MARRY ME CASEOH"), `loved`, `legend`, `adorable`,
+`lovely`, `💜 💖 💕 💗`, and the emotes `peepoLove catLove pepeLove`.
+
+**Admitted, hate:** `eww` (348), `ew` (268), `trash` (255), `clown` (133), `hate`
+(124), `cringe` (87), `worst` (86), `stfu` (76), `loser` (68), `annoying` (63),
+`dogshit` (53), `terrible` (51), `disgusting` (49), `lame` (48), `garbage` (44),
+`scam` (40), `gross` (40), `bozo` (32), `yuck` (25), `awful` (25), `🤡 🤮 🤢` (16
+each), `pathetic` (15), `toxic` (15), `creep`→ no (see below), `weirdo` (10),
+`fraud` (9), `scammer`, `ick`, `hated`, `cringy`, `embarrassing`, `👎 🖕`.
+
+**Refused, with the line that refused them:** `heart` (124 — "your heart is fried",
+"kingdom hearts lore"), `wife`/`husband` (111/44 — GTA RP talk, "ARMAN's wife"),
+`sweet` (74 — "take your sweet time"), `protect` (21 — "protect the farm"), `bad`
+(819 — "my bad", "not bad", far too generic), `ratio` (2 — "power to weight
+ratio"), `boo` (23 — "boo boos hurt"), `creep` (12 — "he can creep on me"),
+`boring` (31 — real, but it is *bored*, not hate; it belongs to a Hype ↔ Bored
+axis if one is ever built), `nobody`/`cares` (need each other to mean anything).
+
+Two things worth knowing about this axis. The hate pole is largely **performative**:
+"holy cringe", "clown nation", "RIP BOZO" are chat roasting the stream, not leaving
+it, and that is the right thing to clip. And it is the first axis whose lower pole
+is *loud*: `eww`/`ew` alone are 616 messages, so unlike dread it will not need the
+353-a-minute chat to show up.
+

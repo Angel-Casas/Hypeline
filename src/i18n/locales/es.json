@@ -668,22 +668,22 @@
     "aria": "Capa de ánimo del chat",
     "widened": "Pasos de {sec}s — este chat es demasiado tranquilo para 15s",
     "axis": {
-      "joy-sorrow": "Risa ↔ Tristeza",
-      "hype-letdown": "Hype ↔ Decepción",
-      "dread-payoff": "Tensión ↔ Alivio"
+      "happy-sad": "Alegría ↔ Tristeza",
+      "love-hate": "Amor ↔ Odio",
+      "hype-letdown": "Hype ↔ Decepción"
     },
     "pole": {
-      "joy": "muerto de risa",
-      "sorrow": "destrozado",
+      "happy": "muerto de risa",
+      "sad": "destrozado",
+      "love": "enamorado",
+      "hate": "odiándolo",
       "hype": "a tope",
-      "letdown": "dándolo por perdido",
-      "dread": "en tensión",
-      "payoff": "aliviado"
+      "letdown": "dándolo por perdido"
     },
     "reason": {
       "plain": "el chat estaba {what} — {n} de {of}",
       "quiet": "el chat escribió menos, pero estaba {what} — {n} de {of}",
-      "both": "el chat no sabía si reír o llorar — {n} de {of}"
+      "both": "el chat estaba {up} y {down} a la vez — {n} de {of}"
     }
   }
 }

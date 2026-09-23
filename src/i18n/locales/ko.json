@@ -668,22 +668,22 @@
     "aria": "채팅 분위기 레이어",
     "widened": "{sec}초 단위 — 이 채팅은 15초로 보기엔 너무 한산합니다",
     "axis": {
-      "joy-sorrow": "웃음 ↔ 슬픔",
-      "hype-letdown": "열광 ↔ 실망",
-      "dread-payoff": "긴장 ↔ 안도"
+      "happy-sad": "기쁨 ↔ 슬픔",
+      "love-hate": "사랑 ↔ 혐오",
+      "hype-letdown": "열광 ↔ 실망"
     },
     "pole": {
-      "joy": "폭소",
-      "sorrow": "침울",
+      "happy": "폭소",
+      "sad": "침울",
+      "love": "푹 빠짐",
+      "hate": "혐오",
       "hype": "열광",
-      "letdown": "포기 선언",
-      "dread": "긴장",
-      "payoff": "안도"
+      "letdown": "포기 선언"
     },
     "reason": {
       "plain": "채팅이 {what} — {of}명 중 {n}명",
       "quiet": "말수는 줄었지만 {what} — {of}명 중 {n}명",
-      "both": "웃어야 할지 울어야 할지 — {of}명 중 {n}명"
+      "both": "채팅이 {up}과(와) {down} 동시에 — {of}명 중 {n}명"
     }
   }
 }

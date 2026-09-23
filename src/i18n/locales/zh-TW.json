@@ -668,22 +668,22 @@
     "aria": "聊天室情緒圖層",
     "widened": "{sec} 秒為一格 — 這個聊天室太安靜，15 秒不夠",
     "axis": {
-      "joy-sorrow": "歡笑 ↔ 難過",
-      "hype-letdown": "高潮 ↔ 失望",
-      "dread-payoff": "緊張 ↔ 釋然"
+      "happy-sad": "開心 ↔ 難過",
+      "love-hate": "喜愛 ↔ 厭惡",
+      "hype-letdown": "高潮 ↔ 失望"
     },
     "pole": {
-      "joy": "笑翻了",
-      "sorrow": "心碎",
+      "happy": "笑翻了",
+      "sad": "心碎",
+      "love": "愛慘了",
+      "hate": "超厭惡",
       "hype": "超嗨",
-      "letdown": "認輸了",
-      "dread": "緊張",
-      "payoff": "終於鬆口氣"
+      "letdown": "認輸了"
     },
     "reason": {
       "plain": "聊天室{what} — {of} 人中 {n} 人",
       "quiet": "發言變少，但{what} — {of} 人中 {n} 人",
-      "both": "聊天室不知該笑還是該哭 — {of} 人中 {n} 人"
+      "both": "聊天室同時{up}又{down} — {of} 人中 {n} 人"
     }
   }
 }
