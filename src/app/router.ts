@@ -1,4 +1,5 @@
-import { createRouter, createWebHistory } from 'vue-router';
+import { START_LOCATION, createRouter, createWebHistory } from 'vue-router';
+import { installed } from '@/lib/pwa';
 import HomePage from '@/features/vod/HomePage.vue';
 import DashboardPage from '@/features/vod/DashboardPage.vue';
 import GalleryPage from '@/features/clips/GalleryPage.vue';
@@ -20,4 +21,16 @@ export const router = createRouter({
     // the old VOD page lives on the dashboard now
     { path: '/vod/:id', redirect: (to) => ({ name: 'dashboard', params: { id: to.params.id } }) },
   ],
+});
+
+/**
+ * The installed app opens on the desk. The manifest's `start_url` says so, but a home-screen
+ * icon placed before that change still launches at `/`, and iOS does not always re-read the
+ * manifest — so the *first* navigation of a standalone session is sent on from the landing
+ * page. Only the first: the rail's home button leads there on purpose (Angel, 2026-09-25).
+ */
+router.beforeEach((to, from) => {
+  if (to.name === 'home' && from === START_LOCATION && installed.value)
+    return { name: 'dashboard' };
+  return true;
 });

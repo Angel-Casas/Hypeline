@@ -2076,3 +2076,12 @@ ten catalogs; the "both poles" reason now names the axis's own poles.
 
 164 unit tests, 16 e2e suites, hover, lint, locales and build green.
 
+## 2026-09-25 — the installed app opens on the dashboard (ADR-45)
+
+`start_url: /dashboard` in the manifest, plus a router guard that redirects only the
+first navigation of a standalone session from `/`, for icons that predate the change
+and for iOS. The rail's brand link still reaches the landing page; a browser tab is
+untouched. Covered in `e2e/pwa.mjs`.
+
+164 unit tests, 16 e2e suites, hover, lint and build green.
+

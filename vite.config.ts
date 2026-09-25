@@ -55,6 +55,10 @@ export default defineConfig({
         theme_color: '#000000',
         background_color: '#000000',
         display: 'standalone',
+        // the installed app opens on the desk, not the landing page: someone who has
+        // installed it has already read the pitch (Angel, 2026-09-25). `src/app/router.ts`
+        // covers installs that still carry the old start_url.
+        start_url: '/dashboard',
         icons: [
           { src: icons.icon192, sizes: '192x192', type: 'image/png' },
           { src: icons.icon512, sizes: '512x512', type: 'image/png' },

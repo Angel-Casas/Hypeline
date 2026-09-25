@@ -1401,3 +1401,21 @@ fixtures) and largely performative — roasting, not leaving — which is exactl
 gets clipped, and the label "hating it" is meant to read that way. Per-language pole
 packs (M7) now owe four poles more.
 
+## ADR-45 — The installed app opens on the desk (2026-09-25)
+
+**Context.** Angel: someone who has installed Hypeline sees the landing page every
+time they open it. The landing page is the pitch; an installed user has already
+bought it, and what they want is the desk — their VODs, the library, the input.
+
+**Decision.** The manifest's `start_url` is `/dashboard`. Because a home-screen icon
+placed before this change still launches at `/` (and iOS does not reliably re-read
+the manifest), the router also sends the **first** navigation of a standalone
+session (`display-mode: standalone` or `navigator.standalone`) from `/` to the
+dashboard. Only the first: the rail's brand link leads to the landing page on
+purpose, and a browser tab is never redirected.
+
+**Consequences.** Nothing changes for the web. The pwa e2e checks the manifest,
+fakes standalone the iOS way, asserts the redirect, the brand link's way back, and
+that a plain tab stays on `/`. The dashboard without an id is already the signed-in
+home (ADR-19), so an installed user lands on something useful either way.
+

@@ -155,6 +155,37 @@ try {
 }
 await ctx2.close();
 
+/*
+ * The installed app opens on the desk (Angel, 2026-09-25): the manifest says so, and for a
+ * home-screen icon that predates that, a standalone session's first navigation to the
+ * landing page is sent on. Standalone is faked the iOS way (`navigator.standalone`), which
+ * is the one signal Playwright can set. The rail's home button must still reach the landing
+ * page — only the *first* navigation is redirected.
+ */
+const manifest3 = await (await p.request.get(BASE + '/manifest.webmanifest')).json();
+console.log('manifest start_url:', manifest3.start_url);
+if (manifest3.start_url !== '/dashboard') throw new Error('start_url is not the dashboard');
+const ctx3 = await b.newContext({ viewport: { width: 1280, height: 900 } });
+await ctx3.addInitScript(() => {
+  localStorage.setItem('hypeline.locale', 'en');
+  localStorage.setItem('hypeline.tour.v1', 'done');
+  Object.defineProperty(navigator, 'standalone', { value: true });
+});
+const p3 = await ctx3.newPage();
+p3.on('pageerror', (e) => errors.push(String(e)));
+await p3.goto(BASE + '/');
+await p3.waitForURL(/\/dashboard$/, { timeout: 10000 });
+console.log('installed app opened at / and landed on:', new URL(p3.url()).pathname);
+await p3.locator('aside a[href="/"]').first().click();
+await p3.waitForURL((u) => u.pathname === '/', { timeout: 10000 });
+console.log("the rail's home button still reaches the landing page:", new URL(p3.url()).pathname);
+await ctx3.close();
+// and a browser tab (not installed) still opens on the landing page
+await p.goto(BASE + '/');
+await p.waitForTimeout(500);
+if (new URL(p.url()).pathname !== '/') throw new Error('a browser tab was redirected off /');
+console.log('a plain browser tab stays on the landing page');
+
 const real = errors.filter((e) => !/ResizeObserver/.test(e));
 console.log('page errors:', real.length ? real : 'none');
 await b.close();
